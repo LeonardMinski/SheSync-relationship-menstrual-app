@@ -14,12 +14,14 @@ import {
   Bell
 } from 'lucide-react';
 import { useApp } from '@/context/AppContext';
+import { useAuth } from '@/context/AuthContext';
 import { getPhaseEmoji } from '@/lib/mockData';
 
 const Navigation = () => {
   const pathname = usePathname();
   const { state, toggleTheme, markNotificationAsRead } = useApp();
   const { isDarkMode, currentPhase, notifications } = state;
+  const { user, signOut } = useAuth();
 
   const unreadNotifications = notifications.filter(n => !n.isRead).length;
 
@@ -66,6 +68,28 @@ const Navigation = () => {
             </div>
             
             <div className="flex items-center space-x-3">
+              {/* User Menu */}
+              {user ? (
+                <div className="flex items-center space-x-3">
+                  <span className="text-sm text-gray-700 dark:text-gray-300">
+                    Hi, {user.name || user.email}
+                  </span>
+                  <button
+                    onClick={signOut}
+                    className="text-sm text-rose-600 hover:text-rose-700 dark:text-rose-400 dark:hover:text-rose-300"
+                  >
+                    Sign Out
+                  </button>
+                </div>
+              ) : (
+                <Link
+                  href="/auth/login"
+                  className="text-sm text-rose-600 hover:text-rose-700 dark:text-rose-400 dark:hover:text-rose-300"
+                >
+                  Sign In
+                </Link>
+              )}
+              
               {/* Notifications */}
               <button className="relative p-2 text-gray-600 dark:text-gray-300 hover:text-rose-500 transition-colors">
                 <Bell size={20} />
