@@ -1,0 +1,7 @@
+{
+  "/ai-coach/page": "app/ai-coach/page.js",
+  "/fantasy/page": "app/fantasy/page.js",
+  "/favicon.ico/route": "app/favicon.ico/route.js",
+  "/intimacy/page": "app/intimacy/page.js",
+  "/page": "app/page.js"
+}
