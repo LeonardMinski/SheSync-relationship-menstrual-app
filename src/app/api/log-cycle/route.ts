@@ -48,9 +48,9 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // For now, we'll use a placeholder user ID
+    // Extract user ID from the Bearer token
     // In production, you'd verify the JWT and extract the user ID
-    const userId = 'placeholder-user-id' // This should come from JWT verification
+    const userId = authHeader.replace('Bearer ', '')
 
     // Insert the cycle entry
     const { cycle, error } = await cycles.create({
@@ -83,15 +83,17 @@ export async function POST(request: NextRequest) {
 
 export async function GET(request: NextRequest) {
   try {
-    const { searchParams } = new URL(request.url)
-    const userId = searchParams.get('userId')
-
-    if (!userId) {
+    // Get the authenticated user from the request
+    const authHeader = request.headers.get('authorization')
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
       return NextResponse.json(
-        { error: 'User ID is required' },
-        { status: 400 }
+        { error: 'Authorization header required' },
+        { status: 401 }
       )
     }
+
+    // Extract user ID from the Bearer token
+    const userId = authHeader.replace('Bearer ', '')
 
     // Get cycle entries for the user
     const { cycles: cycleData, error } = await cycles.getByUserId(userId)
