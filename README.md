@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # SheSync+ 🌸
 
 **The ultimate cycle-powered wellbeing, connection & intimacy app — for women and their partners.**
@@ -217,3 +218,6 @@ This project is licensed under the MIT License - see the LICENSE file for detail
 **Made with 💝 for women and their partners**
 
 *SheSync+ - Because your cycle is your superpower* ✨
+=======
+# SheSync-relationship-menstrual-app
+>>>>>>> 5e431b6e1481e447042694626c2906c44b7520bb
