@@ -285,3 +285,157 @@ export const audioStorage = {
     }
   }
 }
+
+// Data persistence functions for app state
+import { User, CycleData, AICoachMessage, IntimacyCard, FantasyEntry, Notification } from '@/types'
+
+// User management
+export const getUser = (): User | null => {
+  try {
+    const userData = localStorage.getItem('sheSync_user')
+    if (!userData) return null
+    
+    const user = JSON.parse(userData)
+    // Convert date strings back to Date objects
+    user.createdAt = new Date(user.createdAt)
+    return user
+  } catch (error) {
+    console.error('Error getting user:', error)
+    return null
+  }
+}
+
+export const saveUser = (user: User): void => {
+  try {
+    localStorage.setItem('sheSync_user', JSON.stringify(user))
+  } catch (error) {
+    console.error('Error saving user:', error)
+  }
+}
+
+// Cycle data management
+export const getCycleData = (): CycleData[] => {
+  try {
+    const cycleData = localStorage.getItem('sheSync_cycleData')
+    if (!cycleData) return []
+    
+    const data = JSON.parse(cycleData)
+    // Convert date strings back to Date objects
+    return data.map((entry: any) => ({
+      ...entry,
+      date: new Date(entry.date)
+    }))
+  } catch (error) {
+    console.error('Error getting cycle data:', error)
+    return []
+  }
+}
+
+export const saveCycleData = (cycleData: CycleData[]): void => {
+  try {
+    localStorage.setItem('sheSync_cycleData', JSON.stringify(cycleData))
+  } catch (error) {
+    console.error('Error saving cycle data:', error)
+  }
+}
+
+// AI messages management
+export const getAIMessages = (): AICoachMessage[] => {
+  try {
+    const messages = localStorage.getItem('sheSync_aiMessages')
+    if (!messages) return []
+    
+    const data = JSON.parse(messages)
+    // Convert date strings back to Date objects
+    return data.map((message: any) => ({
+      ...message,
+      timestamp: new Date(message.timestamp)
+    }))
+  } catch (error) {
+    console.error('Error getting AI messages:', error)
+    return []
+  }
+}
+
+// Intimacy cards management
+export const getIntimacyCards = (): IntimacyCard[] => {
+  try {
+    const cards = localStorage.getItem('sheSync_intimacyCards')
+    if (!cards) return []
+    
+    return JSON.parse(cards)
+  } catch (error) {
+    console.error('Error getting intimacy cards:', error)
+    return []
+  }
+}
+
+// Fantasy entries management
+export const getFantasyEntries = (): FantasyEntry[] => {
+  try {
+    const entries = localStorage.getItem('sheSync_fantasyEntries')
+    if (!entries) return []
+    
+    const data = JSON.parse(entries)
+    // Convert date strings back to Date objects
+    return data.map((entry: any) => ({
+      ...entry,
+      createdAt: new Date(entry.createdAt),
+      updatedAt: new Date(entry.updatedAt)
+    }))
+  } catch (error) {
+    console.error('Error getting fantasy entries:', error)
+    return []
+  }
+}
+
+export const updateFantasyEntry = (entryId: string, updates: Partial<FantasyEntry>): void => {
+  try {
+    const entries = getFantasyEntries()
+    const updatedEntries = entries.map(entry => 
+      entry.id === entryId 
+        ? { ...entry, ...updates, updatedAt: new Date() }
+        : entry
+    )
+    localStorage.setItem('sheSync_fantasyEntries', JSON.stringify(updatedEntries))
+  } catch (error) {
+    console.error('Error updating fantasy entry:', error)
+  }
+}
+
+// Notifications management
+export const getNotifications = (): Notification[] => {
+  try {
+    const notifications = localStorage.getItem('sheSync_notifications')
+    if (!notifications) return []
+    
+    const data = JSON.parse(notifications)
+    // Convert date strings back to Date objects
+    return data.map((notification: any) => ({
+      ...notification,
+      createdAt: new Date(notification.createdAt)
+    }))
+  } catch (error) {
+    console.error('Error getting notifications:', error)
+    return []
+  }
+}
+
+// Theme management
+export const getTheme = (): 'light' | 'dark' => {
+  try {
+    const theme = localStorage.getItem('sheSync_theme')
+    return theme === 'dark' ? 'dark' : 'light'
+  } catch (error) {
+    console.error('Error getting theme:', error)
+    return 'light'
+  }
+}
+
+export const saveTheme = (theme: 'light' | 'dark'): void => {
+  try {
+    localStorage.setItem('sheSync_theme', theme)
+  } catch (error) {
+    console.error('Error saving theme:', error)
+  }
+}
