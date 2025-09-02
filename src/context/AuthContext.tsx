@@ -36,11 +36,13 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     const checkSession = async () => {
       try {
         const { user: currentUser, error } = await auth.getCurrentUser()
-        if (error) {
+        if (error && error !== 'Auth session missing!') {
+          // Only log actual errors, not the normal case of no session
           console.error('Session check error:', error)
         } else if (currentUser) {
           setUser(currentUser)
         }
+        // If error is 'Auth session missing!', that's normal - no user logged in
       } catch (error) {
         console.error('Session check failed:', error)
       } finally {

@@ -46,7 +46,7 @@ export const auth = {
       }
 
       if (!session?.user) {
-        return { user: null, error: 'Auth session missing!' }
+        return { user: null, error: null } // No session is normal, not an error
       }
 
       // Get user profile from our users table
