@@ -1,210 +1,441 @@
-import { AppState, User, CycleData, AICoachMessage, IntimacyCard, FantasyEntry, Notification } from '@/types';
+import { supabase } from './supabaseClient'
 
-const STORAGE_KEYS = {
-  USER: 'shesync_user',
-  CYCLE_DATA: 'shesync_cycle_data',
-  AI_MESSAGES: 'shesync_ai_messages',
-  INTIMACY_CARDS: 'shesync_intimacy_cards',
-  FANTASY_ENTRIES: 'shesync_fantasy_entries',
-  NOTIFICATIONS: 'shesync_notifications',
-  THEME: 'shesync_theme',
-  ONBOARDING: 'shesync_onboarding',
-} as const;
+// Types for storage operations
+export interface FileUpload {
+  file: File
+  path: string
+  bucket?: string
+}
 
-class LocalStorage {
-  private isClient = typeof window !== 'undefined';
+export interface FileDownload {
+  path: string
+  bucket?: string
+}
 
-  setItem(key: string, value: any): void {
-    if (!this.isClient) return;
+export interface FileDelete {
+  path: string
+  bucket?: string
+}
+
+export interface StorageFile {
+  name: string
+  id: string
+  updated_at: string
+  created_at: string
+  last_accessed_at: string
+  metadata: Record<string, any>
+}
+
+// Storage functions
+export const storage = {
+  // Upload a file
+  async upload(data: FileUpload): Promise<{ url: string | null; error: string | null }> {
     try {
-      const serializedValue = JSON.stringify(value, (key, val) => {
-        if (val instanceof Date) {
-          return { __type: 'Date', value: val.toISOString() };
-        }
-        return val;
-      });
-      localStorage.setItem(key, serializedValue);
-    } catch (error) {
-      console.error('Error saving to localStorage:', error);
-    }
-  }
+      const bucket = data.bucket || 'default'
+      const { data: uploadData, error } = await supabase.storage
+        .from(bucket)
+        .upload(data.path, data.file, {
+          cacheControl: '3600',
+          upsert: false
+        })
 
-  getItem<T>(key: string, defaultValue: T): T {
-    if (!this.isClient) return defaultValue;
+      if (error) {
+        return { url: null, error: error.message }
+      }
+
+      // Get public URL
+      const { data: urlData } = supabase.storage
+        .from(bucket)
+        .getPublicUrl(data.path)
+
+      return { url: urlData.publicUrl, error: null }
+    } catch (error) {
+      return { url: null, error: error instanceof Error ? error.message : 'Unknown error' }
+    }
+  },
+
+  // Download a file
+  async download(data: FileDownload): Promise<{ blob: Blob | null; error: string | null }> {
     try {
-      const item = localStorage.getItem(key);
-      if (item === null) return defaultValue;
-      
-      const parsed = JSON.parse(item, (key, val) => {
-        if (val && typeof val === 'object' && val.__type === 'Date') {
-          return new Date(val.value);
-        }
-        return val;
-      });
-      
-      return parsed;
+      const bucket = data.bucket || 'default'
+      const { data: blob, error } = await supabase.storage
+        .from(bucket)
+        .download(data.path)
+
+      if (error) {
+        return { blob: null, error: error.message }
+      }
+
+      return { blob, error: null }
     } catch (error) {
-      console.error('Error reading from localStorage:', error);
-      return defaultValue;
+      return { blob: null, error: error instanceof Error ? error.message : 'Unknown error' }
     }
-  }
+  },
 
-  removeItem(key: string): void {
-    if (!this.isClient) return;
-    localStorage.removeItem(key);
-  }
+  // Delete a file
+  async delete(data: FileDelete): Promise<{ error: string | null }> {
+    try {
+      const bucket = data.bucket || 'default'
+      const { error } = await supabase.storage
+        .from(bucket)
+        .remove([data.path])
 
-  clear(): void {
-    if (!this.isClient) return;
-    Object.values(STORAGE_KEYS).forEach(key => {
-      localStorage.removeItem(key);
-    });
+      if (error) {
+        return { error: error.message }
+      }
+
+      return { error: null }
+    } catch (error) {
+      return { error: error instanceof Error ? error.message : 'Unknown error' }
+    }
+  },
+
+  // List files in a bucket
+  async list(bucket: string = 'default', path: string = ''): Promise<{ files: StorageFile[] | null; error: string | null }> {
+    try {
+      const { data, error } = await supabase.storage
+        .from(bucket)
+        .list(path)
+
+      if (error) {
+        return { files: null, error: error.message }
+      }
+
+      const files: StorageFile[] = data.map(item => ({
+        name: item.name,
+        id: item.id,
+        updated_at: item.updated_at,
+        created_at: item.created_at,
+        last_accessed_at: item.last_accessed_at,
+        metadata: item.metadata || {}
+      }))
+
+      return { files, error: null }
+    } catch (error) {
+      return { files: null, error: error instanceof Error ? error.message : 'Unknown error' }
+    }
+  },
+
+  // Get public URL for a file
+  async getPublicUrl(path: string, bucket: string = 'default'): Promise<{ url: string | null; error: string | null }> {
+    try {
+      const { data } = supabase.storage
+        .from(bucket)
+        .getPublicUrl(path)
+
+      return { url: data.publicUrl, error: null }
+    } catch (error) {
+      return { url: null, error: error instanceof Error ? error.message : 'Unknown error' }
+    }
+  },
+
+  // Create a signed URL for private files
+  async createSignedUrl(path: string, expiresIn: number = 3600, bucket: string = 'default'): Promise<{ url: string | null; error: string | null }> {
+    try {
+      const { data, error } = await supabase.storage
+        .from(bucket)
+        .createSignedUrl(path, expiresIn)
+
+      if (error) {
+        return { url: null, error: error.message }
+      }
+
+      return { url: data.signedUrl, error: null }
+    } catch (error) {
+      return { url: null, error: error instanceof Error ? error.message : 'Unknown error' }
+    }
+  },
+
+
+
+  // Move/rename a file
+  async move(fromPath: string, toPath: string, bucket: string = 'default'): Promise<{ error: string | null }> {
+    try {
+      // Download the file
+      const { blob, error: downloadError } = await this.download({ path: fromPath, bucket })
+      if (downloadError) {
+        return { error: downloadError }
+      }
+
+      if (!blob) {
+        return { error: 'Failed to download file for moving' }
+      }
+
+      // Upload to new location
+      const file = new File([blob], toPath.split('/').pop() || 'file', { type: blob.type })
+      const { error: uploadError } = await this.upload({ file, path: toPath, bucket })
+      if (uploadError) {
+        return { error: uploadError }
+      }
+
+      // Delete from old location
+      const { error: deleteError } = await this.delete({ path: fromPath, bucket })
+      if (deleteError) {
+        return { error: deleteError }
+      }
+
+      return { error: null }
+    } catch (error) {
+      return { error: error instanceof Error ? error.message : 'Unknown error' }
+    }
+  },
+
+  // Copy a file
+  async copy(fromPath: string, toPath: string, bucket: string = 'default'): Promise<{ error: string | null }> {
+    try {
+      // Download the file
+      const { blob, error: downloadError } = await this.download({ path: fromPath, bucket })
+      if (downloadError) {
+        return { error: downloadError }
+      }
+
+      if (!blob) {
+        return { error: 'Failed to download file for copying' }
+      }
+
+      // Upload to new location
+      const file = new File([blob], toPath.split('/').pop() || 'file', { type: blob.type })
+      const { error: uploadError } = await this.upload({ file, path: toPath, bucket })
+      if (uploadError) {
+        return { error: uploadError }
+      }
+
+      return { error: null }
+    } catch (error) {
+      return { error: error instanceof Error ? error.message : 'Unknown error' }
+    }
   }
 }
 
-const storage = new LocalStorage();
+// Specialized storage functions for different file types
+export const imageStorage = {
+  // Upload an image with optimization
+  async uploadImage(data: FileUpload, options: { resize?: { width: number; height: number } } = {}): Promise<{ url: string | null; error: string | null }> {
+    try {
+      // Validate file type
+      if (!data.file.type.startsWith('image/')) {
+        return { url: null, error: 'File must be an image' }
+      }
+
+      // Use the general upload function
+      return await storage.upload(data)
+    } catch (error) {
+      return { url: null, error: error instanceof Error ? error.message : 'Unknown error' }
+    }
+  },
+
+  // Get image with specific dimensions
+  async getImageUrl(path: string, width?: number, height?: number, bucket: string = 'default'): Promise<{ url: string | null; error: string | null }> {
+    try {
+      const { url, error } = await storage.getPublicUrl(path, bucket)
+      if (error) {
+        return { url: null, error }
+      }
+
+      // Add transformation parameters if dimensions are specified
+      if (width || height) {
+        const params = new URLSearchParams()
+        if (width) params.append('width', width.toString())
+        if (height) params.append('height', height.toString())
+        return { url: `${url}?${params.toString()}`, error: null }
+      }
+
+      return { url, error: null }
+    } catch (error) {
+      return { url: null, error: error instanceof Error ? error.message : 'Unknown error' }
+    }
+  }
+}
+
+export const documentStorage = {
+  // Upload a document
+  async uploadDocument(data: FileUpload): Promise<{ url: string | null; error: string | null }> {
+    try {
+      // Validate file type
+      const allowedTypes = [
+        'application/pdf',
+        'application/msword',
+        'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+        'text/plain'
+      ]
+      
+      if (!allowedTypes.includes(data.file.type)) {
+        return { url: null, error: 'File type not supported' }
+      }
+
+      return await storage.upload(data)
+    } catch (error) {
+      return { url: null, error: error instanceof Error ? error.message : 'Unknown error' }
+    }
+  }
+}
+
+export const audioStorage = {
+  // Upload audio file
+  async uploadAudio(data: FileUpload): Promise<{ url: string | null; error: string | null }> {
+    try {
+      // Validate file type
+      if (!data.file.type.startsWith('audio/')) {
+        return { url: null, error: 'File must be an audio file' }
+      }
+
+      return await storage.upload(data)
+    } catch (error) {
+      return { url: null, error: error instanceof Error ? error.message : 'Unknown error' }
+    }
+  }
+}
+
+// Data persistence functions for app state
+import { User, CycleData, AICoachMessage, IntimacyCard, FantasyEntry, Notification } from '@/types'
 
 // User management
-export const saveUser = (user: User): void => {
-  storage.setItem(STORAGE_KEYS.USER, user);
-};
-
 export const getUser = (): User | null => {
-  return storage.getItem<User | null>(STORAGE_KEYS.USER, null);
-};
+  try {
+    const userData = localStorage.getItem('sheSync_user')
+    if (!userData) return null
+    
+    const user = JSON.parse(userData)
+    // Convert date strings back to Date objects
+    user.createdAt = new Date(user.createdAt)
+    return user
+  } catch (error) {
+    console.error('Error getting user:', error)
+    return null
+  }
+}
 
-export const removeUser = (): void => {
-  storage.removeItem(STORAGE_KEYS.USER);
-};
+export const saveUser = (user: User): void => {
+  try {
+    localStorage.setItem('sheSync_user', JSON.stringify(user))
+  } catch (error) {
+    console.error('Error saving user:', error)
+  }
+}
 
 // Cycle data management
-export const saveCycleData = (cycleData: CycleData[]): void => {
-  storage.setItem(STORAGE_KEYS.CYCLE_DATA, cycleData);
-};
-
 export const getCycleData = (): CycleData[] => {
-  return storage.getItem<CycleData[]>(STORAGE_KEYS.CYCLE_DATA, []);
-};
+  try {
+    const cycleData = localStorage.getItem('sheSync_cycleData')
+    if (!cycleData) return []
+    
+    const data = JSON.parse(cycleData)
+    // Convert date strings back to Date objects
+    return data.map((entry: any) => ({
+      ...entry,
+      date: new Date(entry.date)
+    }))
+  } catch (error) {
+    console.error('Error getting cycle data:', error)
+    return []
+  }
+}
 
-export const addCycleEntry = (entry: CycleData): void => {
-  const existing = getCycleData();
-  const updated = [...existing.filter(e => e.id !== entry.id), entry];
-  saveCycleData(updated);
-};
+export const saveCycleData = (cycleData: CycleData[]): void => {
+  try {
+    localStorage.setItem('sheSync_cycleData', JSON.stringify(cycleData))
+  } catch (error) {
+    console.error('Error saving cycle data:', error)
+  }
+}
 
 // AI messages management
-export const saveAIMessages = (messages: AICoachMessage[]): void => {
-  storage.setItem(STORAGE_KEYS.AI_MESSAGES, messages);
-};
-
 export const getAIMessages = (): AICoachMessage[] => {
-  return storage.getItem<AICoachMessage[]>(STORAGE_KEYS.AI_MESSAGES, []);
-};
-
-export const addAIMessage = (message: AICoachMessage): void => {
-  const existing = getAIMessages();
-  saveAIMessages([...existing, message]);
-};
+  try {
+    const messages = localStorage.getItem('sheSync_aiMessages')
+    if (!messages) return []
+    
+    const data = JSON.parse(messages)
+    // Convert date strings back to Date objects
+    return data.map((message: any) => ({
+      ...message,
+      timestamp: new Date(message.timestamp)
+    }))
+  } catch (error) {
+    console.error('Error getting AI messages:', error)
+    return []
+  }
+}
 
 // Intimacy cards management
-export const saveIntimacyCards = (cards: IntimacyCard[]): void => {
-  storage.setItem(STORAGE_KEYS.INTIMACY_CARDS, cards);
-};
-
 export const getIntimacyCards = (): IntimacyCard[] => {
-  return storage.getItem<IntimacyCard[]>(STORAGE_KEYS.INTIMACY_CARDS, []);
-};
-
-export const updateIntimacyCard = (cardId: string, updates: Partial<IntimacyCard>): void => {
-  const existing = getIntimacyCards();
-  const updated = existing.map(card => 
-    card.id === cardId ? { ...card, ...updates } : card
-  );
-  saveIntimacyCards(updated);
-};
+  try {
+    const cards = localStorage.getItem('sheSync_intimacyCards')
+    if (!cards) return []
+    
+    return JSON.parse(cards)
+  } catch (error) {
+    console.error('Error getting intimacy cards:', error)
+    return []
+  }
+}
 
 // Fantasy entries management
-export const saveFantasyEntries = (entries: FantasyEntry[]): void => {
-  storage.setItem(STORAGE_KEYS.FANTASY_ENTRIES, entries);
-};
-
 export const getFantasyEntries = (): FantasyEntry[] => {
-  return storage.getItem<FantasyEntry[]>(STORAGE_KEYS.FANTASY_ENTRIES, []);
-};
-
-export const addFantasyEntry = (entry: FantasyEntry): void => {
-  const existing = getFantasyEntries();
-  saveFantasyEntries([...existing, entry]);
-};
+  try {
+    const entries = localStorage.getItem('sheSync_fantasyEntries')
+    if (!entries) return []
+    
+    const data = JSON.parse(entries)
+    // Convert date strings back to Date objects
+    return data.map((entry: any) => ({
+      ...entry,
+      createdAt: new Date(entry.createdAt),
+      updatedAt: new Date(entry.updatedAt)
+    }))
+  } catch (error) {
+    console.error('Error getting fantasy entries:', error)
+    return []
+  }
+}
 
 export const updateFantasyEntry = (entryId: string, updates: Partial<FantasyEntry>): void => {
-  const existing = getFantasyEntries();
-  const updated = existing.map(entry => 
-    entry.id === entryId ? { ...entry, ...updates, updatedAt: new Date() } : entry
-  );
-  saveFantasyEntries(updated);
-};
-
-export const deleteFantasyEntry = (entryId: string): void => {
-  const existing = getFantasyEntries();
-  const updated = existing.filter(entry => entry.id !== entryId);
-  saveFantasyEntries(updated);
-};
+  try {
+    const entries = getFantasyEntries()
+    const updatedEntries = entries.map(entry => 
+      entry.id === entryId 
+        ? { ...entry, ...updates, updatedAt: new Date() }
+        : entry
+    )
+    localStorage.setItem('sheSync_fantasyEntries', JSON.stringify(updatedEntries))
+  } catch (error) {
+    console.error('Error updating fantasy entry:', error)
+  }
+}
 
 // Notifications management
-export const saveNotifications = (notifications: Notification[]): void => {
-  storage.setItem(STORAGE_KEYS.NOTIFICATIONS, notifications);
-};
-
 export const getNotifications = (): Notification[] => {
-  return storage.getItem<Notification[]>(STORAGE_KEYS.NOTIFICATIONS, []);
-};
-
-export const addNotification = (notification: Notification): void => {
-  const existing = getNotifications();
-  saveNotifications([notification, ...existing]);
-};
-
-export const markNotificationAsRead = (notificationId: string): void => {
-  const existing = getNotifications();
-  const updated = existing.map(notif => 
-    notif.id === notificationId ? { ...notif, isRead: true } : notif
-  );
-  saveNotifications(updated);
-};
+  try {
+    const notifications = localStorage.getItem('sheSync_notifications')
+    if (!notifications) return []
+    
+    const data = JSON.parse(notifications)
+    // Convert date strings back to Date objects
+    return data.map((notification: any) => ({
+      ...notification,
+      createdAt: new Date(notification.createdAt)
+    }))
+  } catch (error) {
+    console.error('Error getting notifications:', error)
+    return []
+  }
+}
 
 // Theme management
-export const saveTheme = (theme: 'light' | 'dark'): void => {
-  storage.setItem(STORAGE_KEYS.THEME, theme);
-};
-
 export const getTheme = (): 'light' | 'dark' => {
-  return storage.getItem<'light' | 'dark'>(STORAGE_KEYS.THEME, 'light');
-};
+  try {
+    const theme = localStorage.getItem('sheSync_theme')
+    return theme === 'dark' ? 'dark' : 'light'
+  } catch (error) {
+    console.error('Error getting theme:', error)
+    return 'light'
+  }
+}
 
-// Onboarding management
-export const saveOnboardingStatus = (status: boolean): void => {
-  storage.setItem(STORAGE_KEYS.ONBOARDING, status);
-};
-
-export const getOnboardingStatus = (): boolean => {
-  return storage.getItem<boolean>(STORAGE_KEYS.ONBOARDING, false);
-};
-
-// Privacy utilities
-export const exportUserData = (): string => {
-  const data = {
-    user: getUser(),
-    cycleData: getCycleData(),
-    aiMessages: getAIMessages(),
-    intimacyCards: getIntimacyCards(),
-    fantasyEntries: getFantasyEntries(),
-    notifications: getNotifications(),
-    exportDate: new Date().toISOString(),
-  };
-  return JSON.stringify(data, null, 2);
-};
-
-export const clearAllData = (): void => {
-  storage.clear();
-};
+export const saveTheme = (theme: 'light' | 'dark'): void => {
+  try {
+    localStorage.setItem('sheSync_theme', theme)
+  } catch (error) {
+    console.error('Error saving theme:', error)
+  }
+}

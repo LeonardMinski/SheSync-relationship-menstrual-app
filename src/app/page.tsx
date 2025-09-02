@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { format, subDays, addDays } from 'date-fns';
 import { 
   Calendar, 
@@ -14,28 +14,33 @@ import {
   Droplet
 } from 'lucide-react';
 import { useApp } from '@/context/AppContext';
+import { useCycleLogger } from '@/hooks/useCycleLogger';
 import Navigation from '@/components/Navigation';
 import LoadingSpinner from '@/components/LoadingSpinner';
 import { getPhaseEmoji, getPhaseColor } from '@/lib/mockData';
 import { CycleData, CyclePhase } from '@/types';
-import { v4 as uuidv4 } from 'uuid';
 
 const CycleTracker = () => {
-  const { state, addCycleEntry } = useApp();
-  const { user, cycleData, currentPhase, isLoading } = state;
+  const { state } = useApp();
+  const { user, currentPhase, isLoading } = state;
   const [selectedDate, setSelectedDate] = useState(new Date());
-  const [showQuickLog, setShowQuickLog] = useState(false);
+  const [showCycleLog, setShowCycleLog] = useState(false);
+  
+  const { logCycle, fetchCycles, cycles, loading, error, clearError } = useCycleLogger();
 
-  // Quick log form state
-  const [quickLogData, setQuickLogData] = useState({
+  // Cycle log form state
+  const [cycleLogData, setCycleLogData] = useState({
+    phase: 'menstrual',
     mood: 5,
-    energy: 5,
-    libido: 5,
-    stress: 5,
-    symptoms: [] as string[],
-    notes: '',
-    periodFlow: undefined as 'light' | 'medium' | 'heavy' | undefined,
+    symptoms: [] as string[]
   });
+
+  // Fetch cycles on component mount
+  useEffect(() => {
+    if (user) {
+      fetchCycles();
+    }
+  }, [user, fetchCycles]);
 
   if (isLoading) {
     return (
@@ -45,34 +50,25 @@ const CycleTracker = () => {
     );
   }
 
-  const todaysData = cycleData.find(d => 
-    format(d.date, 'yyyy-MM-dd') === format(new Date(), 'yyyy-MM-dd')
+  // Get today's cycle data
+  const todaysData = cycles.find(cycle => 
+    format(new Date(cycle.created_at || ''), 'yyyy-MM-dd') === format(new Date(), 'yyyy-MM-dd')
   );
 
-  const selectedDateData = cycleData.find(d => 
-    format(d.date, 'yyyy-MM-dd') === format(selectedDate, 'yyyy-MM-dd')
+  const selectedDateData = cycles.find(cycle => 
+    format(new Date(cycle.created_at || ''), 'yyyy-MM-dd') === format(selectedDate, 'yyyy-MM-dd')
   );
 
-  const handleQuickLog = () => {
-    const newEntry: CycleData = {
-      id: uuidv4(),
-      date: new Date(),
-      phase: currentPhase,
-      ...quickLogData,
-      symptoms: quickLogData.symptoms,
-    };
-
-    addCycleEntry(newEntry);
-    setShowQuickLog(false);
-    setQuickLogData({
-      mood: 5,
-      energy: 5,
-      libido: 5,
-      stress: 5,
-      symptoms: [],
-      notes: '',
-      periodFlow: undefined,
-    });
+  const handleCycleLog = async () => {
+    const success = await logCycle(cycleLogData);
+    if (success) {
+      setShowCycleLog(false);
+      setCycleLogData({
+        phase: 'menstrual',
+        mood: 5,
+        symptoms: []
+      });
+    }
   };
 
   const getInsightForPhase = (phase: CyclePhase) => {
@@ -119,7 +115,7 @@ const CycleTracker = () => {
           </p>
         </div>
 
-        {/* Today's Quick Stats */}
+        {/* Today's Cycle Stats */}
         {todaysData && (
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             <div className="bg-white/70 dark:bg-gray-800/70 backdrop-blur-sm rounded-xl p-4 border border-rose-200 dark:border-gray-700">
@@ -134,44 +130,42 @@ const CycleTracker = () => {
             
             <div className="bg-white/70 dark:bg-gray-800/70 backdrop-blur-sm rounded-xl p-4 border border-rose-200 dark:border-gray-700">
               <div className="flex items-center space-x-2 mb-2">
-                <Zap className="text-yellow-500" size={20} />
-                <span className="text-sm font-medium text-gray-600 dark:text-gray-300">Energy</span>
+                <span className="text-sm font-medium text-gray-600 dark:text-gray-300">Phase</span>
               </div>
-              <div className="text-2xl font-bold text-gray-900 dark:text-white">
-                {todaysData.energy}/10
-              </div>
-            </div>
-            
-            <div className="bg-white/70 dark:bg-gray-800/70 backdrop-blur-sm rounded-xl p-4 border border-rose-200 dark:border-gray-700">
-              <div className="flex items-center space-x-2 mb-2">
-                <Heart className="text-red-500" size={20} />
-                <span className="text-sm font-medium text-gray-600 dark:text-gray-300">Libido</span>
-              </div>
-              <div className="text-2xl font-bold text-gray-900 dark:text-white">
-                {todaysData.libido}/10
+              <div className="text-lg font-bold text-gray-900 dark:text-white">
+                {todaysData.phase.charAt(0).toUpperCase() + todaysData.phase.slice(1)}
               </div>
             </div>
             
             <div className="bg-white/70 dark:bg-gray-800/70 backdrop-blur-sm rounded-xl p-4 border border-rose-200 dark:border-gray-700">
               <div className="flex items-center space-x-2 mb-2">
-                <TrendingUp className="text-blue-500" size={20} />
-                <span className="text-sm font-medium text-gray-600 dark:text-gray-300">Stress</span>
+                <span className="text-sm font-medium text-gray-600 dark:text-gray-300">Symptoms</span>
               </div>
-              <div className="text-2xl font-bold text-gray-900 dark:text-white">
-                {todaysData.stress}/10
+              <div className="text-lg font-bold text-gray-900 dark:text-white">
+                {todaysData.symptoms.length}
+              </div>
+            </div>
+            
+            <div className="bg-white/70 dark:bg-gray-800/70 backdrop-blur-sm rounded-xl p-4 border border-rose-200 dark:border-gray-700">
+              <div className="flex items-center space-x-2 mb-2">
+                <Calendar className="text-blue-500" size={20} />
+                <span className="text-sm font-medium text-gray-600 dark:text-gray-300">Logged</span>
+              </div>
+              <div className="text-lg font-bold text-gray-900 dark:text-white">
+                {format(new Date(todaysData.created_at || ''), 'MMM d')}
               </div>
             </div>
           </div>
         )}
 
-        {/* Quick Log Button */}
+        {/* Cycle Log Button */}
         <div className="flex justify-center">
           <button
-            onClick={() => setShowQuickLog(true)}
+            onClick={() => setShowCycleLog(true)}
             className="flex items-center space-x-2 bg-gradient-to-r from-rose-500 to-purple-600 text-white px-6 py-3 rounded-xl font-medium hover:from-rose-600 hover:to-purple-700 transition-all duration-200 shadow-lg hover:shadow-xl"
           >
             <Plus size={20} />
-            <span>Log Today's Data</span>
+            <span>Log Cycle Entry</span>
           </button>
         </div>
 
@@ -202,8 +196,8 @@ const CycleTracker = () => {
           <div className="grid grid-cols-7 gap-2">
             {[-3, -2, -1, 0, 1, 2, 3].map(offset => {
               const date = addDays(selectedDate, offset);
-              const dayData = cycleData.find(d => 
-                format(d.date, 'yyyy-MM-dd') === format(date, 'yyyy-MM-dd')
+              const dayData = cycles.find(cycle => 
+                format(new Date(cycle.created_at || ''), 'yyyy-MM-dd') === format(date, 'yyyy-MM-dd')
               );
               const isToday = format(date, 'yyyy-MM-dd') === format(new Date(), 'yyyy-MM-dd');
               
@@ -225,9 +219,9 @@ const CycleTracker = () => {
                   {dayData && (
                     <div className="mt-2 space-y-1">
                       <div className="text-lg">{getPhaseEmoji(dayData.phase)}</div>
-                      {dayData.periodFlow && (
-                        <Droplet className="text-red-500 mx-auto" size={12} />
-                      )}
+                      <div className="text-xs text-gray-500">
+                        {dayData.mood}/10
+                      </div>
                     </div>
                   )}
                 </div>
@@ -250,22 +244,80 @@ const CycleTracker = () => {
                 </span>
               ))}
             </div>
-            {todaysData.notes && (
-              <div className="mt-4 p-3 bg-gray-50 dark:bg-gray-700/50 rounded-lg">
-                <p className="text-gray-700 dark:text-gray-300 italic">"{todaysData.notes}"</p>
-              </div>
-            )}
+          </div>
+        )}
+
+        {/* Recent Cycle Entries */}
+        {cycles.length > 0 && (
+          <div className="bg-white/70 dark:bg-gray-800/70 backdrop-blur-sm rounded-2xl p-6 border border-rose-200 dark:border-gray-700">
+            <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-4">Recent Cycle Entries</h3>
+            <div className="space-y-3">
+              {cycles.slice(0, 5).map((cycle) => (
+                <div key={cycle.id} className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-700/50 rounded-lg">
+                  <div className="flex items-center space-x-3">
+                    <span className="text-lg">{getPhaseEmoji(cycle.phase)}</span>
+                    <div>
+                      <div className="font-medium text-gray-900 dark:text-white">
+                        {cycle.phase.charAt(0).toUpperCase() + cycle.phase.slice(1)} Phase
+                      </div>
+                      <div className="text-sm text-gray-600 dark:text-gray-400">
+                        {format(new Date(cycle.created_at || ''), 'MMM d, yyyy')}
+                      </div>
+                    </div>
+                  </div>
+                  <div className="text-right">
+                    <div className="font-medium text-gray-900 dark:text-white">
+                      Mood: {cycle.mood}/10
+                    </div>
+                    {cycle.symptoms.length > 0 && (
+                      <div className="text-sm text-gray-600 dark:text-gray-400">
+                        {cycle.symptoms.length} symptoms
+                      </div>
+                    )}
+                  </div>
+                </div>
+              ))}
+            </div>
           </div>
         )}
       </main>
 
-      {/* Quick Log Modal */}
-      {showQuickLog && (
+      {/* Cycle Log Modal */}
+      {showCycleLog && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
           <div className="bg-white dark:bg-gray-800 rounded-2xl p-6 w-full max-w-md max-h-[90vh] overflow-y-auto">
-            <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-4">Log Today's Data</h3>
+            <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-4">Log Cycle Entry</h3>
+            
+            {error && (
+              <div className="mb-4 p-3 bg-red-50 border border-red-200 text-red-700 rounded-md">
+                {error}
+                <button
+                  onClick={clearError}
+                  className="ml-2 text-red-500 hover:text-red-700"
+                >
+                  ×
+                </button>
+              </div>
+            )}
             
             <div className="space-y-4">
+              {/* Phase Selection */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  Cycle Phase
+                </label>
+                <select
+                  value={cycleLogData.phase}
+                  onChange={(e) => setCycleLogData({...cycleLogData, phase: e.target.value})}
+                  className="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                >
+                  <option value="menstrual">Menstrual</option>
+                  <option value="follicular">Follicular</option>
+                  <option value="ovulation">Ovulation</option>
+                  <option value="luteal">Luteal</option>
+                </select>
+              </div>
+
               {/* Mood */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
@@ -275,30 +327,12 @@ const CycleTracker = () => {
                   type="range"
                   min="1"
                   max="10"
-                  value={quickLogData.mood}
-                  onChange={(e) => setQuickLogData({...quickLogData, mood: parseInt(e.target.value)})}
+                  value={cycleLogData.mood}
+                  onChange={(e) => setCycleLogData({...cycleLogData, mood: parseInt(e.target.value)})}
                   className="w-full"
                 />
                 <div className="text-center text-sm text-gray-600 dark:text-gray-400">
-                  {quickLogData.mood}/10
-                </div>
-              </div>
-
-              {/* Energy */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                  Energy (1-10)
-                </label>
-                <input
-                  type="range"
-                  min="1"
-                  max="10"
-                  value={quickLogData.energy}
-                  onChange={(e) => setQuickLogData({...quickLogData, energy: parseInt(e.target.value)})}
-                  className="w-full"
-                />
-                <div className="text-center text-sm text-gray-600 dark:text-gray-400">
-                  {quickLogData.energy}/10
+                  {cycleLogData.mood}/10
                 </div>
               </div>
 
@@ -312,13 +346,13 @@ const CycleTracker = () => {
                     <button
                       key={symptom}
                       onClick={() => {
-                        const symptoms = quickLogData.symptoms.includes(symptom)
-                          ? quickLogData.symptoms.filter(s => s !== symptom)
-                          : [...quickLogData.symptoms, symptom];
-                        setQuickLogData({...quickLogData, symptoms});
+                        const symptoms = cycleLogData.symptoms.includes(symptom)
+                          ? cycleLogData.symptoms.filter(s => s !== symptom)
+                          : [...cycleLogData.symptoms, symptom];
+                        setCycleLogData({...cycleLogData, symptoms});
                       }}
                       className={`p-2 rounded-lg text-sm transition-colors ${
-                        quickLogData.symptoms.includes(symptom)
+                        cycleLogData.symptoms.includes(symptom)
                           ? 'bg-rose-100 dark:bg-rose-900/30 text-rose-800 dark:text-rose-200'
                           : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300'
                       }`}
@@ -328,34 +362,21 @@ const CycleTracker = () => {
                   ))}
                 </div>
               </div>
-
-              {/* Notes */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                  Notes
-                </label>
-                <textarea
-                  value={quickLogData.notes}
-                  onChange={(e) => setQuickLogData({...quickLogData, notes: e.target.value})}
-                  placeholder="How are you feeling today?"
-                  className="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
-                  rows={3}
-                />
-              </div>
             </div>
 
             <div className="flex space-x-3 mt-6">
               <button
-                onClick={() => setShowQuickLog(false)}
+                onClick={() => setShowCycleLog(false)}
                 className="flex-1 py-3 px-4 bg-gray-200 dark:bg-gray-600 text-gray-800 dark:text-gray-200 rounded-lg font-medium hover:bg-gray-300 dark:hover:bg-gray-500 transition-colors"
               >
                 Cancel
               </button>
               <button
-                onClick={handleQuickLog}
-                className="flex-1 py-3 px-4 bg-gradient-to-r from-rose-500 to-purple-600 text-white rounded-lg font-medium hover:from-rose-600 hover:to-purple-700 transition-all"
+                onClick={handleCycleLog}
+                disabled={loading}
+                className="flex-1 py-3 px-4 bg-gradient-to-r from-rose-500 to-purple-600 text-white rounded-lg font-medium hover:from-rose-600 hover:to-purple-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                Save
+                {loading ? 'Saving...' : 'Save Entry'}
               </button>
             </div>
           </div>

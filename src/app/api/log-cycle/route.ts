@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { supabase } from '@/lib/supabaseClient'
+import { cycles } from '@/lib/db'
 
 export async function POST(request: NextRequest) {
   try {
@@ -48,24 +48,20 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // For now, we'll use a placeholder user ID
+    // Extract user ID from the Bearer token
     // In production, you'd verify the JWT and extract the user ID
-    const userId = 'placeholder-user-id' // This should come from JWT verification
+    const userId = authHeader.replace('Bearer ', '')
 
     // Insert the cycle entry
-    const { data, error } = await supabase
-      .from('cycles')
-      .insert({
-        user_id: userId,
-        phase,
-        mood,
-        symptoms: symptoms || []
-      })
-      .select()
-      .single()
+    const { cycle, error } = await cycles.create({
+      user_id: userId,
+      phase,
+      mood,
+      symptoms: symptoms || []
+    })
 
     if (error) {
-      console.error('Supabase error:', error)
+      console.error('Database error:', error)
       return NextResponse.json(
         { error: 'Failed to save cycle entry' },
         { status: 500 }
@@ -74,7 +70,7 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({
       message: 'Cycle entry logged successfully',
-      data
+      data: cycle
     })
   } catch (error) {
     console.error('Log cycle error:', error)
@@ -87,32 +83,30 @@ export async function POST(request: NextRequest) {
 
 export async function GET(request: NextRequest) {
   try {
-    const { searchParams } = new URL(request.url)
-    const userId = searchParams.get('userId')
-
-    if (!userId) {
+    // Get the authenticated user from the request
+    const authHeader = request.headers.get('authorization')
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
       return NextResponse.json(
-        { error: 'User ID is required' },
-        { status: 400 }
+        { error: 'Authorization header required' },
+        { status: 401 }
       )
     }
 
+    // Extract user ID from the Bearer token
+    const userId = authHeader.replace('Bearer ', '')
+
     // Get cycle entries for the user
-    const { data, error } = await supabase
-      .from('cycles')
-      .select('*')
-      .eq('user_id', userId)
-      .order('created_at', { ascending: false })
+    const { cycles: cycleData, error } = await cycles.getByUserId(userId)
 
     if (error) {
-      console.error('Supabase error:', error)
+      console.error('Database error:', error)
       return NextResponse.json(
         { error: 'Failed to fetch cycle entries' },
         { status: 500 }
       )
     }
 
-    return NextResponse.json({ data })
+    return NextResponse.json({ data: cycleData })
   } catch (error) {
     console.error('Get cycles error:', error)
     return NextResponse.json(

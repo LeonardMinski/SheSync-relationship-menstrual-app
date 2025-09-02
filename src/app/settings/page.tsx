@@ -22,7 +22,6 @@ import { useApp } from '@/context/AppContext';
 import Navigation from '@/components/Navigation';
 import LoadingSpinner from '@/components/LoadingSpinner';
 import { subscriptionPlans } from '@/lib/mockData';
-import { exportUserData, clearAllData } from '@/lib/storage';
 
 const Settings = () => {
   const { state, toggleTheme, logout } = useApp();
@@ -49,8 +48,18 @@ const Settings = () => {
   ];
 
   const handleExportData = () => {
-    const data = exportUserData();
-    const blob = new Blob([data], { type: 'application/json' });
+    // Export user data functionality
+    const data = {
+      user: user,
+      cycleData: state.cycleData,
+      aiMessages: state.aiMessages,
+      intimacyCards: state.intimacyCards,
+      fantasyEntries: state.fantasyEntries,
+      notifications: state.notifications,
+      exportDate: new Date().toISOString()
+    };
+    
+    const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
@@ -62,7 +71,8 @@ const Settings = () => {
   };
 
   const handleDeleteAllData = () => {
-    clearAllData();
+    // Clear all local data
+    localStorage.clear();
     logout();
     setShowDeleteConfirm(false);
   };
@@ -278,7 +288,7 @@ const Settings = () => {
                           Current Plan: {currentPlan?.name}
                         </h3>
                         <p className="text-gray-600 dark:text-gray-300">
-                          {currentPlan?.price === 0 ? 'Free' : `$${currentPlan?.price}/${currentPlan?.interval}`}
+                          {currentPlan?.price === 0 ? 'Free' : `£${currentPlan?.price}/${currentPlan?.interval}`}
                         </p>
                       </div>
                     </div>
@@ -293,47 +303,95 @@ const Settings = () => {
                     </div>
                   </div>
 
-                  {/* Other Plans */}
-                  <div>
-                    <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Upgrade Options</h3>
-                    <div className="grid gap-4 md:grid-cols-2">
-                      {subscriptionPlans.filter(plan => plan.id !== user?.subscriptionTier).map((plan) => (
-                        <div
-                          key={plan.id}
-                          className={`p-4 border-2 rounded-xl transition-all ${
-                            plan.isPopular
-                              ? 'border-purple-500 bg-purple-50 dark:bg-purple-900/20'
-                              : 'border-gray-300 dark:border-gray-600'
-                          }`}
+                  {/* Subscription Actions */}
+                  <div className="space-y-4">
+                    <div className="flex flex-col sm:flex-row gap-4">
+                      <button
+                        onClick={() => window.location.href = '/pricing'}
+                        className="flex-1 bg-gradient-to-r from-rose-500 to-purple-600 text-white py-3 px-6 rounded-xl hover:from-rose-600 hover:to-purple-700 transition-all font-semibold"
+                      >
+                        View All Plans
+                      </button>
+                      
+                      {user?.subscriptionTier !== 'free' && (
+                        <button
+                          onClick={() => {
+                            // TODO: Implement subscription management
+                            alert('Subscription management coming soon!');
+                          }}
+                          className="flex-1 bg-gray-500 text-white py-3 px-6 rounded-xl hover:bg-gray-600 transition-all font-semibold"
                         >
-                          <div className="flex items-center justify-between mb-3">
-                            <h4 className="font-semibold text-gray-900 dark:text-white">{plan.name}</h4>
-                            {plan.isPopular && (
-                              <span className="bg-purple-500 text-white text-xs px-2 py-1 rounded-full">
-                                Popular
-                              </span>
-                            )}
-                          </div>
-                          <div className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
-                            {plan.price === 0 ? 'Free' : `$${plan.price}`}
-                            {plan.interval !== 'lifetime' && (
+                          Manage Subscription
+                        </button>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Billing Information */}
+                  {user?.subscriptionTier !== 'free' && (
+                    <div className="bg-gray-50 dark:bg-gray-700/50 rounded-xl p-6">
+                      <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Billing Information</h3>
+                      <div className="space-y-3">
+                        <div className="flex justify-between">
+                          <span className="text-gray-600 dark:text-gray-300">Status:</span>
+                          <span className="text-green-600 dark:text-green-400 font-medium">Active</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-gray-600 dark:text-gray-300">Next billing date:</span>
+                          <span className="text-gray-900 dark:text-white">Coming soon</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-gray-600 dark:text-gray-300">Payment method:</span>
+                          <span className="text-gray-900 dark:text-white">•••• •••• •••• 4242</span>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Quick Upgrade Options */}
+                  {user?.subscriptionTier === 'free' && (
+                    <div>
+                      <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Upgrade to Unlock More</h3>
+                      <div className="grid gap-4 md:grid-cols-2">
+                        {subscriptionPlans.filter(plan => plan.id !== 'free').map((plan) => (
+                          <div
+                            key={plan.id}
+                            className={`p-4 border-2 rounded-xl transition-all ${
+                              plan.isPopular
+                                ? 'border-purple-500 bg-purple-50 dark:bg-purple-900/20'
+                                : 'border-gray-300 dark:border-gray-600'
+                            }`}
+                          >
+                            <div className="flex items-center justify-between mb-3">
+                              <h4 className="font-semibold text-gray-900 dark:text-white">{plan.name}</h4>
+                              {plan.isPopular && (
+                                <span className="bg-purple-500 text-white text-xs px-2 py-1 rounded-full">
+                                  Popular
+                                </span>
+                              )}
+                            </div>
+                            <div className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
+                              £{plan.price}
                               <span className="text-sm font-normal text-gray-600 dark:text-gray-300">
                                 /{plan.interval}
                               </span>
-                            )}
+                            </div>
+                            <ul className="space-y-1 text-sm text-gray-600 dark:text-gray-300 mb-4">
+                              {plan.features.slice(0, 3).map((feature, index) => (
+                                <li key={index}>• {feature}</li>
+                              ))}
+                            </ul>
+                            <button 
+                              onClick={() => window.location.href = '/pricing'}
+                              className="w-full bg-gradient-to-r from-rose-500 to-purple-600 text-white py-2 rounded-lg hover:from-rose-600 hover:to-purple-700 transition-all"
+                            >
+                              Upgrade to {plan.name}
+                            </button>
                           </div>
-                          <ul className="space-y-1 text-sm text-gray-600 dark:text-gray-300 mb-4">
-                            {plan.features.slice(0, 3).map((feature, index) => (
-                              <li key={index}>• {feature}</li>
-                            ))}
-                          </ul>
-                          <button className="w-full bg-gradient-to-r from-rose-500 to-purple-600 text-white py-2 rounded-lg hover:from-rose-600 hover:to-purple-700 transition-all">
-                            {plan.price === 0 ? 'Downgrade' : 'Upgrade'}
-                          </button>
-                        </div>
-                      ))}
+                        ))}
+                      </div>
                     </div>
-                  </div>
+                  )}
                 </div>
               )}
 

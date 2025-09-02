@@ -1,74 +1,156 @@
-'use client';
+'use client'
 
-import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-import { User } from '@/types';
+import React, { createContext, useContext, useEffect, useState, ReactNode } from 'react'
+import { auth, User, CreateUserData, LoginData } from '@/lib/db'
+import { supabase } from '@/lib/supabaseClient'
 
 interface AuthContextType {
-  user: User | null;
-  isLoading: boolean;
-  login: (user: User) => void;
-  logout: () => void;
+  user: User | null
+  loading: boolean
+  signUp: (data: CreateUserData) => Promise<{ success: boolean; error?: string }>
+  signIn: (data: LoginData) => Promise<{ success: boolean; error?: string }>
+  signOut: () => Promise<void>
+  refreshUser: () => Promise<void>
 }
 
-const AuthContext = createContext<AuthContextType | undefined>(undefined);
+const AuthContext = createContext<AuthContextType | undefined>(undefined)
 
 export const useAuth = () => {
-  const context = useContext(AuthContext);
+  const context = useContext(AuthContext)
   if (context === undefined) {
-    throw new Error('useAuth must be used within an AuthProvider');
+    throw new Error('useAuth must be used within an AuthProvider')
   }
-  return context;
-};
+  return context
+}
 
 interface AuthProviderProps {
-  children: ReactNode;
+  children: ReactNode
 }
 
 export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
-  const [user, setUser] = useState<User | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
+  const [user, setUser] = useState<User | null>(null)
+  const [loading, setLoading] = useState(true)
 
+  // Check for existing session on mount
   useEffect(() => {
-    // Check for existing user session
-    const checkAuth = async () => {
+    const checkSession = async () => {
       try {
-        // For now, we'll use localStorage to check for user
-        const storedUser = localStorage.getItem('sheSync_user');
-        if (storedUser) {
-          const userData = JSON.parse(storedUser);
-          userData.createdAt = new Date(userData.createdAt);
-          setUser(userData);
+        const { user: currentUser, error } = await auth.getCurrentUser()
+        if (error) {
+          console.error('Session check error:', error)
+        } else if (currentUser) {
+          setUser(currentUser)
         }
       } catch (error) {
-        console.error('Error checking auth:', error);
+        console.error('Session check failed:', error)
       } finally {
-        setIsLoading(false);
+        setLoading(false)
       }
-    };
+    }
 
-    checkAuth();
-  }, []);
+    checkSession()
+  }, [])
 
-  const login = (userData: User) => {
-    setUser(userData);
-    localStorage.setItem('sheSync_user', JSON.stringify(userData));
-  };
+  // Listen for auth state changes
+  useEffect(() => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+      if (event === 'SIGNED_IN' && session?.user) {
+        const { user: userProfile } = await auth.getCurrentUser()
+        setUser(userProfile)
+      } else if (event === 'SIGNED_OUT') {
+        setUser(null)
+      }
+    })
 
-  const logout = () => {
-    setUser(null);
-    localStorage.removeItem('sheSync_user');
-  };
+    return () => {
+      subscription.unsubscribe()
+    }
+  }, [])
+
+  const signUp = async (data: CreateUserData): Promise<{ success: boolean; error?: string }> => {
+    try {
+      setLoading(true)
+      const { user: newUser, error } = await auth.signUp(data)
+
+      if (error) {
+        return { success: false, error }
+      }
+
+      if (newUser) {
+        setUser(newUser)
+        return { success: true }
+      }
+
+      return { success: false, error: 'Signup failed' }
+    } catch (error) {
+      return { success: false, error: error instanceof Error ? error.message : 'Unknown error' }
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const signIn = async (data: LoginData): Promise<{ success: boolean; error?: string }> => {
+    try {
+      setLoading(true)
+      const { user: signedInUser, error } = await auth.signIn(data)
+
+      if (error) {
+        return { success: false, error }
+      }
+
+      if (signedInUser) {
+        setUser(signedInUser)
+        return { success: true }
+      }
+
+      return { success: false, error: 'Signin failed' }
+    } catch (error) {
+      return { success: false, error: error instanceof Error ? error.message : 'Unknown error' }
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const signOut = async (): Promise<void> => {
+    try {
+      setLoading(true)
+      const { error } = await auth.signOut()
+      if (error) {
+        console.error('Signout error:', error)
+      }
+      setUser(null)
+    } catch (error) {
+      console.error('Signout failed:', error)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const refreshUser = async (): Promise<void> => {
+    try {
+      const { user: currentUser, error } = await auth.getCurrentUser()
+      if (error) {
+        console.error('User refresh error:', error)
+      } else if (currentUser) {
+        setUser(currentUser)
+      }
+    } catch (error) {
+      console.error('User refresh failed:', error)
+    }
+  }
 
   const value: AuthContextType = {
     user,
-    isLoading,
-    login,
-    logout,
-  };
+    loading,
+    signUp,
+    signIn,
+    signOut,
+    refreshUser,
+  }
 
   return (
     <AuthContext.Provider value={value}>
       {children}
     </AuthContext.Provider>
-  );
-};
+  )
+}
