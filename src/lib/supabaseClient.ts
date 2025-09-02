@@ -1,14 +1,36 @@
 import { createClient } from '@supabase/supabase-js'
 
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://placeholder.supabase.co'
-const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || 'placeholder-anon-key'
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
+const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
 
-// Only throw error in production if variables are missing
-if (process.env.NODE_ENV === 'production' && (!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY)) {
-  throw new Error('Missing Supabase environment variables in production')
+// Check if environment variables are properly loaded
+if (!supabaseUrl || !supabaseAnonKey) {
+  console.error('Missing Supabase environment variables:')
+  console.error('NEXT_PUBLIC_SUPABASE_URL:', supabaseUrl ? 'Set' : 'Missing')
+  console.error('NEXT_PUBLIC_SUPABASE_ANON_KEY:', supabaseAnonKey ? 'Set' : 'Missing')
+  
+  // In development, create a mock client that throws helpful errors
+  if (process.env.NODE_ENV === 'development') {
+    console.warn('Creating mock Supabase client for development. Please set up your .env.local file.')
+  }
+  
+  // Only throw error in production
+  if (process.env.NODE_ENV === 'production') {
+    throw new Error('Missing Supabase environment variables in production')
+  }
 }
 
-export const supabase = createClient(supabaseUrl, supabaseAnonKey)
+// Create Supabase client with proper error handling
+export const supabase = createClient(
+  supabaseUrl || 'https://placeholder.supabase.co',
+  supabaseAnonKey || 'placeholder-anon-key',
+  {
+    auth: {
+      persistSession: true,
+      autoRefreshToken: true,
+    },
+  }
+)
 
 // Database types based on your schema
 export interface Database {

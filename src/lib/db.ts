@@ -96,6 +96,12 @@ export const auth = {
 
   async signUp(data: CreateUserData): Promise<{ user: User | null; error: string | null }> {
     try {
+      // Check if Supabase is properly configured
+      const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
+      if (!supabaseUrl || supabaseUrl.includes('placeholder')) {
+        return { user: null, error: 'Supabase not configured. Please check your environment variables.' }
+      }
+
       const { data: authData, error: authError } = await supabase.auth.signUp({
         email: data.email,
         password: data.password,
@@ -107,6 +113,7 @@ export const auth = {
       })
 
       if (authError) {
+        console.error('Supabase signup error:', authError)
         return { user: null, error: authError.message }
       }
 
