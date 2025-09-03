@@ -1,6 +1,6 @@
 {
-  "/api/checkout/route": "app/api/checkout/route.js",
-  "/auth/login/page": "app/auth/login/page.js",
+  "/api/auth/route": "app/api/auth/route.js",
   "/auth/signup/page": "app/auth/signup/page.js",
+  "/auth/verify-email/page": "app/auth/verify-email/page.js",
   "/favicon.ico/route": "app/favicon.ico/route.js"
 }

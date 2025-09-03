@@ -1,9 +1,9 @@
 {
   "app": {
-    "[project]/src/app/auth/login/page": [
+    "[project]/src/app/auth/signup/page": [
       "static/media/UcC73FwrK3iLTeHuS_nVMrMxCp50SjIa1ZL7W0Q5nw-s.p.0faac26c.woff2"
     ],
-    "[project]/src/app/auth/signup/page": [
+    "[project]/src/app/auth/verify-email/page": [
       "static/media/UcC73FwrK3iLTeHuS_nVMrMxCp50SjIa1ZL7W0Q5nw-s.p.0faac26c.woff2"
     ]
   },

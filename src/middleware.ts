@@ -3,7 +3,7 @@ import type { NextRequest } from 'next/server'
 
 // Define protected routes that require authentication
 const protectedRoutes = [
-  '/',
+  '/dashboard',
   '/ai-coach',
   '/fantasy',
   '/intimacy',
@@ -18,7 +18,7 @@ const protectedRoutes = [
   '/api/shared'
 ]
 
-// Define auth routes that should redirect to home if already authenticated
+// Define auth routes that should redirect to dashboard if already authenticated
 const authRoutes = [
   '/auth/login',
   '/auth/signup'
@@ -48,9 +48,9 @@ export function middleware(request: NextRequest) {
     return NextResponse.redirect(loginUrl)
   }
 
-  // If it's an auth route and has token, redirect to home
+  // If it's an auth route and has token, redirect to dashboard
   if (isAuthRoute && token) {
-    return NextResponse.redirect(new URL('/', request.url))
+    return NextResponse.redirect(new URL('/dashboard', request.url))
   }
 
   // Allow the request to continue

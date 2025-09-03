@@ -141,7 +141,7 @@ export const auth = {
         .from('users')
         .insert(newUser)
 
-      if (profileError) {
+      if (profileError && Object.keys(profileError).length > 0) {
         console.error('Error creating user profile:', profileError)
         // Still return the user data even if profile creation fails
         return { user: newUser, error: null }

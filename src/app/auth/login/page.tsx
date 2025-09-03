@@ -23,7 +23,7 @@ export default function LoginPage() {
       const result = await signIn({ email, password })
       
       if (result.success) {
-        router.push('/') // Redirect to home page after successful login
+        router.push('/dashboard') // Redirect to dashboard after successful login
       } else {
         setError(result.error || 'Login failed')
       }

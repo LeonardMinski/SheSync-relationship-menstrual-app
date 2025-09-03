@@ -147,3 +147,4 @@ console.log();
 
 console.log('🚀 Demo Complete! The signup flow is ready to work with real Supabase credentials.');
 console.log('=====================================');
+
