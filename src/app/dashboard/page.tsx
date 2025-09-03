@@ -17,7 +17,8 @@ import {
   Info,
   Sparkles,
   Clock,
-  Target
+  Target,
+  X
 } from 'lucide-react';
 import { useApp } from '@/context/AppContext';
 import { useAuth } from '@/context/AuthContext';
@@ -205,7 +206,14 @@ const PhaseTooltip: React.FC<{ phase: CyclePhase; children: React.ReactNode }> =
   const hideTooltipWithDelay = () => {
     timeoutRef.current = setTimeout(() => {
       setShowTooltip(false);
-    }, 100);
+    }, 150);
+  };
+
+  const hideTooltipImmediately = () => {
+    if (timeoutRef.current) {
+      clearTimeout(timeoutRef.current);
+    }
+    setShowTooltip(false);
   };
 
   const cancelHideTooltip = () => {
@@ -255,12 +263,24 @@ const PhaseTooltip: React.FC<{ phase: CyclePhase; children: React.ReactNode }> =
         onMouseEnter={cancelHideTooltip}
         onMouseLeave={hideTooltipWithDelay}
       >
-        {/* Backdrop */}
-        <div className="fixed inset-0 -z-10 bg-black/10 backdrop-blur-[1px]" />
+        {/* Backdrop - click to close */}
+        <div 
+          className="fixed inset-0 -z-10 bg-black/10 backdrop-blur-[1px] cursor-pointer" 
+          onClick={hideTooltipImmediately}
+        />
         
         {/* Tooltip */}
-        <div className="w-80 p-4 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl shadow-2xl max-w-[calc(100vw-2rem)]">
-          <div className="flex items-center gap-2 mb-2">
+        <div className="w-80 p-4 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl shadow-2xl max-w-[calc(100vw-2rem)] relative">
+          {/* Close button */}
+          <button
+            onClick={hideTooltipImmediately}
+            className="absolute top-2 right-2 p-1 text-gray-400 hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-300 transition-colors"
+            aria-label="Close tooltip"
+          >
+            <X size={14} />
+          </button>
+          
+          <div className="flex items-center gap-2 mb-2 pr-6">
             <span className="text-2xl">{getPhaseEmoji(phase)}</span>
             <h3 className="font-semibold text-gray-900 dark:text-white">{explanation.title}</h3>
           </div>
@@ -271,7 +291,7 @@ const PhaseTooltip: React.FC<{ phase: CyclePhase; children: React.ReactNode }> =
             <div><strong>Tips:</strong> {explanation.tips}</div>
           </div>
           <div className="mt-3 text-xs text-gray-400 dark:text-gray-500 text-center">
-            Hover to keep open
+            Click anywhere outside or ✕ to close
           </div>
         </div>
       </div>,
