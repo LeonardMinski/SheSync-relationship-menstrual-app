@@ -61,7 +61,7 @@ const phaseExplanations = {
 };
 
 // Smart prediction logic
-const calculateSmartPrediction = (cycleData: CycleData[]) => {
+const calculateSmartPrediction = (cycleData: any[]) => {
   if (!cycleData || cycleData.length === 0) {
     return {
       predictedPhase: 'luteal' as CyclePhase,
@@ -74,10 +74,10 @@ const calculateSmartPrediction = (cycleData: CycleData[]) => {
   }
 
   // Sort by date to get most recent entries
-  const sortedData = [...cycleData].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+  const sortedData = [...cycleData].sort((a, b) => new Date(b.created_at || b.date).getTime() - new Date(a.created_at || a.date).getTime());
   const latestEntry = sortedData[0];
   const today = new Date();
-  const lastEntryDate = new Date(latestEntry.date);
+  const lastEntryDate = new Date(latestEntry.created_at || latestEntry.date);
   const daysSinceLastEntry = Math.floor((today.getTime() - lastEntryDate.getTime()) / (1000 * 60 * 60 * 24));
 
   // If we have a recent entry (within 2 days), use actual data
@@ -99,8 +99,8 @@ const calculateSmartPrediction = (cycleData: CycleData[]) => {
   if (menstrualEntries.length >= 2) {
     const cycleLengths = [];
     for (let i = 0; i < menstrualEntries.length - 1; i++) {
-      const current = new Date(menstrualEntries[i].date);
-      const next = new Date(menstrualEntries[i + 1].date);
+      const current = new Date(menstrualEntries[i].created_at || menstrualEntries[i].date);
+      const next = new Date(menstrualEntries[i + 1].created_at || menstrualEntries[i + 1].date);
       const cycleLength = Math.abs((current.getTime() - next.getTime()) / (1000 * 60 * 60 * 24));
       if (cycleLength > 20 && cycleLength < 40) { // reasonable cycle length
         cycleLengths.push(cycleLength);
@@ -141,7 +141,7 @@ const calculateSmartPrediction = (cycleData: CycleData[]) => {
   }
 
   // Calculate days since last period
-  const lastPeriodDate = new Date(lastMenstrualEntry.date);
+  const lastPeriodDate = new Date(lastMenstrualEntry.created_at || lastMenstrualEntry.date);
   const daysSinceLastPeriod = Math.floor((today.getTime() - lastPeriodDate.getTime()) / (1000 * 60 * 60 * 24));
   
   // Predict phase based on cycle day
@@ -672,7 +672,6 @@ const CycleTracker = () => {
           </div>
         )}
       </main>
-      </div>
       </div>
 
       {/* Cycle Log Modal */}

@@ -6,6 +6,7 @@ export interface User {
   createdAt: Date;
   partnerId?: string;
   privacySettings: PrivacySettings;
+  profileImageUrl?: string;
 }
 
 export interface PrivacySettings {

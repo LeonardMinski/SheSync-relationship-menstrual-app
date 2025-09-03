@@ -313,6 +313,35 @@ export const saveUser = (user: User): void => {
   }
 }
 
+export const saveUserProfileImage = (userId: string, imageUrl: string): void => {
+  try {
+    const existingUser = getUser()
+    if (existingUser) {
+      const updatedUser = { ...existingUser, profileImageUrl: imageUrl }
+      saveUser(updatedUser)
+    }
+    // Also save separately for quick access
+    localStorage.setItem(`sheSync_profileImage_${userId}`, imageUrl)
+  } catch (error) {
+    console.error('Error saving user profile image:', error)
+  }
+}
+
+export const getUserProfileImage = (userId: string): string | null => {
+  try {
+    // First try to get from user object
+    const user = getUser()
+    if (user && user.profileImageUrl) {
+      return user.profileImageUrl
+    }
+    // Fallback to separate storage
+    return localStorage.getItem(`sheSync_profileImage_${userId}`)
+  } catch (error) {
+    console.error('Error getting user profile image:', error)
+    return null
+  }
+}
+
 // Cycle data management
 export const getCycleData = (): CycleData[] => {
   try {
@@ -429,6 +458,64 @@ export const getTheme = (): 'light' | 'dark' => {
   } catch (error) {
     console.error('Error getting theme:', error)
     return 'light'
+  }
+}
+
+// Profile image functions
+export const uploadProfileImage = async (file: File, userId: string): Promise<{ url: string | null; error: string | null }> => {
+  try {
+    const fileExt = file.name.split('.').pop()
+    const fileName = `${userId}/profile.${fileExt}`
+    const filePath = `profiles/${fileName}`
+
+    // Upload file to Supabase storage
+    const { data, error } = await supabase.storage
+      .from('avatars')
+      .upload(filePath, file, {
+        cacheControl: '3600',
+        upsert: true // Replace existing file
+      })
+
+    if (error) {
+      console.error('Error uploading profile image:', error)
+      return { url: null, error: error.message }
+    }
+
+    // Get public URL
+    const { data: { publicUrl } } = supabase.storage
+      .from('avatars')
+      .getPublicUrl(filePath)
+
+    return { url: publicUrl, error: null }
+  } catch (error) {
+    console.error('Profile image upload failed:', error)
+    return { url: null, error: error instanceof Error ? error.message : 'Upload failed' }
+  }
+}
+
+export const deleteProfileImage = async (userId: string): Promise<{ error: string | null }> => {
+  try {
+    // Try to delete common image extensions
+    const possibleFiles = [
+      `profiles/${userId}/profile.jpg`,
+      `profiles/${userId}/profile.png`, 
+      `profiles/${userId}/profile.jpeg`,
+      `profiles/${userId}/profile.webp`
+    ]
+
+    const { error } = await supabase.storage
+      .from('avatars')
+      .remove(possibleFiles)
+
+    if (error) {
+      console.error('Error deleting profile image:', error)
+      return { error: error.message }
+    }
+
+    return { error: null }
+  } catch (error) {
+    console.error('Profile image deletion failed:', error)
+    return { error: error instanceof Error ? error.message : 'Deletion failed' }
   }
 }
 

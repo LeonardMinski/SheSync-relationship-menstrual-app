@@ -19,13 +19,15 @@ import {
   UserPlus
 } from 'lucide-react';
 import { useApp } from '@/context/AppContext';
+import { useAuth } from '@/context/AuthContext';
 import Navigation from '@/components/Navigation';
 import LoadingSpinner from '@/components/LoadingSpinner';
 import { subscriptionPlans } from '@/lib/mockData';
 
 const Settings = () => {
   const { state, toggleTheme, logout } = useApp();
-  const { user, notifications, isDarkMode, isLoading } = state;
+  const { user: authUser } = useAuth();
+  const { notifications, isDarkMode, isLoading } = state;
   const [activeTab, setActiveTab] = useState<'account' | 'privacy' | 'partner' | 'subscription' | 'notifications'>('account');
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
@@ -50,7 +52,7 @@ const Settings = () => {
   const handleExportData = () => {
     // Export user data functionality
     const data = {
-      user: user,
+      user: authUser,
       cycleData: state.cycleData,
       aiMessages: state.aiMessages,
       intimacyCards: state.intimacyCards,
@@ -77,7 +79,7 @@ const Settings = () => {
     setShowDeleteConfirm(false);
   };
 
-  const currentPlan = subscriptionPlans.find(plan => plan.id === user?.subscriptionTier);
+  const currentPlan = subscriptionPlans.find(plan => plan.id === authUser?.subscription_tier);
 
   return (
     <div className="min-h-screen pb-20">
@@ -149,7 +151,7 @@ const Settings = () => {
                       </label>
                       <input
                         type="text"
-                        value={user?.name || ''}
+                        value={authUser?.name || ''}
                         readOnly
                         className="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white"
                       />
@@ -161,7 +163,7 @@ const Settings = () => {
                       </label>
                       <input
                         type="email"
-                        value={user?.email || ''}
+                        value={authUser?.email || ''}
                         readOnly
                         className="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white"
                       />
@@ -222,7 +224,7 @@ const Settings = () => {
                   <h2 className="text-xl font-bold text-gray-900 dark:text-white">Privacy Settings</h2>
                   
                   <div className="space-y-4">
-                    {Object.entries(user?.privacySettings || {}).map(([key, value]) => (
+                    {Object.entries(authUser?.privacy_settings || {}).map(([key, value]) => (
                       <div key={key} className="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-700/50 rounded-lg">
                         <div>
                           <div className="font-medium text-gray-900 dark:text-white">
@@ -313,7 +315,7 @@ const Settings = () => {
                         View All Plans
                       </button>
                       
-                      {user?.subscriptionTier !== 'free' && (
+                      {authUser?.subscription_tier !== 'free' && (
                         <button
                           onClick={() => {
                             // TODO: Implement subscription management
@@ -328,7 +330,7 @@ const Settings = () => {
                   </div>
 
                   {/* Billing Information */}
-                  {user?.subscriptionTier !== 'free' && (
+                  {authUser?.subscription_tier !== 'free' && (
                     <div className="bg-gray-50 dark:bg-gray-700/50 rounded-xl p-6">
                       <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Billing Information</h3>
                       <div className="space-y-3">
@@ -349,48 +351,48 @@ const Settings = () => {
                   )}
 
                   {/* Quick Upgrade Options */}
-                  {user?.subscriptionTier === 'free' && (
-                    <div>
+                  {authUser?.subscription_tier === 'free' && (
+                  <div>
                       <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Upgrade to Unlock More</h3>
-                      <div className="grid gap-4 md:grid-cols-2">
+                    <div className="grid gap-4 md:grid-cols-2">
                         {subscriptionPlans.filter(plan => plan.id !== 'free').map((plan) => (
-                          <div
-                            key={plan.id}
-                            className={`p-4 border-2 rounded-xl transition-all ${
-                              plan.isPopular
-                                ? 'border-purple-500 bg-purple-50 dark:bg-purple-900/20'
-                                : 'border-gray-300 dark:border-gray-600'
-                            }`}
-                          >
-                            <div className="flex items-center justify-between mb-3">
-                              <h4 className="font-semibold text-gray-900 dark:text-white">{plan.name}</h4>
-                              {plan.isPopular && (
-                                <span className="bg-purple-500 text-white text-xs px-2 py-1 rounded-full">
-                                  Popular
-                                </span>
-                              )}
-                            </div>
-                            <div className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
+                        <div
+                          key={plan.id}
+                          className={`p-4 border-2 rounded-xl transition-all ${
+                            plan.isPopular
+                              ? 'border-purple-500 bg-purple-50 dark:bg-purple-900/20'
+                              : 'border-gray-300 dark:border-gray-600'
+                          }`}
+                        >
+                          <div className="flex items-center justify-between mb-3">
+                            <h4 className="font-semibold text-gray-900 dark:text-white">{plan.name}</h4>
+                            {plan.isPopular && (
+                              <span className="bg-purple-500 text-white text-xs px-2 py-1 rounded-full">
+                                Popular
+                              </span>
+                            )}
+                          </div>
+                          <div className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
                               £{plan.price}
                               <span className="text-sm font-normal text-gray-600 dark:text-gray-300">
                                 /{plan.interval}
                               </span>
-                            </div>
-                            <ul className="space-y-1 text-sm text-gray-600 dark:text-gray-300 mb-4">
-                              {plan.features.slice(0, 3).map((feature, index) => (
-                                <li key={index}>• {feature}</li>
-                              ))}
-                            </ul>
+                          </div>
+                          <ul className="space-y-1 text-sm text-gray-600 dark:text-gray-300 mb-4">
+                            {plan.features.slice(0, 3).map((feature, index) => (
+                              <li key={index}>• {feature}</li>
+                            ))}
+                          </ul>
                             <button 
                               onClick={() => window.location.href = '/pricing'}
                               className="w-full bg-gradient-to-r from-rose-500 to-purple-600 text-white py-2 rounded-lg hover:from-rose-600 hover:to-purple-700 transition-all"
                             >
                               Upgrade to {plan.name}
-                            </button>
-                          </div>
-                        ))}
-                      </div>
+                          </button>
+                        </div>
+                      ))}
                     </div>
+                  </div>
                   )}
                 </div>
               )}
