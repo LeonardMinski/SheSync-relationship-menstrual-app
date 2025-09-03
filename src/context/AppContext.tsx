@@ -210,8 +210,11 @@ export const AppProvider: React.FC<AppProviderProps> = ({ children }) => {
 
   const toggleTheme = () => {
     const newTheme = !state.isDarkMode;
+    console.log('🎨 Toggle theme called:', state.isDarkMode, '->', newTheme);
     saveTheme(newTheme ? 'dark' : 'light');
+    console.log('💾 Theme saved to localStorage:', newTheme ? 'dark' : 'light');
     dispatch({ type: 'SET_THEME', payload: newTheme });
+    console.log('📤 Theme dispatch sent:', newTheme);
   };
 
   const addCycleEntry = (entry: CycleData) => {
