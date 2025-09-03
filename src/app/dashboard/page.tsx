@@ -402,23 +402,34 @@ const CycleTracker = () => {
   ];
 
   return (
-    <div className="min-h-screen pb-20">
-      <Navigation />
+    <div className="min-h-screen pb-20 bg-gradient-to-br from-rose-50 via-white to-purple-50 dark:from-slate-950 dark:via-slate-900 dark:to-slate-950 transition-all duration-500 relative overflow-hidden">
+      {/* Dark mode ambient background effects */}
+      <div className="absolute inset-0 dark:bg-gradient-to-br dark:from-violet-950/20 dark:via-transparent dark:to-rose-950/20 pointer-events-none" />
+      <div className="absolute top-0 left-0 w-96 h-96 dark:bg-violet-600/10 rounded-full blur-3xl pointer-events-none animate-pulse" />
+      <div className="absolute bottom-0 right-0 w-96 h-96 dark:bg-rose-600/10 rounded-full blur-3xl pointer-events-none animate-pulse" style={{ animationDelay: '1s' }} />
+      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-64 h-64 dark:bg-purple-600/5 rounded-full blur-2xl pointer-events-none animate-pulse" style={{ animationDelay: '2s' }} />
       
-      <main className="max-w-7xl mx-auto px-4 py-6 space-y-6">
+      {/* Content wrapper */}
+      <div className="relative z-10">
+        <Navigation />
+        
+        <main className="max-w-7xl mx-auto px-4 py-6 space-y-6">
         {/* Welcome Section */}
-        <div className="bg-white/70 dark:bg-gray-800/70 backdrop-blur-sm rounded-2xl p-6 border border-rose-200 dark:border-gray-700">
-          <div className="flex items-center justify-between mb-4">
-            <div>
-                        <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
-            Hi, {authUser?.name?.split(' ')[0] || authUser?.email?.split('@')[0]}!
-          </h1>
-              <p className="text-gray-600 dark:text-gray-300">
-                {format(new Date(), 'EEEE, MMMM do')}
-              </p>
+        <div className="bg-white/70 dark:bg-slate-900/40 backdrop-blur-xl rounded-3xl p-8 border border-rose-200/50 dark:border-slate-700/50 shadow-xl dark:shadow-2xl dark:shadow-purple-900/20 relative overflow-hidden">
+          {/* Glass morphism overlay */}
+          <div className="absolute inset-0 bg-gradient-to-br from-white/10 to-transparent dark:from-slate-800/20 dark:to-transparent pointer-events-none" />
+          <div className="relative z-10">
+            <div className="flex items-center justify-between mb-4">
+              <div>
+                <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
+                  Hi, {authUser?.name?.split(' ')[0] || authUser?.email?.split('@')[0]}!
+                </h1>
+                <p className="text-gray-600 dark:text-gray-300">
+                  {format(new Date(), 'EEEE, MMMM do')}
+                </p>
+              </div>
+              <div className="text-4xl">{getPhaseEmoji(smartPrediction.predictedPhase)}</div>
             </div>
-            <div className="text-4xl">{getPhaseEmoji(smartPrediction.predictedPhase)}</div>
-          </div>
           
           <div className="space-y-3">
             {/* Smart Prediction Display */}
@@ -436,7 +447,9 @@ const CycleTracker = () => {
             </PhaseTooltip>
 
             {/* Prediction Explanation */}
-            <div className="bg-gradient-to-r from-purple-50 to-rose-50 dark:from-purple-900/20 dark:to-rose-900/20 rounded-lg p-3 border border-purple-100 dark:border-purple-800">
+            <div className="bg-gradient-to-r from-purple-50 to-rose-50 dark:from-violet-900/30 dark:via-purple-900/20 dark:to-rose-900/30 rounded-2xl p-4 border border-purple-100/50 dark:border-violet-700/30 backdrop-blur-sm shadow-lg dark:shadow-violet-900/20 relative overflow-hidden">
+              {/* Shimmer effect for dark mode */}
+              <div className="absolute inset-0 dark:bg-gradient-to-r dark:from-transparent dark:via-violet-400/5 dark:to-transparent animate-pulse pointer-events-none" />
               <div className="flex items-start gap-2">
                 {smartPrediction.isActualData ? (
                   <Target size={16} className="text-purple-600 dark:text-purple-400 mt-0.5 flex-shrink-0" />
@@ -478,6 +491,7 @@ const CycleTracker = () => {
           <p className="mt-3 text-gray-700 dark:text-gray-300">
             {getInsightForPhase(smartPrediction.predictedPhase)}
           </p>
+          </div>
         </div>
 
         {/* Today's Cycle Stats */}
@@ -527,7 +541,7 @@ const CycleTracker = () => {
         <div className="flex justify-center">
           <button
             onClick={() => setShowCycleLog(true)}
-            className="flex items-center space-x-2 bg-gradient-to-r from-rose-500 to-purple-600 text-white px-6 py-3 rounded-xl font-medium hover:from-rose-600 hover:to-purple-700 transition-all duration-200 shadow-lg hover:shadow-xl"
+            className="flex items-center space-x-2 bg-gradient-to-r from-rose-500 to-purple-600 dark:from-violet-600 dark:via-purple-600 dark:to-rose-500 text-white px-8 py-4 rounded-2xl font-semibold hover:from-rose-600 hover:to-purple-700 dark:hover:from-violet-700 dark:hover:via-purple-700 dark:hover:to-rose-600 transition-all duration-300 shadow-lg hover:shadow-2xl dark:shadow-purple-900/50 hover:scale-105 active:scale-95 backdrop-blur-sm"
           >
             <Plus size={20} />
             <span>Log Cycle Entry</span>
@@ -535,7 +549,10 @@ const CycleTracker = () => {
         </div>
 
         {/* Calendar View */}
-        <div className="bg-white/70 dark:bg-gray-800/70 backdrop-blur-sm rounded-2xl p-6 border border-rose-200 dark:border-gray-700">
+        <div className="bg-white/70 dark:bg-slate-900/40 backdrop-blur-xl rounded-3xl p-8 border border-rose-200/50 dark:border-slate-700/50 shadow-xl dark:shadow-2xl dark:shadow-purple-900/20 relative overflow-hidden">
+          {/* Glass morphism overlay */}
+          <div className="absolute inset-0 bg-gradient-to-br from-white/10 to-transparent dark:from-slate-800/20 dark:to-transparent pointer-events-none" />
+          <div className="relative z-10">
           <div className="flex items-center justify-between mb-6">
             <h2 className="text-xl font-bold text-gray-900 dark:text-white">Calendar View</h2>
             <div className="flex items-center space-x-2">
@@ -593,11 +610,15 @@ const CycleTracker = () => {
               );
             })}
           </div>
+          </div>
         </div>
 
         {/* Recent Symptoms */}
         {todaysData?.symptoms && todaysData.symptoms.length > 0 && (
-          <div className="bg-white/70 dark:bg-gray-800/70 backdrop-blur-sm rounded-2xl p-6 border border-rose-200 dark:border-gray-700">
+          <div className="bg-white/70 dark:bg-slate-900/40 backdrop-blur-xl rounded-3xl p-8 border border-rose-200/50 dark:border-slate-700/50 shadow-xl dark:shadow-2xl dark:shadow-purple-900/20 relative overflow-hidden">
+            {/* Glass morphism overlay */}
+            <div className="absolute inset-0 bg-gradient-to-br from-white/10 to-transparent dark:from-slate-800/20 dark:to-transparent pointer-events-none" />
+            <div className="relative z-10">
             <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-4">Today's Symptoms</h3>
             <div className="flex flex-wrap gap-2">
               {todaysData.symptoms.map(symptom => (
@@ -609,12 +630,16 @@ const CycleTracker = () => {
                 </span>
               ))}
             </div>
+            </div>
           </div>
         )}
 
         {/* Recent Cycle Entries */}
         {cycles.length > 0 && (
-          <div className="bg-white/70 dark:bg-gray-800/70 backdrop-blur-sm rounded-2xl p-6 border border-rose-200 dark:border-gray-700">
+          <div className="bg-white/70 dark:bg-slate-900/40 backdrop-blur-xl rounded-3xl p-8 border border-rose-200/50 dark:border-slate-700/50 shadow-xl dark:shadow-2xl dark:shadow-purple-900/20 relative overflow-hidden">
+            {/* Glass morphism overlay */}
+            <div className="absolute inset-0 bg-gradient-to-br from-white/10 to-transparent dark:from-slate-800/20 dark:to-transparent pointer-events-none" />
+            <div className="relative z-10">
             <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-4">Recent Cycle Entries</h3>
             <div className="space-y-3">
               {cycles.slice(0, 5).map((cycle) => (
@@ -643,14 +668,20 @@ const CycleTracker = () => {
                 </div>
               ))}
             </div>
+            </div>
           </div>
         )}
       </main>
+      </div>
+      </div>
 
       {/* Cycle Log Modal */}
       {showCycleLog && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white dark:bg-gray-800 rounded-2xl p-6 w-full max-w-md max-h-[90vh] overflow-y-auto">
+        <div className="fixed inset-0 bg-black/50 dark:bg-black/70 backdrop-blur-md flex items-center justify-center z-50 p-4">
+          <div className="bg-white/95 dark:bg-slate-900/95 backdrop-blur-2xl rounded-3xl p-8 w-full max-w-md max-h-[90vh] overflow-y-auto border border-white/20 dark:border-slate-700/50 shadow-2xl dark:shadow-purple-900/30 relative">
+            {/* Glass morphism overlay */}
+            <div className="absolute inset-0 bg-gradient-to-br from-white/20 to-transparent dark:from-slate-800/20 dark:to-transparent rounded-3xl pointer-events-none" />
+            <div className="relative z-10">
             <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-4">Log Cycle Entry</h3>
             
             {error && (
@@ -674,7 +705,7 @@ const CycleTracker = () => {
                 <select
                   value={cycleLogData.phase}
                   onChange={(e) => setCycleLogData({...cycleLogData, phase: e.target.value})}
-                  className="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                  className="w-full p-4 border border-gray-300/50 dark:border-slate-600/50 rounded-2xl bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm text-gray-900 dark:text-white shadow-sm dark:shadow-slate-900/20 focus:border-purple-500 dark:focus:border-violet-500 focus:ring-2 focus:ring-purple-500/20 dark:focus:ring-violet-500/20 transition-all duration-300"
                 >
                   <option value="menstrual">Menstrual</option>
                   <option value="follicular">Follicular</option>
@@ -739,10 +770,11 @@ const CycleTracker = () => {
               <button
                 onClick={handleCycleLog}
                 disabled={loading}
-                className="flex-1 py-3 px-4 bg-gradient-to-r from-rose-500 to-purple-600 text-white rounded-lg font-medium hover:from-rose-600 hover:to-purple-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                className="flex-1 py-4 px-6 bg-gradient-to-r from-rose-500 to-purple-600 dark:from-violet-600 dark:via-purple-600 dark:to-rose-500 text-white rounded-2xl font-semibold hover:from-rose-600 hover:to-purple-700 dark:hover:from-violet-700 dark:hover:via-purple-700 dark:hover:to-rose-600 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed shadow-lg dark:shadow-purple-900/50 hover:shadow-xl dark:hover:shadow-purple-900/70 hover:scale-105 active:scale-95"
               >
                 {loading ? 'Saving...' : 'Save Entry'}
               </button>
+            </div>
             </div>
           </div>
         </div>
