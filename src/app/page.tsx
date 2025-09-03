@@ -218,7 +218,7 @@ const CycleTracker = () => {
                   </div>
                   {dayData && (
                     <div className="mt-2 space-y-1">
-                      <div className="text-lg">{getPhaseEmoji(dayData.phase)}</div>
+                      <div className="text-lg">{getPhaseEmoji(dayData.phase as CyclePhase)}</div>
                       <div className="text-xs text-gray-500">
                         {dayData.mood}/10
                       </div>
@@ -255,7 +255,7 @@ const CycleTracker = () => {
               {cycles.slice(0, 5).map((cycle) => (
                 <div key={cycle.id} className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-700/50 rounded-lg">
                   <div className="flex items-center space-x-3">
-                    <span className="text-lg">{getPhaseEmoji(cycle.phase)}</span>
+                    <span className="text-lg">{getPhaseEmoji(cycle.phase as CyclePhase)}</span>
                     <div>
                       <div className="font-medium text-gray-900 dark:text-white">
                         {cycle.phase.charAt(0).toUpperCase() + cycle.phase.slice(1)} Phase

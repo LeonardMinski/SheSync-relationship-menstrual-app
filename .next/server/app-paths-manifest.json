@@ -1,6 +1,25 @@
 {
+  "/api/ai-coach/route": "app/api/ai-coach/route.js",
+  "/api/auth/route": "app/api/auth/route.js",
+  "/api/checkout/route": "app/api/checkout/route.js",
+  "/api/coach/route": "app/api/coach/route.js",
+  "/api/cycle/route": "app/api/cycle/route.js",
+  "/api/fantasy/route": "app/api/fantasy/route.js",
   "/_not-found/page": "app/_not-found/page.js",
-  "/auth/login/page": "app/auth/login/page.js",
+  "/api/intimacy/route": "app/api/intimacy/route.js",
+  "/api/log-cycle/route": "app/api/log-cycle/route.js",
+  "/api/shared/route": "app/api/shared/route.js",
+  "/api/user/route": "app/api/user/route.js",
+  "/api/partner/route": "app/api/partner/route.js",
+  "/api/webhooks/stripe/route": "app/api/webhooks/stripe/route.js",
   "/favicon.ico/route": "app/favicon.ico/route.js",
-  "/page": "app/page.js"
+  "/ai-coach/page": "app/ai-coach/page.js",
+  "/auth/login/page": "app/auth/login/page.js",
+  "/auth/signup/page": "app/auth/signup/page.js",
+  "/auth/verify-email/page": "app/auth/verify-email/page.js",
+  "/fantasy/page": "app/fantasy/page.js",
+  "/settings/page": "app/settings/page.js",
+  "/page": "app/page.js",
+  "/intimacy/page": "app/intimacy/page.js",
+  "/pricing/page": "app/pricing/page.js"
 }

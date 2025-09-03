@@ -198,3 +198,60 @@ export const auth = {
     }
   }
 }
+
+// Cycles database operations
+export const cycles = {
+  async create(data: {
+    user_id: string
+    phase: 'menstrual' | 'follicular' | 'ovulation' | 'luteal'
+    mood: number
+    symptoms: string[]
+  }): Promise<{ cycle: any | null; error: string | null }> {
+    try {
+      const { data: cycle, error } = await supabase
+        .from('cycle_data')
+        .insert({
+          user_id: data.user_id,
+          date: new Date().toISOString().split('T')[0], // Current date
+          phase: data.phase,
+          mood: data.mood,
+          energy: 5, // Default values
+          libido: 5,
+          stress: 5,
+          symptoms: data.symptoms
+        })
+        .select()
+        .single()
+
+      if (error) {
+        console.error('Error creating cycle entry:', error)
+        return { cycle: null, error: error.message }
+      }
+
+      return { cycle, error: null }
+    } catch (error) {
+      console.error('Error creating cycle entry:', error)
+      return { cycle: null, error: error instanceof Error ? error.message : 'Unknown error' }
+    }
+  },
+
+  async getByUserId(userId: string): Promise<{ cycles: any[] | null; error: string | null }> {
+    try {
+      const { data: cycles, error } = await supabase
+        .from('cycle_data')
+        .select('*')
+        .eq('user_id', userId)
+        .order('date', { ascending: false })
+
+      if (error) {
+        console.error('Error fetching cycles:', error)
+        return { cycles: null, error: error.message }
+      }
+
+      return { cycles, error: null }
+    } catch (error) {
+      console.error('Error fetching cycles:', error)
+      return { cycles: null, error: error instanceof Error ? error.message : 'Unknown error' }
+    }
+  }
+}

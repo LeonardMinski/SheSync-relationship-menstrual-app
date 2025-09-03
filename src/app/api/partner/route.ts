@@ -86,15 +86,15 @@ export async function POST(request: NextRequest) {
     // Check if already partnered
     const { data: existingPartnership, error: checkError } = await supabase
       .from('users')
-      .select('partner_id')
+      .select('id, partner_id')
       .or(`id.eq.${authenticatedRequest.user.id},id.eq.${partnerUser.id}`)
 
     if (checkError) {
       return createErrorResponse('Error checking partnership status', 500)
     }
 
-    const currentUser = existingPartnership.find(u => u.id === authenticatedRequest.user.id)
-    const partner = existingPartnership.find(u => u.id === partnerUser.id)
+    const currentUser = existingPartnership?.find(u => u.id === authenticatedRequest.user?.id)
+    const partner = existingPartnership?.find(u => u.id === partnerUser.id)
 
     if (currentUser?.partner_id || partner?.partner_id) {
       return createErrorResponse('One or both users are already partnered', 400)
