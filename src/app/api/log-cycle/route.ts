@@ -1,36 +1,42 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { cycles } from '@/lib/db'
 import { createClient } from '@supabase/supabase-js'
 
-// Create a separate Supabase client for server-side operations
-const supabaseAdmin = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-)
-
-async function getAuthenticatedUser(request: NextRequest) {
+async function getAuthenticatedSupabaseClient(request: NextRequest) {
   try {
     // Get the Authorization header
     const authHeader = request.headers.get('authorization')
     if (!authHeader || !authHeader.startsWith('Bearer ')) {
-      return { user: null, error: 'No authorization header' }
+      return { supabase: null, user: null, error: 'No authorization header' }
     }
 
     // Extract the token
     const token = authHeader.substring(7) // Remove 'Bearer ' prefix
     
-    // Verify the token with Supabase
-    const { data: { user }, error } = await supabaseAdmin.auth.getUser(token)
+    // Create a Supabase client with the user's access token
+    const supabase = createClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+      {
+        global: {
+          headers: {
+            Authorization: `Bearer ${token}`
+          }
+        }
+      }
+    )
+    
+    // Verify the token and get user
+    const { data: { user }, error } = await supabase.auth.getUser(token)
     
     if (error || !user) {
       console.error('Token verification failed:', error)
-      return { user: null, error: error?.message || 'Invalid token' }
+      return { supabase: null, user: null, error: error?.message || 'Invalid token' }
     }
 
-    return { user, error: null }
+    return { supabase, user, error: null }
   } catch (error) {
     console.error('Auth error:', error)
-    return { user: null, error: 'Authentication failed' }
+    return { supabase: null, user: null, error: 'Authentication failed' }
   }
 }
 
@@ -71,10 +77,10 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // Get the authenticated user
-    const { user, error: authError } = await getAuthenticatedUser(request)
+    // Get the authenticated Supabase client and user
+    const { supabase, user, error: authError } = await getAuthenticatedSupabaseClient(request)
 
-    if (authError || !user) {
+    if (authError || !user || !supabase) {
       console.error('Auth error in log-cycle:', authError)
       return NextResponse.json(
         { error: 'Authentication required' },
@@ -84,18 +90,26 @@ export async function POST(request: NextRequest) {
 
     console.log('✅ API: User authenticated:', user.email, 'ID:', user.id)
 
-    // Insert the cycle entry
-    const { cycle, error } = await cycles.create({
-      user_id: user.id,
-      phase,
-      mood,
-      symptoms: symptoms || []
-    })
+    // Insert the cycle entry directly using the authenticated Supabase client
+    const { data: cycle, error } = await supabase
+      .from('cycle_data')
+      .insert({
+        user_id: user.id,
+        date: new Date().toISOString().split('T')[0], // Current date
+        phase,
+        mood,
+        energy: 5, // Default values
+        libido: 5,
+        stress: 5,
+        symptoms: symptoms || []
+      })
+      .select()
+      .single()
 
     if (error) {
       console.error('Error creating cycle entry:', error)
       return NextResponse.json(
-        { error: 'Database error: ' + error },
+        { error: 'Database error: ' + error.message },
         { status: 500 }
       )
     }
@@ -116,18 +130,22 @@ export async function POST(request: NextRequest) {
 
 export async function GET(request: NextRequest) {
   try {
-    // Get the authenticated user
-    const { user, error: authError } = await getAuthenticatedUser(request)
+    // Get the authenticated Supabase client and user
+    const { supabase, user, error: authError } = await getAuthenticatedSupabaseClient(request)
 
-    if (authError || !user) {
+    if (authError || !user || !supabase) {
       return NextResponse.json(
         { error: 'Authentication required' },
         { status: 401 }
       )
     }
 
-    // Get cycle entries for the user
-    const { cycles: cycleData, error } = await cycles.getByUserId(user.id)
+    // Get cycle entries for the user using the authenticated client
+    const { data: cycleData, error } = await supabase
+      .from('cycle_data')
+      .select('*')
+      .eq('user_id', user.id)
+      .order('date', { ascending: false })
 
     if (error) {
       console.error('Database error:', error)
