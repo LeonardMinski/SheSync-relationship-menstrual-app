@@ -28,7 +28,7 @@ const Navigation = () => {
   const navItems = [
     {
       name: 'Cycle',
-      href: '/',
+      href: '/dashboard',
       icon: Calendar,
       emoji: getPhaseEmoji(currentPhase),
     },

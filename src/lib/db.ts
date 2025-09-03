@@ -156,19 +156,23 @@ export const auth = {
 
   async signIn(data: LoginData): Promise<{ user: User | null; error: string | null }> {
     try {
+      console.log('🔍 DB: Starting Supabase auth sign in...')
       const { data: authData, error: authError } = await supabase.auth.signInWithPassword({
         email: data.email,
         password: data.password
       })
 
       if (authError) {
+        console.error('❌ DB: Auth error:', authError.message)
         return { user: null, error: authError.message }
       }
 
       if (!authData.user) {
+        console.error('❌ DB: No user in auth data')
         return { user: null, error: 'Signin failed' }
       }
 
+      console.log('✅ DB: Auth successful, fetching user profile...')
       // Get user profile
       const { data: userProfile, error: profileError } = await supabase
         .from('users')
@@ -177,13 +181,14 @@ export const auth = {
         .single()
 
       if (profileError) {
-        console.error('Error getting user profile:', profileError)
+        console.error('❌ DB: Profile error:', profileError)
         return { user: null, error: 'User profile not found' }
       }
 
+      console.log('✅ DB: Profile found, login complete')
       return { user: userProfile, error: null }
     } catch (error) {
-      console.error('Error signing in:', error)
+      console.error('❌ DB: Unexpected error signing in:', error)
       return { user: null, error: error instanceof Error ? error.message : 'Unknown error' }
     }
   },

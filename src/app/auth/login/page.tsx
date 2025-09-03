@@ -20,14 +20,19 @@ export default function LoginPage() {
     setLoading(true)
 
     try {
+      console.log('🔍 Starting login process...')
       const result = await signIn({ email, password })
+      console.log('🔍 Login result:', result)
       
       if (result.success) {
+        console.log('✅ Login successful, redirecting to dashboard...')
         router.push('/dashboard') // Redirect to dashboard after successful login
       } else {
+        console.error('❌ Login failed:', result.error)
         setError(result.error || 'Login failed')
       }
     } catch (err) {
+      console.error('❌ Unexpected login error:', err)
       setError('An unexpected error occurred')
     } finally {
       setLoading(false)

@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server'
 import type { NextRequest } from 'next/server'
+import { createServerClient } from '@supabase/ssr'
 
 // Define protected routes that require authentication
 const protectedRoutes = [
@@ -24,7 +25,7 @@ const authRoutes = [
   '/auth/signup'
 ]
 
-export function middleware(request: NextRequest) {
+export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl
   
   // Check if the route is protected
@@ -37,24 +38,49 @@ export function middleware(request: NextRequest) {
     pathname === route || pathname.startsWith(route + '/')
   )
 
-  // Get the token from cookies
-  const token = request.cookies.get('sb-access-token')?.value || 
-                request.cookies.get('supabase-auth-token')?.value
+  // Create a response object to modify
+  let response = NextResponse.next({
+    request: {
+      headers: request.headers,
+    },
+  })
 
-  // If it's a protected route and no token, redirect to login
-  if (isProtectedRoute && !token) {
+  // Create Supabase client for server-side auth checking
+  const supabase = createServerClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    {
+      cookies: {
+        get(name: string) {
+          return request.cookies.get(name)?.value
+        },
+        set(name: string, value: string, options: any) {
+          response.cookies.set(name, value, options)
+        },
+        remove(name: string, options: any) {
+          response.cookies.delete(name)
+        },
+      },
+    }
+  )
+
+  // Get the current user
+  const { data: { user } } = await supabase.auth.getUser()
+
+  // If it's a protected route and no user, redirect to login
+  if (isProtectedRoute && !user) {
     const loginUrl = new URL('/auth/login', request.url)
     loginUrl.searchParams.set('redirect', pathname)
     return NextResponse.redirect(loginUrl)
   }
 
-  // If it's an auth route and has token, redirect to dashboard
-  if (isAuthRoute && token) {
+  // If it's an auth route and user is logged in, redirect to dashboard
+  if (isAuthRoute && user) {
     return NextResponse.redirect(new URL('/dashboard', request.url))
   }
 
-  // Allow the request to continue
-  return NextResponse.next()
+  // Return the response with potentially modified cookies
+  return response
 }
 
 export const config = {

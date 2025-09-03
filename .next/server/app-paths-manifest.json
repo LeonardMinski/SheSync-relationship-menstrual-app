@@ -1,6 +1,15 @@
 {
-  "/api/auth/route": "app/api/auth/route.js",
-  "/auth/signup/page": "app/auth/signup/page.js",
-  "/auth/verify-email/page": "app/auth/verify-email/page.js",
-  "/favicon.ico/route": "app/favicon.ico/route.js"
+  "/_not-found/page": "app/_not-found/page.js",
+  "/ai-coach/page": "app/ai-coach/page.js",
+  "/api/checkout/route": "app/api/checkout/route.js",
+  "/api/coach/route": "app/api/coach/route.js",
+  "/api/log-cycle/route": "app/api/log-cycle/route.js",
+  "/auth/login/page": "app/auth/login/page.js",
+  "/dashboard/page": "app/dashboard/page.js",
+  "/fantasy/page": "app/fantasy/page.js",
+  "/favicon.ico/route": "app/favicon.ico/route.js",
+  "/intimacy/page": "app/intimacy/page.js",
+  "/page": "app/page.js",
+  "/pricing/page": "app/pricing/page.js",
+  "/settings/page": "app/settings/page.js"
 }

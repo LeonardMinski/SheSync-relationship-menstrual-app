@@ -35,10 +35,10 @@ export const useCycleLogger = () => {
       const response = await fetch('/api/log-cycle', {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${user.id}` // In production, use actual JWT token
+          'Content-Type': 'application/json'
         },
-        body: JSON.stringify(data)
+        body: JSON.stringify(data),
+        credentials: 'include' // Include cookies for authentication
       })
 
       const result = await response.json()
@@ -70,9 +70,7 @@ export const useCycleLogger = () => {
 
     try {
       const response = await fetch('/api/log-cycle', {
-        headers: {
-          'Authorization': `Bearer ${user.id}` // In production, use actual JWT token
-        }
+        credentials: 'include' // Include cookies for authentication
       })
       const result = await response.json()
 

@@ -1,5 +1,31 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { cycles } from '@/lib/db'
+import { createServerClient } from '@supabase/ssr'
+import { cookies } from 'next/headers'
+
+async function getAuthenticatedUser() {
+  const cookieStore = cookies()
+  const supabase = createServerClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    {
+      cookies: {
+        get(name: string) {
+          return cookieStore.get(name)?.value
+        },
+        set(name: string, value: string, options: any) {
+          cookieStore.set(name, value, options)
+        },
+        remove(name: string, options: any) {
+          cookieStore.delete(name)
+        },
+      },
+    }
+  )
+  
+  const { data: { user }, error } = await supabase.auth.getUser()
+  return { user, error }
+}
 
 export async function POST(request: NextRequest) {
   try {
@@ -38,36 +64,36 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // Get the authenticated user from the request
-    // In a real app, you'd get this from the JWT token
-    const authHeader = request.headers.get('authorization')
-    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+    // Get the authenticated user
+    const { user, error: authError } = await getAuthenticatedUser()
+
+    if (authError || !user) {
+      console.error('Auth error in log-cycle:', authError)
       return NextResponse.json(
-        { error: 'Authorization header required' },
+        { error: 'Authentication required' },
         { status: 401 }
       )
     }
 
-    // Extract user ID from the Bearer token
-    // In production, you'd verify the JWT and extract the user ID
-    const userId = authHeader.replace('Bearer ', '')
+    console.log('✅ API: User authenticated:', user.email, 'ID:', user.id)
 
     // Insert the cycle entry
     const { cycle, error } = await cycles.create({
-      user_id: userId,
+      user_id: user.id,
       phase,
       mood,
       symptoms: symptoms || []
     })
 
     if (error) {
-      console.error('Database error:', error)
+      console.error('Error creating cycle entry:', error)
       return NextResponse.json(
-        { error: 'Failed to save cycle entry' },
+        { error: 'Database error: ' + error },
         { status: 500 }
       )
     }
 
+    console.log('✅ API: Cycle entry created successfully')
     return NextResponse.json({
       message: 'Cycle entry logged successfully',
       data: cycle
@@ -83,20 +109,18 @@ export async function POST(request: NextRequest) {
 
 export async function GET(request: NextRequest) {
   try {
-    // Get the authenticated user from the request
-    const authHeader = request.headers.get('authorization')
-    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+    // Get the authenticated user
+    const { user, error: authError } = await getAuthenticatedUser()
+
+    if (authError || !user) {
       return NextResponse.json(
-        { error: 'Authorization header required' },
+        { error: 'Authentication required' },
         { status: 401 }
       )
     }
 
-    // Extract user ID from the Bearer token
-    const userId = authHeader.replace('Bearer ', '')
-
     // Get cycle entries for the user
-    const { cycles: cycleData, error } = await cycles.getByUserId(userId)
+    const { cycles: cycleData, error } = await cycles.getByUserId(user.id)
 
     if (error) {
       console.error('Database error:', error)
