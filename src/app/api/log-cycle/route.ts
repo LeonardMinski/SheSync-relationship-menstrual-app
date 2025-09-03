@@ -3,20 +3,20 @@ import { cycles } from '@/lib/db'
 import { createServerClient } from '@supabase/ssr'
 import { cookies } from 'next/headers'
 
-async function getAuthenticatedUser() {
+async function getAuthenticatedUser(request: NextRequest) {
   const cookieStore = await cookies()
   const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
     {
       cookies: {
-        get(name: string) {
+        async get(name: string) {
           return cookieStore.get(name)?.value
         },
-        set(name: string, value: string, options: any) {
+        async set(name: string, value: string, options: any) {
           cookieStore.set(name, value, options)
         },
-        remove(name: string, options: any) {
+        async remove(name: string, options: any) {
           cookieStore.delete(name)
         },
       },
@@ -65,7 +65,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Get the authenticated user
-    const { user, error: authError } = await getAuthenticatedUser()
+    const { user, error: authError } = await getAuthenticatedUser(request)
 
     if (authError || !user) {
       console.error('Auth error in log-cycle:', authError)
@@ -110,7 +110,7 @@ export async function POST(request: NextRequest) {
 export async function GET(request: NextRequest) {
   try {
     // Get the authenticated user
-    const { user, error: authError } = await getAuthenticatedUser()
+    const { user, error: authError } = await getAuthenticatedUser(request)
 
     if (authError || !user) {
       return NextResponse.json(
