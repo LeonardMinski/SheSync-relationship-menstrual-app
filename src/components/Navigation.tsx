@@ -77,7 +77,7 @@ const Navigation = () => {
                       <User size={16} className="text-white" />
                     </div>
                     <span className="text-sm text-gray-700 dark:text-gray-300 hidden sm:inline">
-                      Hi, {user.name?.split(' ')[0] || user.email?.split('@')[0]}!
+                      {user.name || user.email?.split('@')[0]}
                     </span>
                   </div>
                   <button

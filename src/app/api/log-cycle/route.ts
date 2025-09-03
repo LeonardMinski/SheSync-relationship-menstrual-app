@@ -1,30 +1,37 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { cycles } from '@/lib/db'
-import { createServerClient } from '@supabase/ssr'
-import { cookies } from 'next/headers'
+import { createClient } from '@supabase/supabase-js'
+
+// Create a separate Supabase client for server-side operations
+const supabaseAdmin = createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL!,
+  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+)
 
 async function getAuthenticatedUser(request: NextRequest) {
-  const cookieStore = await cookies()
-  const supabase = createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-    {
-      cookies: {
-        async get(name: string) {
-          return cookieStore.get(name)?.value
-        },
-        async set(name: string, value: string, options: any) {
-          cookieStore.set(name, value, options)
-        },
-        async remove(name: string, options: any) {
-          cookieStore.delete(name)
-        },
-      },
+  try {
+    // Get the Authorization header
+    const authHeader = request.headers.get('authorization')
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+      return { user: null, error: 'No authorization header' }
     }
-  )
-  
-  const { data: { user }, error } = await supabase.auth.getUser()
-  return { user, error }
+
+    // Extract the token
+    const token = authHeader.substring(7) // Remove 'Bearer ' prefix
+    
+    // Verify the token with Supabase
+    const { data: { user }, error } = await supabaseAdmin.auth.getUser(token)
+    
+    if (error || !user) {
+      console.error('Token verification failed:', error)
+      return { user: null, error: error?.message || 'Invalid token' }
+    }
+
+    return { user, error: null }
+  } catch (error) {
+    console.error('Auth error:', error)
+    return { user: null, error: 'Authentication failed' }
+  }
 }
 
 export async function POST(request: NextRequest) {

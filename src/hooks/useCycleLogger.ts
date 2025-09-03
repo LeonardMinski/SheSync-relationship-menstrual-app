@@ -1,5 +1,6 @@
 import { useState, useCallback } from 'react'
 import { useAuth } from '@/context/AuthContext'
+import { supabase } from '@/lib/supabaseClient'
 
 export interface CycleEntry {
   id?: string
@@ -32,13 +33,19 @@ export const useCycleLogger = () => {
     setError(null)
 
     try {
+      // Get the current session and access token
+      const { data: { session } } = await supabase.auth.getSession()
+      if (!session?.access_token) {
+        throw new Error('No valid session found')
+      }
+
       const response = await fetch('/api/log-cycle', {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/json'
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${session.access_token}`
         },
-        body: JSON.stringify(data),
-        credentials: 'include' // Include cookies for authentication
+        body: JSON.stringify(data)
       })
 
       const result = await response.json()
@@ -69,8 +76,16 @@ export const useCycleLogger = () => {
     setError(null)
 
     try {
+      // Get the current session and access token
+      const { data: { session } } = await supabase.auth.getSession()
+      if (!session?.access_token) {
+        throw new Error('No valid session found')
+      }
+
       const response = await fetch('/api/log-cycle', {
-        credentials: 'include' // Include cookies for authentication
+        headers: {
+          'Authorization': `Bearer ${session.access_token}`
+        }
       })
       const result = await response.json()
 
