@@ -115,9 +115,9 @@ const CycleTracker = () => {
         <div className="bg-white/70 dark:bg-gray-800/70 backdrop-blur-sm rounded-2xl p-6 border border-rose-200 dark:border-gray-700">
           <div className="flex items-center justify-between mb-4">
             <div>
-              <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
-                Hello, {authUser?.name || authUser?.email?.split('@')[0]}! 
-              </h1>
+                        <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
+            Hi, {authUser?.name?.split(' ')[0] || authUser?.email?.split('@')[0]}!
+          </h1>
               <p className="text-gray-600 dark:text-gray-300">
                 {format(new Date(), 'EEEE, MMMM do')}
               </p>
