@@ -1,6 +1,7 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
+import { createPortal } from 'react-dom';
 import { useRouter } from 'next/navigation';
 import { format, subDays, addDays } from 'date-fns';
 import { 
@@ -180,91 +181,115 @@ const calculateSmartPrediction = (cycleData: CycleData[]) => {
   };
 };
 
-// Tooltip component
+// Portal-based Tooltip component
 const PhaseTooltip: React.FC<{ phase: CyclePhase; children: React.ReactNode }> = ({ phase, children }) => {
   const [showTooltip, setShowTooltip] = useState(false);
-  const [tooltipPosition, setTooltipPosition] = useState({ x: 0, y: 0 });
+  const [mounted, setMounted] = useState(false);
+  const triggerRef = useRef<HTMLDivElement>(null);
+  const tooltipRef = useRef<HTMLDivElement>(null);
+  const timeoutRef = useRef<NodeJS.Timeout | null>(null);
   const explanation = phaseExplanations[phase];
-  const triggerRef = React.useRef<HTMLDivElement>(null);
 
-  const handleMouseEnter = (e: React.MouseEvent) => {
-    if (triggerRef.current) {
-      const rect = triggerRef.current.getBoundingClientRect();
-      const scrollX = window.scrollX || window.pageXOffset;
-      const scrollY = window.scrollY || window.pageYOffset;
-      
-      // Position tooltip to the right of the trigger element
-      let x = rect.right + scrollX + 8; // 8px gap
-      let y = rect.top + scrollY - 8; // Align with top, slight offset
-      
-      // Check if tooltip would go off screen horizontally
-      const tooltipWidth = 320; // 80 * 4 (w-80)
-      if (x + tooltipWidth > window.innerWidth + scrollX) {
-        // Position to the left instead
-        x = rect.left + scrollX - tooltipWidth - 8;
-      }
-      
-      // Check if tooltip would go off screen vertically
-      const tooltipHeight = 300; // Approximate height
-      if (y + tooltipHeight > window.innerHeight + scrollY) {
-        y = window.innerHeight + scrollY - tooltipHeight - 16;
-      }
-      
-      // Ensure tooltip doesn't go above viewport
-      if (y < scrollY + 16) {
-        y = scrollY + 16;
-      }
-      
-      setTooltipPosition({ x, y });
+  // Ensure we're on the client side
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  const showTooltipWithDelay = () => {
+    if (timeoutRef.current) {
+      clearTimeout(timeoutRef.current);
     }
     setShowTooltip(true);
   };
 
-  const handleMouseLeave = () => {
-    setShowTooltip(false);
+  const hideTooltipWithDelay = () => {
+    timeoutRef.current = setTimeout(() => {
+      setShowTooltip(false);
+    }, 100);
+  };
+
+  const cancelHideTooltip = () => {
+    if (timeoutRef.current) {
+      clearTimeout(timeoutRef.current);
+    }
+  };
+
+  // Clean up timeout on unmount
+  useEffect(() => {
+    return () => {
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current);
+      }
+    };
+  }, []);
+
+  const renderTooltip = () => {
+    if (!showTooltip || !triggerRef.current || !mounted) return null;
+
+    const rect = triggerRef.current.getBoundingClientRect();
+    const tooltipWidth = 320;
+    const tooltipHeight = 280;
+    
+    // Calculate position
+    let left = rect.right + 8;
+    let top = rect.top - 8;
+    
+    // Adjust if going off screen
+    if (left + tooltipWidth > window.innerWidth) {
+      left = rect.left - tooltipWidth - 8;
+    }
+    
+    if (top + tooltipHeight > window.innerHeight) {
+      top = window.innerHeight - tooltipHeight - 16;
+    }
+    
+    if (top < 16) {
+      top = 16;
+    }
+
+    return createPortal(
+      <div 
+        ref={tooltipRef}
+        className="fixed z-[99999] pointer-events-auto"
+        style={{ left, top }}
+        onMouseEnter={cancelHideTooltip}
+        onMouseLeave={hideTooltipWithDelay}
+      >
+        {/* Backdrop */}
+        <div className="fixed inset-0 -z-10 bg-black/10 backdrop-blur-[1px]" />
+        
+        {/* Tooltip */}
+        <div className="w-80 p-4 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl shadow-2xl max-w-[calc(100vw-2rem)]">
+          <div className="flex items-center gap-2 mb-2">
+            <span className="text-2xl">{getPhaseEmoji(phase)}</span>
+            <h3 className="font-semibold text-gray-900 dark:text-white">{explanation.title}</h3>
+          </div>
+          <p className="text-sm text-gray-600 dark:text-gray-300 mb-3">{explanation.description}</p>
+          <div className="space-y-1 text-xs text-gray-500 dark:text-gray-400">
+            <div><strong>Duration:</strong> {explanation.duration}</div>
+            <div><strong>Hormones:</strong> {explanation.hormones}</div>
+            <div><strong>Tips:</strong> {explanation.tips}</div>
+          </div>
+          <div className="mt-3 text-xs text-gray-400 dark:text-gray-500 text-center">
+            Hover to keep open
+          </div>
+        </div>
+      </div>,
+      document.body
+    );
   };
 
   return (
     <>
       <div 
         ref={triggerRef}
-        className="relative inline-block"
-        onMouseEnter={handleMouseEnter}
-        onMouseLeave={handleMouseLeave}
+        className="relative inline-block cursor-help"
+        onMouseEnter={showTooltipWithDelay}
+        onMouseLeave={hideTooltipWithDelay}
       >
         {children}
       </div>
-      
-      {showTooltip && (
-        <>
-          {/* Backdrop */}
-          <div className="fixed inset-0 z-[9998] bg-black/20 backdrop-blur-sm" />
-          {/* Tooltip */}
-          <div 
-            className="fixed z-[9999] w-80 p-4 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl shadow-2xl"
-            style={{ 
-              left: `${tooltipPosition.x}px`,
-              top: `${tooltipPosition.y}px`,
-              maxWidth: 'calc(100vw - 2rem)'
-            }}
-          >
-            <div className="flex items-center gap-2 mb-2">
-              <span className="text-2xl">{getPhaseEmoji(phase)}</span>
-              <h3 className="font-semibold text-gray-900 dark:text-white">{explanation.title}</h3>
-            </div>
-            <p className="text-sm text-gray-600 dark:text-gray-300 mb-3">{explanation.description}</p>
-            <div className="space-y-1 text-xs text-gray-500 dark:text-gray-400">
-              <div><strong>Duration:</strong> {explanation.duration}</div>
-              <div><strong>Hormones:</strong> {explanation.hormones}</div>
-              <div><strong>Tips:</strong> {explanation.tips}</div>
-            </div>
-            {/* Close hint */}
-            <div className="mt-3 text-xs text-gray-400 dark:text-gray-500 text-center">
-              Move mouse away to close
-            </div>
-          </div>
-        </>
-      )}
+      {renderTooltip()}
     </>
   );
 };
