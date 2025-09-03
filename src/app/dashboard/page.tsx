@@ -116,7 +116,7 @@ const CycleTracker = () => {
           <div className="flex items-center justify-between mb-4">
             <div>
               <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
-                Hello, {user?.name}! 
+                Hello, {authUser?.name || authUser?.email?.split('@')[0]}! 
               </h1>
               <p className="text-gray-600 dark:text-gray-300">
                 {format(new Date(), 'EEEE, MMMM do')}

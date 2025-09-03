@@ -11,7 +11,8 @@ import {
   Settings,
   Moon,
   Sun,
-  Bell
+  Bell,
+  User
 } from 'lucide-react';
 import { useApp } from '@/context/AppContext';
 import { useAuth } from '@/context/AuthContext';
@@ -71,9 +72,14 @@ const Navigation = () => {
               {/* User Menu */}
               {user ? (
                 <div className="flex items-center space-x-3">
-                  <span className="text-sm text-gray-700 dark:text-gray-300">
-                    Hi, {user.name || user.email}
-                  </span>
+                  <div className="flex items-center space-x-2">
+                    <div className="w-8 h-8 bg-gradient-to-br from-rose-500 to-purple-600 rounded-full flex items-center justify-center">
+                      <User size={16} className="text-white" />
+                    </div>
+                    <span className="text-sm text-gray-700 dark:text-gray-300 hidden sm:inline">
+                      {user.name || user.email?.split('@')[0]}
+                    </span>
+                  </div>
                   <button
                     onClick={signOut}
                     className="text-sm text-rose-600 hover:text-rose-700 dark:text-rose-400 dark:hover:text-rose-300"
