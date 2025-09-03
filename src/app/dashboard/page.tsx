@@ -193,20 +193,31 @@ const PhaseTooltip: React.FC<{ phase: CyclePhase; children: React.ReactNode }> =
     >
       {children}
       {showTooltip && (
-        <div className="absolute z-50 w-80 p-4 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl shadow-xl -top-2 left-full ml-2">
-          <div className="flex items-center gap-2 mb-2">
-            <span className="text-2xl">{getPhaseEmoji(phase)}</span>
-            <h3 className="font-semibold text-gray-900 dark:text-white">{explanation.title}</h3>
+        <>
+          {/* Backdrop */}
+          <div className="fixed inset-0 z-[9998] bg-black/20 backdrop-blur-sm" />
+          {/* Tooltip */}
+          <div className="absolute z-[9999] w-80 p-4 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl shadow-2xl -top-2 left-full ml-2 sm:left-full sm:ml-2 max-sm:left-1/2 max-sm:-translate-x-1/2 max-sm:ml-0"
+               style={{ maxWidth: 'calc(100vw - 2rem)' }}>
+            <div className="flex items-center gap-2 mb-2">
+              <span className="text-2xl">{getPhaseEmoji(phase)}</span>
+              <h3 className="font-semibold text-gray-900 dark:text-white">{explanation.title}</h3>
+            </div>
+            <p className="text-sm text-gray-600 dark:text-gray-300 mb-3">{explanation.description}</p>
+            <div className="space-y-1 text-xs text-gray-500 dark:text-gray-400">
+              <div><strong>Duration:</strong> {explanation.duration}</div>
+              <div><strong>Hormones:</strong> {explanation.hormones}</div>
+              <div><strong>Tips:</strong> {explanation.tips}</div>
+            </div>
+            {/* Arrow */}
+            <div className="absolute top-4 -left-1 w-2 h-2 bg-white dark:bg-gray-800 border-l border-t border-gray-200 dark:border-gray-700 transform rotate-45 sm:block max-sm:hidden"></div>
+            <div className="absolute -top-1 left-1/2 -translate-x-1/2 w-2 h-2 bg-white dark:bg-gray-800 border-l border-t border-gray-200 dark:border-gray-700 transform rotate-45 sm:hidden"></div>
+            {/* Close hint */}
+            <div className="mt-3 text-xs text-gray-400 dark:text-gray-500 text-center">
+              Move mouse away to close
+            </div>
           </div>
-          <p className="text-sm text-gray-600 dark:text-gray-300 mb-3">{explanation.description}</p>
-          <div className="space-y-1 text-xs text-gray-500 dark:text-gray-400">
-            <div><strong>Duration:</strong> {explanation.duration}</div>
-            <div><strong>Hormones:</strong> {explanation.hormones}</div>
-            <div><strong>Tips:</strong> {explanation.tips}</div>
-          </div>
-          {/* Arrow */}
-          <div className="absolute top-4 -left-1 w-2 h-2 bg-white dark:bg-gray-800 border-l border-t border-gray-200 dark:border-gray-700 transform rotate-45"></div>
-        </div>
+        </>
       )}
     </div>
   );
