@@ -12,7 +12,11 @@ import {
   Plus,
   ChevronLeft,
   ChevronRight,
-  Droplet
+  Droplet,
+  Info,
+  Sparkles,
+  Clock,
+  Target
 } from 'lucide-react';
 import { useApp } from '@/context/AppContext';
 import { useAuth } from '@/context/AuthContext';
@@ -21,6 +25,192 @@ import Navigation from '@/components/Navigation';
 import LoadingSpinner from '@/components/LoadingSpinner';
 import { getPhaseEmoji, getPhaseColor } from '@/lib/mockData';
 import { CycleData, CyclePhase } from '@/types';
+
+// Phase explanations for tooltips
+const phaseExplanations = {
+  menstrual: {
+    title: "Menstrual Phase",
+    description: "Days 1-5 of your cycle. Your period has arrived! Hormone levels are at their lowest. You might feel tired and need extra rest. Focus on gentle self-care and iron-rich foods.",
+    duration: "3-7 days",
+    hormones: "Estrogen & Progesterone: Low",
+    tips: "Rest, hydrate, gentle movement, warm baths"
+  },
+  follicular: {
+    title: "Follicular Phase", 
+    description: "Days 1-13 of your cycle. Your energy is building! Estrogen rises, making you feel more optimistic and social. Great time for new projects and challenges.",
+    duration: "7-10 days",
+    hormones: "Estrogen: Rising, Progesterone: Low",
+    tips: "Try new things, socialize, intense workouts"
+  },
+  ovulation: {
+    title: "Ovulation Phase",
+    description: "Around day 14. You're at your peak! Estrogen peaks and you might feel most confident, attractive, and energetic. Libido is typically highest.",
+    duration: "3-5 days",
+    hormones: "Estrogen: Peak, LH Surge",
+    tips: "Date nights, important meetings, creative work"
+  },
+  luteal: {
+    title: "Luteal Phase",
+    description: "Days 15-28. The calm after the storm. Progesterone rises, you might feel more introspective. PMS symptoms may appear toward the end. Time to slow down and prepare.",
+    duration: "10-14 days", 
+    hormones: "Progesterone: Rising, Estrogen: Declining",
+    tips: "Meal prep, organize, gentle yoga, magnesium"
+  }
+};
+
+// Smart prediction logic
+const calculateSmartPrediction = (cycleData: CycleData[]) => {
+  if (!cycleData || cycleData.length === 0) {
+    return {
+      predictedPhase: 'luteal' as CyclePhase,
+      confidence: 0,
+      explanation: 'No cycle data available yet',
+      daysSinceLastEntry: 0,
+      averageCycleLength: 28,
+      isActualData: false
+    };
+  }
+
+  // Sort by date to get most recent entries
+  const sortedData = [...cycleData].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+  const latestEntry = sortedData[0];
+  const today = new Date();
+  const lastEntryDate = new Date(latestEntry.date);
+  const daysSinceLastEntry = Math.floor((today.getTime() - lastEntryDate.getTime()) / (1000 * 60 * 60 * 24));
+
+  // If we have a recent entry (within 2 days), use actual data
+  if (daysSinceLastEntry <= 2) {
+    return {
+      predictedPhase: latestEntry.phase,
+      confidence: 95,
+      explanation: `Based on your recent entry from ${daysSinceLastEntry === 0 ? 'today' : daysSinceLastEntry + ' day(s) ago'}`,
+      daysSinceLastEntry,
+      averageCycleLength: 28,
+      isActualData: true
+    };
+  }
+
+  // Calculate average cycle length from menstrual phases
+  const menstrualEntries = sortedData.filter(entry => entry.phase === 'menstrual');
+  let averageCycleLength = 28; // default
+  
+  if (menstrualEntries.length >= 2) {
+    const cycleLengths = [];
+    for (let i = 0; i < menstrualEntries.length - 1; i++) {
+      const current = new Date(menstrualEntries[i].date);
+      const next = new Date(menstrualEntries[i + 1].date);
+      const cycleLength = Math.abs((current.getTime() - next.getTime()) / (1000 * 60 * 60 * 24));
+      if (cycleLength > 20 && cycleLength < 40) { // reasonable cycle length
+        cycleLengths.push(cycleLength);
+      }
+    }
+    if (cycleLengths.length > 0) {
+      averageCycleLength = Math.round(cycleLengths.reduce((a, b) => a + b, 0) / cycleLengths.length);
+    }
+  }
+
+  // Find the most recent menstrual phase
+  const lastMenstrualEntry = menstrualEntries[0];
+  if (!lastMenstrualEntry) {
+    // No menstrual data, make educated guess based on last entry
+    const daysSince = daysSinceLastEntry;
+    let predictedPhase: CyclePhase = 'luteal';
+    let confidence = 60;
+
+    if (latestEntry.phase === 'menstrual' && daysSince < 10) {
+      predictedPhase = 'follicular';
+      confidence = 70;
+    } else if (latestEntry.phase === 'follicular' && daysSince < 7) {
+      predictedPhase = 'ovulation';
+      confidence = 65;
+    } else if (latestEntry.phase === 'ovulation' && daysSince < 14) {
+      predictedPhase = 'luteal';
+      confidence = 75;
+    }
+
+    return {
+      predictedPhase,
+      confidence,
+      explanation: `Estimated based on your ${latestEntry.phase} phase entry ${daysSince} days ago`,
+      daysSinceLastEntry,
+      averageCycleLength,
+      isActualData: false
+    };
+  }
+
+  // Calculate days since last period
+  const lastPeriodDate = new Date(lastMenstrualEntry.date);
+  const daysSinceLastPeriod = Math.floor((today.getTime() - lastPeriodDate.getTime()) / (1000 * 60 * 60 * 24));
+  
+  // Predict phase based on cycle day
+  let predictedPhase: CyclePhase;
+  let confidence: number;
+  let explanation: string;
+
+  if (daysSinceLastPeriod <= 5) {
+    predictedPhase = 'menstrual';
+    confidence = 80;
+    explanation = `Day ${daysSinceLastPeriod + 1} of your cycle - typically menstrual phase`;
+  } else if (daysSinceLastPeriod <= 13) {
+    predictedPhase = 'follicular';
+    confidence = 75;
+    explanation = `Day ${daysSinceLastPeriod + 1} of your cycle - typically follicular phase`;
+  } else if (daysSinceLastPeriod <= 16) {
+    predictedPhase = 'ovulation';
+    confidence = 70;
+    explanation = `Day ${daysSinceLastPeriod + 1} of your cycle - typically ovulation`;
+  } else if (daysSinceLastPeriod < averageCycleLength) {
+    predictedPhase = 'luteal';
+    confidence = 75;
+    explanation = `Day ${daysSinceLastPeriod + 1} of your cycle - typically luteal phase`;
+  } else {
+    // Overdue for next period
+    predictedPhase = 'menstrual';
+    confidence = 60;
+    explanation = `Day ${daysSinceLastPeriod + 1} - your next period may be starting soon`;
+  }
+
+  return {
+    predictedPhase,
+    confidence,
+    explanation,
+    daysSinceLastEntry,
+    averageCycleLength,
+    isActualData: false
+  };
+};
+
+// Tooltip component
+const PhaseTooltip: React.FC<{ phase: CyclePhase; children: React.ReactNode }> = ({ phase, children }) => {
+  const [showTooltip, setShowTooltip] = useState(false);
+  const explanation = phaseExplanations[phase];
+
+  return (
+    <div 
+      className="relative inline-block"
+      onMouseEnter={() => setShowTooltip(true)}
+      onMouseLeave={() => setShowTooltip(false)}
+    >
+      {children}
+      {showTooltip && (
+        <div className="absolute z-50 w-80 p-4 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl shadow-xl -top-2 left-full ml-2">
+          <div className="flex items-center gap-2 mb-2">
+            <span className="text-2xl">{getPhaseEmoji(phase)}</span>
+            <h3 className="font-semibold text-gray-900 dark:text-white">{explanation.title}</h3>
+          </div>
+          <p className="text-sm text-gray-600 dark:text-gray-300 mb-3">{explanation.description}</p>
+          <div className="space-y-1 text-xs text-gray-500 dark:text-gray-400">
+            <div><strong>Duration:</strong> {explanation.duration}</div>
+            <div><strong>Hormones:</strong> {explanation.hormones}</div>
+            <div><strong>Tips:</strong> {explanation.tips}</div>
+          </div>
+          {/* Arrow */}
+          <div className="absolute top-4 -left-1 w-2 h-2 bg-white dark:bg-gray-800 border-l border-t border-gray-200 dark:border-gray-700 transform rotate-45"></div>
+        </div>
+      )}
+    </div>
+  );
+};
 
 const CycleTracker = () => {
   const router = useRouter();
@@ -31,6 +221,9 @@ const CycleTracker = () => {
   const [showCycleLog, setShowCycleLog] = useState(false);
   
   const { logCycle, fetchCycles, cycles, loading, error, clearError } = useCycleLogger();
+
+  // Calculate smart prediction
+  const smartPrediction = calculateSmartPrediction(cycles);
 
   // Redirect to login if not authenticated
   useEffect(() => {
@@ -122,16 +315,66 @@ const CycleTracker = () => {
                 {format(new Date(), 'EEEE, MMMM do')}
               </p>
             </div>
-            <div className="text-4xl">{getPhaseEmoji(currentPhase)}</div>
+            <div className="text-4xl">{getPhaseEmoji(smartPrediction.predictedPhase)}</div>
           </div>
           
-          <div className={`inline-flex items-center px-4 py-2 rounded-full text-sm font-medium ${getPhaseColor(currentPhase)}`}>
-            <span className="mr-2">{getPhaseEmoji(currentPhase)}</span>
-            {currentPhase.charAt(0).toUpperCase() + currentPhase.slice(1)} Phase
+          <div className="space-y-3">
+            {/* Smart Prediction Display */}
+            <PhaseTooltip phase={smartPrediction.predictedPhase}>
+              <div className={`inline-flex items-center px-4 py-2 rounded-full text-sm font-medium cursor-help ${getPhaseColor(smartPrediction.predictedPhase)}`}>
+                <span className="mr-2">{getPhaseEmoji(smartPrediction.predictedPhase)}</span>
+                {smartPrediction.predictedPhase.charAt(0).toUpperCase() + smartPrediction.predictedPhase.slice(1)} Phase
+                {smartPrediction.isActualData ? (
+                  <Target size={14} className="ml-2 opacity-60" />
+                ) : (
+                  <Sparkles size={14} className="ml-2 opacity-60" />
+                )}
+                <Info size={14} className="ml-1 opacity-60" />
+              </div>
+            </PhaseTooltip>
+
+            {/* Prediction Explanation */}
+            <div className="bg-gradient-to-r from-purple-50 to-rose-50 dark:from-purple-900/20 dark:to-rose-900/20 rounded-lg p-3 border border-purple-100 dark:border-purple-800">
+              <div className="flex items-start gap-2">
+                {smartPrediction.isActualData ? (
+                  <Target size={16} className="text-purple-600 dark:text-purple-400 mt-0.5 flex-shrink-0" />
+                ) : (
+                  <Sparkles size={16} className="text-purple-600 dark:text-purple-400 mt-0.5 flex-shrink-0" />
+                )}
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-2 mb-1">
+                    <span className="text-xs font-medium text-purple-700 dark:text-purple-300">
+                      {smartPrediction.isActualData ? 'Recent Entry' : 'Smart Prediction'}
+                    </span>
+                    {!smartPrediction.isActualData && (
+                      <div className="flex items-center gap-1">
+                        <div className="h-2 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden" style={{ width: '40px' }}>
+                          <div 
+                            className="h-full bg-gradient-to-r from-purple-500 to-rose-500 rounded-full transition-all duration-300"
+                            style={{ width: `${smartPrediction.confidence}%` }}
+                          />
+                        </div>
+                        <span className="text-xs text-purple-600 dark:text-purple-400 font-medium">
+                          {smartPrediction.confidence}%
+                        </span>
+                      </div>
+                    )}
+                  </div>
+                  <p className="text-xs text-gray-600 dark:text-gray-300 leading-relaxed">
+                    {smartPrediction.explanation}
+                  </p>
+                  {!smartPrediction.isActualData && smartPrediction.averageCycleLength !== 28 && (
+                    <p className="text-xs text-purple-600 dark:text-purple-400 mt-1">
+                      Based on your {smartPrediction.averageCycleLength}-day average cycle
+                    </p>
+                  )}
+                </div>
+              </div>
+            </div>
           </div>
           
           <p className="mt-3 text-gray-700 dark:text-gray-300">
-            {getInsightForPhase(currentPhase)}
+            {getInsightForPhase(smartPrediction.predictedPhase)}
           </p>
         </div>
 
