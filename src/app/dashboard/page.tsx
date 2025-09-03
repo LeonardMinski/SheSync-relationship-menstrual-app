@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import { format, subDays, addDays } from 'date-fns';
 import { 
   Calendar, 
@@ -14,6 +15,7 @@ import {
   Droplet
 } from 'lucide-react';
 import { useApp } from '@/context/AppContext';
+import { useAuth } from '@/context/AuthContext';
 import { useCycleLogger } from '@/hooks/useCycleLogger';
 import Navigation from '@/components/Navigation';
 import LoadingSpinner from '@/components/LoadingSpinner';
@@ -21,12 +23,21 @@ import { getPhaseEmoji, getPhaseColor } from '@/lib/mockData';
 import { CycleData, CyclePhase } from '@/types';
 
 const CycleTracker = () => {
+  const router = useRouter();
   const { state } = useApp();
+  const { user: authUser } = useAuth();
   const { user, currentPhase, isLoading } = state;
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [showCycleLog, setShowCycleLog] = useState(false);
   
   const { logCycle, fetchCycles, cycles, loading, error, clearError } = useCycleLogger();
+
+  // Redirect to login if not authenticated
+  useEffect(() => {
+    if (!isLoading && !authUser) {
+      router.push('/auth/login');
+    }
+  }, [authUser, isLoading, router]);
 
   // Cycle log form state
   const [cycleLogData, setCycleLogData] = useState({
@@ -46,6 +57,15 @@ const CycleTracker = () => {
     return (
       <div className="flex items-center justify-center min-h-screen">
         <LoadingSpinner size="lg" text="Loading your cycle data..." />
+      </div>
+    );
+  }
+
+  // Don't render if not authenticated
+  if (!authUser) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <LoadingSpinner size="lg" text="Redirecting to login..." />
       </div>
     );
   }

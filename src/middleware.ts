@@ -8,15 +8,8 @@ const protectedRoutes = [
   '/ai-coach',
   '/fantasy',
   '/intimacy',
-  '/settings',
-  '/api/log-cycle',
-  '/api/cycle',
-  '/api/intimacy',
-  '/api/fantasy',
-  '/api/ai-coach',
-  '/api/partner',
-  '/api/user',
-  '/api/shared'
+  '/settings'
+  // Removed API routes - they handle auth internally
 ]
 
 // Define auth routes that should redirect to dashboard if already authenticated
@@ -28,59 +21,55 @@ const authRoutes = [
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl
   
-  // Check if the route is protected
-  const isProtectedRoute = protectedRoutes.some(route => 
-    pathname === route || pathname.startsWith(route + '/')
-  )
-  
   // Check if the route is an auth route
   const isAuthRoute = authRoutes.some(route => 
     pathname === route || pathname.startsWith(route + '/')
   )
 
-  // Create a response object to modify
-  let response = NextResponse.next({
-    request: {
-      headers: request.headers,
-    },
-  })
+  // For now, let's disable server-side auth checking and only handle auth routes
+  // The client-side will handle authentication state
+  
+  // Only handle auth route redirects (if user is already logged in)
+  if (isAuthRoute) {
+    // Try to check if user is logged in, but don't block if it fails
+    try {
+      const response = NextResponse.next()
+      
+      const supabase = createServerClient(
+        process.env.NEXT_PUBLIC_SUPABASE_URL!,
+        process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+        {
+          cookies: {
+            get(name: string) {
+              return request.cookies.get(name)?.value
+            },
+            set(name: string, value: string, options: any) {
+              response.cookies.set(name, value, options)
+            },
+            remove(name: string, options: any) {
+              response.cookies.delete(name)
+            },
+          },
+        }
+      )
 
-  // Create Supabase client for server-side auth checking
-  const supabase = createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-    {
-      cookies: {
-        get(name: string) {
-          return request.cookies.get(name)?.value
-        },
-        set(name: string, value: string, options: any) {
-          response.cookies.set(name, value, options)
-        },
-        remove(name: string, options: any) {
-          response.cookies.delete(name)
-        },
-      },
+      const { data: { user } } = await supabase.auth.getUser()
+      
+      // If user is logged in and trying to access auth pages, redirect to dashboard
+      if (user) {
+        return NextResponse.redirect(new URL('/dashboard', request.url))
+      }
+      
+      return response
+    } catch (error) {
+      // If auth check fails, just continue to the auth page
+      console.log('Auth check failed in middleware, continuing to auth page')
+      return NextResponse.next()
     }
-  )
-
-  // Get the current user
-  const { data: { user } } = await supabase.auth.getUser()
-
-  // If it's a protected route and no user, redirect to login
-  if (isProtectedRoute && !user) {
-    const loginUrl = new URL('/auth/login', request.url)
-    loginUrl.searchParams.set('redirect', pathname)
-    return NextResponse.redirect(loginUrl)
   }
 
-  // If it's an auth route and user is logged in, redirect to dashboard
-  if (isAuthRoute && user) {
-    return NextResponse.redirect(new URL('/dashboard', request.url))
-  }
-
-  // Return the response with potentially modified cookies
-  return response
+  // For all other routes, just continue - let client-side handle auth
+  return NextResponse.next()
 }
 
 export const config = {
