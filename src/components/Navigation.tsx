@@ -221,6 +221,9 @@ const Navigation = () => {
               >
                 {isDarkMode ? <Sun size={20} /> : <Moon size={20} />}
               </button>
+              
+              {/* Debug: Test if dark mode is working */}
+              <div className="test-dark-mode w-4 h-4 bg-blue-500 dark:bg-red-500"></div>
             </div>
           </div>
         </div>

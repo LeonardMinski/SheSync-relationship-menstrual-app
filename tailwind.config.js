@@ -15,4 +15,5 @@ module.exports = {
     },
   },
   plugins: [],
+  important: false, // Ensure dark mode styles can override
 }
