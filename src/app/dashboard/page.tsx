@@ -447,9 +447,7 @@ const CycleTracker = () => {
             </PhaseTooltip>
 
             {/* Prediction Explanation */}
-            <div className="bg-gradient-to-r from-purple-50 to-rose-50 dark:from-violet-900/30 dark:via-purple-900/20 dark:to-rose-900/30 rounded-2xl p-4 border border-purple-100/50 dark:border-violet-700/30 backdrop-blur-sm shadow-lg dark:shadow-violet-900/20 relative overflow-hidden">
-              {/* Shimmer effect for dark mode */}
-              <div className="absolute inset-0 dark:bg-gradient-to-r dark:from-transparent dark:via-violet-400/5 dark:to-transparent animate-pulse pointer-events-none" />
+            <div className="p-4 relative">
               <div className="flex items-start gap-2">
                 {smartPrediction.isActualData ? (
                   <Target size={16} className="text-purple-600 dark:text-purple-400 mt-0.5 flex-shrink-0" />
@@ -475,11 +473,11 @@ const CycleTracker = () => {
                       </div>
                     )}
                   </div>
-                  <p className="text-xs leading-relaxed" style={{color: '#555555'}}>
+                  <p className="text-xs leading-relaxed text-gray-300">
                     {smartPrediction.explanation}
                   </p>
                   {!smartPrediction.isActualData && smartPrediction.averageCycleLength !== 28 && (
-                    <p className="text-xs mt-1" style={{color: '#555555'}}>
+                    <p className="text-xs mt-1 text-gray-300">
                       Based on your {smartPrediction.averageCycleLength}-day average cycle
                     </p>
                   )}
@@ -488,7 +486,7 @@ const CycleTracker = () => {
             </div>
           </div>
           
-          <p className="mt-3" style={{color: '#555555'}}>
+          <p className="mt-3 text-gray-300">
             {getInsightForPhase(smartPrediction.predictedPhase)}
           </p>
           </div>
@@ -636,7 +634,7 @@ const CycleTracker = () => {
 
         {/* Recent Cycle Entries */}
         {cycles.length > 0 && (
-          <div className="bg-white/70 dark:bg-slate-700/60 backdrop-blur-xl rounded-3xl p-8 border border-rose-200/50 dark:border-slate-600/50 shadow-xl dark:shadow-2xl dark:shadow-purple-900/20 relative overflow-hidden">
+          <div className="bg-white/70 dark:bg-slate-900/40 backdrop-blur-xl rounded-3xl p-8 border border-rose-200/50 dark:border-slate-700/50 shadow-xl dark:shadow-2xl dark:shadow-purple-900/20 relative overflow-hidden">
             {/* Glass morphism overlay */}
             <div className="absolute inset-0 bg-gradient-to-br from-white/10 to-transparent dark:from-slate-800/20 dark:to-transparent pointer-events-none" />
             <div className="relative z-10">
