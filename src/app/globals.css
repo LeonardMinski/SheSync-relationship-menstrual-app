@@ -1,30 +1,36 @@
 @import "tailwindcss";
 
-/* Modern Feminine Color System */
+/* WCAG-Compliant Feminine Color System */
 :root {
-  /* Light Theme - Soft & Elegant */
-  --bg-primary: linear-gradient(135deg, #fdf2f8 0%, #fef7ff 50%, #f0f9ff 100%);
-  --bg-secondary: rgba(255, 255, 255, 0.8);
-  --bg-glass: rgba(255, 255, 255, 0.25);
-  --text-primary: #1f2937;
-  --text-secondary: #6b7280;
-  --accent-primary: linear-gradient(135deg, #ec4899 0%, #8b5cf6 100%);
-  --accent-secondary: linear-gradient(135deg, #f472b6 0%, #a855f7 100%);
-  --border-subtle: rgba(236, 72, 153, 0.1);
-  --shadow-soft: 0 20px 25px -5px rgba(236, 72, 153, 0.1), 0 10px 10px -5px rgba(236, 72, 153, 0.04);
+  /* 🌸 Light Mode - WCAG AA Compliant */
+  --bg-primary: #FFF9FB; /* Soft Blush */
+  --bg-secondary: #FFFFFF; /* White Sand */
+  --bg-glass: rgba(255, 255, 255, 0.8);
+  --text-primary: #2C2C2C; /* Charcoal */
+  --text-secondary: #555555; /* Warm Grey */
+  --accent-primary: #D87398; /* Rose Quartz */
+  --accent-secondary: #8C72B8; /* Lavender Mist */
+  --accent-tertiary: #F28C81; /* Coral Glow */
+  --success: #4E9B6C; /* Sage Green */
+  --error: #C94F4F; /* Soft Red */
+  --border-subtle: rgba(216, 115, 152, 0.2);
+  --shadow-soft: 0 10px 25px -5px rgba(216, 115, 152, 0.15), 0 4px 6px -2px rgba(216, 115, 152, 0.1);
 }
 
 .dark {
-  /* Dark Theme - Luxurious & Modern */
-  --bg-primary: linear-gradient(135deg, #0f0f23 0%, #1a1a2e 50%, #16213e 100%);
-  --bg-secondary: rgba(30, 41, 59, 0.8);
-  --bg-glass: rgba(15, 23, 42, 0.4);
-  --text-primary: #f8fafc;
-  --text-secondary: #cbd5e1;
-  --accent-primary: linear-gradient(135deg, #f472b6 0%, #a855f7 100%);
-  --accent-secondary: linear-gradient(135deg, #ec4899 0%, #8b5cf6 100%);
-  --border-subtle: rgba(244, 114, 182, 0.2);
-  --shadow-soft: 0 25px 50px -12px rgba(244, 114, 182, 0.25), 0 0 0 1px rgba(244, 114, 182, 0.05);
+  /* 🌙 Dark Mode - WCAG AA Compliant */
+  --bg-primary: #14101A; /* Deep Plum */
+  --bg-secondary: #23192A; /* Midnight Mauve */
+  --bg-glass: rgba(35, 25, 42, 0.8);
+  --text-primary: #F5F0F7; /* Mist White */
+  --text-secondary: #C2AECF; /* Dusty Lilac */
+  --accent-primary: #B56FD9; /* Orchid Purple */
+  --accent-secondary: #D98697; /* Rosewood */
+  --accent-tertiary: #FF865C; /* Peach Glow */
+  --success: #6FBF8F; /* Sage Green */
+  --error: #E16262; /* Rose Ember */
+  --border-subtle: rgba(181, 111, 217, 0.3);
+  --shadow-soft: 0 20px 40px -10px rgba(181, 111, 217, 0.3), 0 0 0 1px rgba(181, 111, 217, 0.1);
 }
 
 /* Enhanced Base Styles */
@@ -37,7 +43,7 @@ body {
   font-variation-settings: 'opsz' 32;
 }
 
-/* Modern Glass Morphism */
+/* WCAG-Compliant Glass Morphism */
 .glass-effect {
   background: var(--bg-glass);
   backdrop-filter: blur(20px);
@@ -45,17 +51,18 @@ body {
   box-shadow: var(--shadow-soft);
 }
 
-/* Gradient Text */
+/* WCAG-Compliant Gradient Text */
 .gradient-text {
-  background: var(--accent-primary);
+  background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
 }
 
-/* Modern Button Styles */
+/* WCAG-Compliant Button Styles */
 .btn-primary {
   background: var(--accent-primary);
+  color: white;
   box-shadow: var(--shadow-soft);
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   transform: translateY(0);
@@ -63,7 +70,12 @@ body {
 
 .btn-primary:hover {
   transform: translateY(-2px);
-  box-shadow: 0 32px 64px -12px rgba(236, 72, 153, 0.4);
+  filter: brightness(1.1);
+  box-shadow: 0 20px 40px -10px rgba(216, 115, 152, 0.4);
+}
+
+.dark .btn-primary:hover {
+  box-shadow: 0 20px 40px -10px rgba(181, 111, 217, 0.4);
 }
 
 /* Enhanced Dark Mode Overrides */

@@ -5,28 +5,33 @@ import { Heart, Calendar, Brain, Users, Sparkles, ArrowRight } from 'lucide-reac
 
 export default function LandingPage() {
   return (
-    <div className="min-h-screen bg-gradient-to-br from-pink-50 via-purple-50 to-indigo-50 dark:from-slate-950 dark:via-indigo-950 dark:to-purple-950">
+    <div className="min-h-screen" style={{backgroundColor: 'var(--bg-primary)'}}>
       {/* Header */}
-      <header className="bg-white/80 dark:bg-slate-900/80 backdrop-blur-2xl border-b border-pink-200/50 dark:border-purple-500/20 sticky top-0 z-50 shadow-lg dark:shadow-purple-900/20">
+      <header className="backdrop-blur-2xl border-b sticky top-0 z-50 shadow-lg" style={{
+        backgroundColor: 'var(--bg-glass)',
+        borderColor: 'var(--border-subtle)',
+        boxShadow: 'var(--shadow-soft)'
+      }}>
         <div className="container mx-auto px-4 py-6">
           <div className="flex justify-between items-center">
           <div className="flex items-center space-x-3">
-            <div className="w-10 h-10 bg-gradient-to-br from-pink-500 to-purple-600 rounded-2xl flex items-center justify-center shadow-lg">
+            <div className="w-10 h-10 rounded-2xl flex items-center justify-center shadow-lg" style={{backgroundColor: 'var(--accent-primary)'}}>
               <Heart className="h-5 w-5 text-white" />
             </div>
-            <span className="text-2xl font-bold bg-gradient-to-r from-pink-600 to-purple-600 bg-clip-text text-transparent">SheSync+</span>
+            <span className="text-2xl font-bold gradient-text">SheSync+</span>
           </div>
           
           <div className="flex items-center space-x-4">
             <Link
               href="/auth/login"
-              className="text-slate-600 dark:text-slate-300 hover:text-pink-600 dark:hover:text-pink-400 font-medium transition-colors duration-300"
+              className="font-medium transition-colors duration-300 hover:opacity-80"
+              style={{color: 'var(--text-secondary)'}}
             >
               Login
             </Link>
             <Link
               href="/auth/signup"
-              className="bg-gradient-to-r from-pink-500 to-purple-600 text-white px-6 py-2.5 rounded-xl font-semibold hover:from-pink-600 hover:to-purple-700 transition-all duration-300 shadow-lg hover:shadow-xl hover:scale-105 active:scale-95"
+              className="btn-primary px-6 py-2.5 rounded-xl font-semibold transition-all duration-300 hover:scale-105 active:scale-95"
             >
               Get Started
             </Link>
@@ -38,13 +43,13 @@ export default function LandingPage() {
       {/* Hero Section */}
       <main className="container mx-auto px-4 py-16">
         <div className="text-center max-w-4xl mx-auto">
-          <h1 className="text-5xl md:text-6xl font-bold text-slate-800 dark:text-white mb-6 leading-tight">
+          <h1 className="text-5xl md:text-6xl font-bold mb-6 leading-tight" style={{color: 'var(--text-primary)'}}>
             Your Complete
-            <span className="bg-gradient-to-r from-pink-500 via-purple-500 to-indigo-500 bg-clip-text text-transparent"> Wellness </span>
+            <span className="gradient-text"> Wellness </span>
             & Intimacy Companion
           </h1>
           
-          <p className="text-xl text-slate-600 dark:text-slate-300 mb-12 max-w-2xl mx-auto leading-relaxed">
+          <p className="text-xl mb-12 max-w-2xl mx-auto leading-relaxed" style={{color: 'var(--text-secondary)'}}>
             Track your menstrual cycle, enhance intimacy with your partner, explore fantasies safely, 
             and get AI-powered coaching - all in one beautiful, private app.
           </p>
@@ -52,7 +57,7 @@ export default function LandingPage() {
           <div className="flex flex-col sm:flex-row gap-6 justify-center mb-16">
             <Link
               href="/auth/signup"
-              className="group bg-gradient-to-r from-pink-500 to-purple-600 text-white px-10 py-4 rounded-2xl font-semibold text-lg hover:from-pink-600 hover:to-purple-700 transition-all duration-300 transform hover:scale-105 hover:-translate-y-1 shadow-xl hover:shadow-2xl flex items-center justify-center relative overflow-hidden"
+              className="group btn-primary px-10 py-4 rounded-2xl font-semibold text-lg transition-all duration-300 transform hover:scale-105 hover:-translate-y-1 shadow-xl hover:shadow-2xl flex items-center justify-center relative overflow-hidden"
             >
               <div className="absolute inset-0 bg-gradient-to-r from-white/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
               <span className="relative">Start Your Journey</span>
@@ -61,7 +66,12 @@ export default function LandingPage() {
             
             <Link
               href="/auth/login"
-              className="bg-white/80 dark:bg-slate-800/80 backdrop-blur-xl text-slate-800 dark:text-white px-10 py-4 rounded-2xl font-semibold text-lg border border-pink-200/50 dark:border-purple-500/30 hover:border-pink-300 dark:hover:border-purple-400 transition-all duration-300 transform hover:scale-105 hover:-translate-y-1 shadow-lg hover:shadow-xl"
+              className="backdrop-blur-xl px-10 py-4 rounded-2xl font-semibold text-lg border transition-all duration-300 transform hover:scale-105 hover:-translate-y-1 shadow-lg hover:shadow-xl"
+              style={{
+                backgroundColor: 'var(--bg-secondary)',
+                color: 'var(--text-primary)',
+                borderColor: 'var(--border-subtle)'
+              }}
             >
               Sign In
             </Link>

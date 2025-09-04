@@ -26,7 +26,7 @@ export default function RootLayout({
         <AuthProvider>
           <AppProvider>
             <ThemeProvider>
-              <div className="min-h-screen bg-gradient-to-br from-pink-50 via-purple-50 to-indigo-50 dark:from-slate-950 dark:via-indigo-950 dark:to-purple-950 transition-all duration-500">
+              <div className="min-h-screen transition-all duration-500" style={{backgroundColor: 'var(--bg-primary)'}}>
                 {children}
               </div>
             </ThemeProvider>
