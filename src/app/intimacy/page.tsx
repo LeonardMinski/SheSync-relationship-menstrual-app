@@ -86,7 +86,7 @@ const IntimacyDeck = () => {
         <main className="max-w-4xl mx-auto px-4 py-6">
           <div className="text-center py-12">
             <Heart className="w-16 h-16 text-gray-400 mx-auto mb-4" />
-            <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">
+            <h2 className="text-xl font-semibold text-white dark:text-white mb-2">
               No cards in this category
             </h2>
             <p className="text-gray-600 dark:text-gray-300">
@@ -110,7 +110,7 @@ const IntimacyDeck = () => {
               <Heart className="text-white" size={24} />
             </div>
             <div>
-              <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Intimacy Deck</h1>
+              <h1 className="text-2xl font-bold text-white dark:text-white">Intimacy Deck</h1>
               <p className="text-gray-600 dark:text-gray-300">
                 Deepen your connection through meaningful conversations
               </p>
@@ -216,7 +216,7 @@ const IntimacyDeck = () => {
                     <button
                       onClick={handleAnswer}
                       disabled={!userAnswer.trim()}
-                      className="flex-1 bg-white text-gray-900 hover:bg-white/90 py-2 rounded-lg font-medium transition-colors disabled:opacity-50"
+                      className="flex-1 bg-white text-white hover:bg-white/90 py-2 rounded-lg font-medium transition-colors disabled:opacity-50"
                     >
                       Save Answer
                     </button>
@@ -302,7 +302,7 @@ const IntimacyDeck = () => {
 
         {/* Stats */}
         <div className="mt-8 bg-white/70 dark:bg-gray-800/70 backdrop-blur-sm rounded-2xl p-6 border border-rose-200 dark:border-gray-700">
-          <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Your Progress</h3>
+          <h3 className="text-lg font-semibold text-white dark:text-white mb-4">Your Progress</h3>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             <div className="text-center">
               <div className="text-2xl font-bold text-rose-500">

@@ -15,7 +15,7 @@ export default function LandingPage() {
         <div className="container mx-auto px-4 py-6">
           <div className="flex justify-between items-center">
           <div className="flex items-center space-x-3">
-            <div className="w-10 h-10 rounded-2xl flex items-center justify-center shadow-lg" style={{backgroundColor: 'var(--accent-primary)'}}>
+            <div className="w-10 h-10 rounded-2xl flex items-center justify-center shadow-lg" style={{background: 'var(--accent-gradient)'}}>
               <Heart className="h-5 w-5 text-white" />
             </div>
             <span className="text-2xl font-bold gradient-text">SheSync+</span>
@@ -80,42 +80,42 @@ export default function LandingPage() {
 
         {/* Features Grid */}
         <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8 mb-20">
-          <div className="bg-white/70 dark:bg-gray-800/70 backdrop-blur-sm rounded-2xl p-6 border border-rose-200 dark:border-gray-700 text-center">
-            <div className="bg-rose-100 dark:bg-rose-900/30 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
-              <Calendar className="h-8 w-8 text-rose-500" />
+          <div className="glass-effect rounded-2xl p-6 text-center">
+            <div className="w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4" style={{background: 'var(--accent-gradient)'}}>
+              <Calendar className="h-8 w-8 text-white" />
             </div>
-            <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2">Cycle Tracking</h3>
-            <p className="text-gray-600 dark:text-gray-300">
+            <h3 className="text-xl font-bold mb-2" style={{color: 'var(--text-primary)'}}>Cycle Tracking</h3>
+            <p style={{color: 'var(--text-secondary)'}}>
               Intelligent menstrual cycle tracking with mood, symptoms, and phase insights.
             </p>
           </div>
 
-          <div className="bg-white/70 dark:bg-gray-800/70 backdrop-blur-sm rounded-2xl p-6 border border-rose-200 dark:border-gray-700 text-center">
-            <div className="bg-purple-100 dark:bg-purple-900/30 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
-              <Heart className="h-8 w-8 text-purple-500" />
+          <div className="glass-effect rounded-2xl p-6 text-center">
+            <div className="w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4" style={{backgroundColor: 'var(--accent-secondary)'}}>
+              <Heart className="h-8 w-8 text-white" />
             </div>
-            <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2">Intimacy Cards</h3>
-            <p className="text-gray-600 dark:text-gray-300">
+            <h3 className="text-xl font-bold mb-2" style={{color: 'var(--text-primary)'}}>Intimacy Cards</h3>
+            <p style={{color: 'var(--text-secondary)'}}>
               Curated conversation starters and activities to deepen your connection.
             </p>
           </div>
 
-          <div className="bg-white/70 dark:bg-gray-800/70 backdrop-blur-sm rounded-2xl p-6 border border-rose-200 dark:border-gray-700 text-center">
-            <div className="bg-indigo-100 dark:bg-indigo-900/30 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
-              <Sparkles className="h-8 w-8 text-indigo-500" />
+          <div className="glass-effect rounded-2xl p-6 text-center">
+            <div className="w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4" style={{backgroundColor: 'var(--info)'}}>
+              <Sparkles className="h-8 w-8 text-white" />
             </div>
-            <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2">Fantasy Vault</h3>
-            <p className="text-gray-600 dark:text-gray-300">
+            <h3 className="text-xl font-bold mb-2" style={{color: 'var(--text-primary)'}}>Fantasy Vault</h3>
+            <p style={{color: 'var(--text-secondary)'}}>
               Private space to explore and share your desires in a safe environment.
             </p>
           </div>
 
-          <div className="bg-white/70 dark:bg-gray-800/70 backdrop-blur-sm rounded-2xl p-6 border border-rose-200 dark:border-gray-700 text-center">
-            <div className="bg-emerald-100 dark:bg-emerald-900/30 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
-              <Brain className="h-8 w-8 text-emerald-500" />
+          <div className="glass-effect rounded-2xl p-6 text-center">
+            <div className="w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4" style={{backgroundColor: 'var(--success)'}}>
+              <Brain className="h-8 w-8 text-white" />
             </div>
-            <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2">AI Coach</h3>
-            <p className="text-gray-600 dark:text-gray-300">
+            <h3 className="text-xl font-bold mb-2" style={{color: 'var(--text-primary)'}}>AI Coach</h3>
+            <p style={{color: 'var(--text-secondary)'}}>
               Personalized guidance for wellness, relationships, and intimate health.
             </p>
           </div>
@@ -124,7 +124,7 @@ export default function LandingPage() {
         {/* Partner Features */}
         <div className="bg-gradient-to-r from-rose-500/10 to-purple-600/10 dark:from-rose-900/20 dark:to-purple-900/20 rounded-3xl p-8 md:p-12 text-center mb-20">
           <Users className="h-16 w-16 text-rose-500 mx-auto mb-6" />
-          <h2 className="text-3xl md:text-4xl font-bold text-gray-900 dark:text-white mb-4">
+          <h2 className="text-3xl md:text-4xl font-bold text-white dark:text-white mb-4">
             Better Together
           </h2>
           <p className="text-lg text-gray-600 dark:text-gray-300 mb-8 max-w-2xl mx-auto">
@@ -140,7 +140,7 @@ export default function LandingPage() {
 
         {/* CTA Section */}
         <div className="text-center">
-          <h2 className="text-3xl md:text-4xl font-bold text-gray-900 dark:text-white mb-6">
+          <h2 className="text-3xl md:text-4xl font-bold text-white dark:text-white mb-6">
             Ready to Transform Your Wellness Journey?
           </h2>
           <p className="text-lg text-gray-600 dark:text-gray-300 mb-8">

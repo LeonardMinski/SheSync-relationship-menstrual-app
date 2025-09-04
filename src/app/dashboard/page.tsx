@@ -282,7 +282,7 @@ const PhaseTooltip: React.FC<{ phase: CyclePhase; children: React.ReactNode }> =
           
           <div className="flex items-center gap-2 mb-2 pr-6">
             <span className="text-2xl">{getPhaseEmoji(phase)}</span>
-            <h3 className="font-semibold text-gray-900 dark:text-white">{explanation.title}</h3>
+            <h3 className="font-semibold text-white dark:text-white">{explanation.title}</h3>
           </div>
           <p className="text-sm text-gray-600 dark:text-gray-300 mb-3">{explanation.description}</p>
           <div className="space-y-1 text-xs text-gray-500 dark:text-gray-400">
@@ -421,7 +421,7 @@ const CycleTracker = () => {
           <div className="relative z-10">
             <div className="flex items-center justify-between mb-4">
               <div>
-                <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
+                <h1 className="text-2xl font-bold text-white dark:text-white">
                   Hi, {authUser?.name?.split(' ')[0] || authUser?.email?.split('@')[0]}!
                 </h1>
                 <p className="text-gray-600 dark:text-gray-300">
@@ -502,7 +502,7 @@ const CycleTracker = () => {
                 <Brain className="text-rose-500" size={20} />
                 <span className="text-sm font-medium text-gray-600 dark:text-gray-300">Mood</span>
               </div>
-              <div className="text-2xl font-bold text-gray-900 dark:text-white">
+              <div className="text-2xl font-bold text-white dark:text-white">
                 {todaysData.mood}/10
               </div>
             </div>
@@ -511,7 +511,7 @@ const CycleTracker = () => {
               <div className="flex items-center space-x-2 mb-2">
                 <span className="text-sm font-medium text-gray-600 dark:text-gray-300">Phase</span>
               </div>
-              <div className="text-lg font-bold text-gray-900 dark:text-white">
+              <div className="text-lg font-bold text-white dark:text-white">
                 {todaysData.phase.charAt(0).toUpperCase() + todaysData.phase.slice(1)}
               </div>
             </div>
@@ -520,7 +520,7 @@ const CycleTracker = () => {
               <div className="flex items-center space-x-2 mb-2">
                 <span className="text-sm font-medium text-gray-600 dark:text-gray-300">Symptoms</span>
               </div>
-              <div className="text-lg font-bold text-gray-900 dark:text-white">
+              <div className="text-lg font-bold text-white dark:text-white">
                 {todaysData.symptoms.length}
               </div>
             </div>
@@ -530,7 +530,7 @@ const CycleTracker = () => {
                 <Calendar className="text-blue-500" size={20} />
                 <span className="text-sm font-medium text-gray-600 dark:text-gray-300">Logged</span>
               </div>
-              <div className="text-lg font-bold text-gray-900 dark:text-white">
+              <div className="text-lg font-bold text-white dark:text-white">
                 {format(new Date(todaysData.created_at || ''), 'MMM d')}
               </div>
             </div>
@@ -554,7 +554,7 @@ const CycleTracker = () => {
           <div className="absolute inset-0 bg-gradient-to-br from-white/10 to-transparent dark:from-slate-800/20 dark:to-transparent pointer-events-none" />
           <div className="relative z-10">
           <div className="flex items-center justify-between mb-6">
-            <h2 className="text-xl font-bold text-gray-900 dark:text-white">Calendar View</h2>
+            <h2 className="text-xl font-bold text-white dark:text-white">Calendar View</h2>
             <div className="flex items-center space-x-2">
               <button
                 onClick={() => setSelectedDate(subDays(selectedDate, 7))}
@@ -592,7 +592,7 @@ const CycleTracker = () => {
                       : 'border-transparent hover:border-gray-300 dark:hover:border-gray-600'
                   }`}
                 >
-                  <div className="text-sm font-medium text-gray-900 dark:text-white">
+                  <div className="text-sm font-medium text-white dark:text-white">
                     {format(date, 'd')}
                   </div>
                   <div className="text-xs text-gray-500 dark:text-gray-400">
@@ -619,7 +619,7 @@ const CycleTracker = () => {
             {/* Glass morphism overlay */}
             <div className="absolute inset-0 bg-gradient-to-br from-white/10 to-transparent dark:from-slate-800/20 dark:to-transparent pointer-events-none" />
             <div className="relative z-10">
-            <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-4">Today's Symptoms</h3>
+            <h3 className="text-lg font-bold text-white dark:text-white mb-4">Today's Symptoms</h3>
             <div className="flex flex-wrap gap-2">
               {todaysData.symptoms.map(symptom => (
                 <span
@@ -640,14 +640,14 @@ const CycleTracker = () => {
             {/* Glass morphism overlay */}
             <div className="absolute inset-0 bg-gradient-to-br from-white/10 to-transparent dark:from-slate-800/20 dark:to-transparent pointer-events-none" />
             <div className="relative z-10">
-            <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-4">Recent Cycle Entries</h3>
+            <h3 className="text-lg font-bold text-white dark:text-white mb-4">Recent Cycle Entries</h3>
             <div className="space-y-3">
               {cycles.slice(0, 5).map((cycle) => (
                 <div key={cycle.id} className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-700/50 rounded-lg">
                   <div className="flex items-center space-x-3">
                     <span className="text-lg">{getPhaseEmoji(cycle.phase as CyclePhase)}</span>
                     <div>
-                      <div className="font-medium text-gray-900 dark:text-white">
+                      <div className="font-medium text-white dark:text-white">
                         {cycle.phase.charAt(0).toUpperCase() + cycle.phase.slice(1)} Phase
                       </div>
                       <div className="text-sm text-gray-600 dark:text-gray-400">
@@ -656,7 +656,7 @@ const CycleTracker = () => {
                     </div>
                   </div>
                   <div className="text-right">
-                    <div className="font-medium text-gray-900 dark:text-white">
+                    <div className="font-medium text-white dark:text-white">
                       Mood: {cycle.mood}/10
                     </div>
                     {cycle.symptoms.length > 0 && (
@@ -681,7 +681,7 @@ const CycleTracker = () => {
             {/* Glass morphism overlay */}
             <div className="absolute inset-0 bg-gradient-to-br from-white/20 to-transparent dark:from-slate-800/20 dark:to-transparent rounded-3xl pointer-events-none" />
             <div className="relative z-10">
-            <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-4">Log Cycle Entry</h3>
+            <h3 className="text-xl font-bold text-white dark:text-white mb-4">Log Cycle Entry</h3>
             
             {error && (
               <div className="mb-4 p-3 bg-red-50 border border-red-200 text-red-700 rounded-md">
@@ -704,7 +704,7 @@ const CycleTracker = () => {
                 <select
                   value={cycleLogData.phase}
                   onChange={(e) => setCycleLogData({...cycleLogData, phase: e.target.value})}
-                  className="w-full p-4 border border-gray-300/50 dark:border-slate-600/50 rounded-2xl bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm text-gray-900 dark:text-white shadow-sm dark:shadow-slate-900/20 focus:border-purple-500 dark:focus:border-violet-500 focus:ring-2 focus:ring-purple-500/20 dark:focus:ring-violet-500/20 transition-all duration-300"
+                  className="w-full p-4 border border-gray-300/50 dark:border-slate-600/50 rounded-2xl bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm text-white dark:text-white shadow-sm dark:shadow-slate-900/20 focus:border-purple-500 dark:focus:border-violet-500 focus:ring-2 focus:ring-purple-500/20 dark:focus:ring-violet-500/20 transition-all duration-300"
                 >
                   <option value="menstrual">Menstrual</option>
                   <option value="follicular">Follicular</option>

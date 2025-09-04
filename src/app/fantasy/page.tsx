@@ -172,7 +172,7 @@ const FantasyVault = () => {
                 <Sparkles className="text-white" size={24} />
               </div>
               <div>
-                <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Fantasy Vault</h1>
+                <h1 className="text-2xl font-bold text-white dark:text-white">Fantasy Vault</h1>
                 <p className="text-gray-600 dark:text-gray-300">
                   Your private space for dreams, desires, and intimate thoughts
                 </p>
@@ -233,7 +233,7 @@ const FantasyVault = () => {
         {filteredEntries.length === 0 ? (
           <div className="text-center py-12">
             <Sparkles className="w-16 h-16 text-gray-400 mx-auto mb-4" />
-            <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">
+            <h2 className="text-xl font-semibold text-white dark:text-white mb-2">
               No entries yet
             </h2>
             <p className="text-gray-600 dark:text-gray-300 mb-6">
@@ -288,7 +288,7 @@ const FantasyVault = () => {
                   </div>
 
                   {/* Entry Content */}
-                  <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">
+                  <h3 className="text-lg font-semibold text-white dark:text-white mb-2">
                     {entry.title}
                   </h3>
                   
@@ -341,7 +341,7 @@ const FantasyVault = () => {
       {showCreateModal && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
           <div className="bg-white dark:bg-gray-800 rounded-2xl p-6 w-full max-w-2xl max-h-[90vh] overflow-y-auto">
-            <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-6">
+            <h3 className="text-xl font-bold text-white dark:text-white mb-6">
               {editingEntry ? 'Edit Entry' : 'Create New Entry'}
             </h3>
             
@@ -356,7 +356,7 @@ const FantasyVault = () => {
                   value={formData.title}
                   onChange={(e) => setFormData({...formData, title: e.target.value})}
                   placeholder="Give your entry a title..."
-                  className="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                  className="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-white dark:text-white"
                 />
               </div>
 
@@ -395,7 +395,7 @@ const FantasyVault = () => {
                   value={formData.content}
                   onChange={(e) => setFormData({...formData, content: e.target.value})}
                   placeholder="Share your thoughts, dreams, or fantasies..."
-                  className="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                  className="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-white dark:text-white"
                   rows={6}
                 />
               </div>
@@ -461,7 +461,7 @@ const FantasyVault = () => {
               {/* Share Toggle */}
               <div className="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-700/50 rounded-lg">
                 <div>
-                  <div className="font-medium text-gray-900 dark:text-white">Share with Partner</div>
+                  <div className="font-medium text-white dark:text-white">Share with Partner</div>
                   <div className="text-sm text-gray-600 dark:text-gray-300">
                     Allow your partner to see this entry
                   </div>

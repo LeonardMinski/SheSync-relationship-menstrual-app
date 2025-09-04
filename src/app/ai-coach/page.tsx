@@ -71,7 +71,7 @@ const AICoach = () => {
               <Bot className="text-white" size={24} />
             </div>
             <div>
-              <h1 className="text-2xl font-bold text-gray-900 dark:text-white">AI Coach</h1>
+              <h1 className="text-2xl font-bold text-white dark:text-white">AI Coach</h1>
               <p className="text-gray-600 dark:text-gray-300">
                 Your personal cycle-powered wellness assistant
               </p>
@@ -127,7 +127,7 @@ const AICoach = () => {
                 <div className="bg-gradient-to-r from-rose-500 to-purple-600 p-4 rounded-full w-16 h-16 mx-auto mb-4 flex items-center justify-center">
                   <Bot className="text-white" size={32} />
                 </div>
-                <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">
+                <h3 className="text-lg font-semibold text-white dark:text-white mb-2">
                   Hi {user?.name}! I'm your AI wellness coach.
                 </h3>
                 <p className="text-gray-600 dark:text-gray-300 mb-6 max-w-md mx-auto">
@@ -179,7 +179,7 @@ const AICoach = () => {
                             <Bot size={16} className="text-white" />
                           </div>
                           <div className="bg-gray-100 dark:bg-gray-700 rounded-2xl rounded-bl-md px-4 py-3">
-                            <p className="text-sm text-gray-900 dark:text-white whitespace-pre-wrap">{message.response}</p>
+                            <p className="text-sm text-white dark:text-white whitespace-pre-wrap">{message.response}</p>
                             <div className="mt-2 text-xs text-gray-500 dark:text-gray-400">
                               {format(message.timestamp, 'HH:mm')}
                             </div>
@@ -222,7 +222,7 @@ const AICoach = () => {
                   onChange={(e) => setInputMessage(e.target.value)}
                   onKeyPress={handleKeyPress}
                   placeholder="Ask me about your cycle, mood, energy, or relationships..."
-                  className="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-700 text-gray-900 dark:text-white resize-none focus:ring-2 focus:ring-rose-500 focus:border-transparent"
+                  className="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-700 text-white dark:text-white resize-none focus:ring-2 focus:ring-rose-500 focus:border-transparent"
                   rows={2}
                   disabled={isCoachLoading}
                 />

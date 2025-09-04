@@ -11,7 +11,7 @@ export default function AuthCallback() {
           <CheckCircleIcon className="h-16 w-16 text-green-500" />
         </div>
         
-        <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">
+        <h1 className="text-2xl font-bold text-white dark:text-white mb-4">
           Email Confirmed!
         </h1>
         

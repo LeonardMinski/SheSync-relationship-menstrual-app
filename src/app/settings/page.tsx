@@ -93,7 +93,7 @@ const Settings = () => {
               <SettingsIcon className="text-white" size={24} />
             </div>
             <div>
-              <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Settings</h1>
+              <h1 className="text-2xl font-bold text-white dark:text-white">Settings</h1>
               <p className="text-gray-600 dark:text-gray-300">
                 Manage your account, privacy, and preferences
               </p>
@@ -141,7 +141,7 @@ const Settings = () => {
               {/* Account Tab */}
               {activeTab === 'account' && (
                 <div className="space-y-6">
-                  <h2 className="text-xl font-bold text-gray-900 dark:text-white">Account Settings</h2>
+                  <h2 className="text-xl font-bold text-white dark:text-white">Account Settings</h2>
                   
                   {/* Profile Info */}
                   <div className="space-y-4">
@@ -153,7 +153,7 @@ const Settings = () => {
                         type="text"
                         value={authUser?.name || ''}
                         readOnly
-                        className="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white"
+                        className="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-700 text-white dark:text-white"
                       />
                     </div>
                     
@@ -165,7 +165,7 @@ const Settings = () => {
                         type="email"
                         value={authUser?.email || ''}
                         readOnly
-                        className="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white"
+                        className="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-700 text-white dark:text-white"
                       />
                     </div>
                   </div>
@@ -175,7 +175,7 @@ const Settings = () => {
                     <div className="flex items-center space-x-3">
                       {isDarkMode ? <Moon size={20} /> : <Sun size={20} />}
                       <div>
-                        <div className="font-medium text-gray-900 dark:text-white">Theme</div>
+                        <div className="font-medium text-white dark:text-white">Theme</div>
                         <div className="text-sm text-gray-600 dark:text-gray-300">
                           {isDarkMode ? 'Dark mode' : 'Light mode'}
                         </div>
@@ -197,7 +197,7 @@ const Settings = () => {
 
                   {/* Data Management */}
                   <div className="space-y-4">
-                    <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Data Management</h3>
+                    <h3 className="text-lg font-semibold text-white dark:text-white">Data Management</h3>
                     
                     <button
                       onClick={handleExportData}
@@ -221,13 +221,13 @@ const Settings = () => {
               {/* Privacy Tab */}
               {activeTab === 'privacy' && (
                 <div className="space-y-6">
-                  <h2 className="text-xl font-bold text-gray-900 dark:text-white">Privacy Settings</h2>
+                  <h2 className="text-xl font-bold text-white dark:text-white">Privacy Settings</h2>
                   
                   <div className="space-y-4">
                     {Object.entries(authUser?.privacy_settings || {}).map(([key, value]) => (
                       <div key={key} className="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-700/50 rounded-lg">
                         <div>
-                          <div className="font-medium text-gray-900 dark:text-white">
+                          <div className="font-medium text-white dark:text-white">
                             {key.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase())}
                           </div>
                           <div className="text-sm text-gray-600 dark:text-gray-300">
@@ -258,11 +258,11 @@ const Settings = () => {
               {/* Partner Tab */}
               {activeTab === 'partner' && (
                 <div className="space-y-6">
-                  <h2 className="text-xl font-bold text-gray-900 dark:text-white">Partner Management</h2>
+                  <h2 className="text-xl font-bold text-white dark:text-white">Partner Management</h2>
                   
                   <div className="text-center py-8">
                     <Heart className="w-16 h-16 text-gray-400 mx-auto mb-4" />
-                    <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">
+                    <h3 className="text-lg font-semibold text-white dark:text-white mb-2">
                       No Partner Connected
                     </h3>
                     <p className="text-gray-600 dark:text-gray-300 mb-6">
@@ -279,14 +279,14 @@ const Settings = () => {
               {/* Subscription Tab */}
               {activeTab === 'subscription' && (
                 <div className="space-y-6">
-                  <h2 className="text-xl font-bold text-gray-900 dark:text-white">Subscription</h2>
+                  <h2 className="text-xl font-bold text-white dark:text-white">Subscription</h2>
                   
                   {/* Current Plan */}
                   <div className="bg-gradient-to-r from-rose-50 to-purple-50 dark:from-rose-900/20 dark:to-purple-900/20 rounded-xl p-6">
                     <div className="flex items-center space-x-3 mb-4">
                       <Crown className="text-purple-600" size={24} />
                       <div>
-                        <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+                        <h3 className="text-lg font-semibold text-white dark:text-white">
                           Current Plan: {currentPlan?.name}
                         </h3>
                         <p className="text-gray-600 dark:text-gray-300">
@@ -332,7 +332,7 @@ const Settings = () => {
                   {/* Billing Information */}
                   {authUser?.subscription_tier !== 'free' && (
                     <div className="bg-gray-50 dark:bg-gray-700/50 rounded-xl p-6">
-                      <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Billing Information</h3>
+                      <h3 className="text-lg font-semibold text-white dark:text-white mb-4">Billing Information</h3>
                       <div className="space-y-3">
                         <div className="flex justify-between">
                           <span className="text-gray-600 dark:text-gray-300">Status:</span>
@@ -340,11 +340,11 @@ const Settings = () => {
                         </div>
                         <div className="flex justify-between">
                           <span className="text-gray-600 dark:text-gray-300">Next billing date:</span>
-                          <span className="text-gray-900 dark:text-white">Coming soon</span>
+                          <span className="text-white dark:text-white">Coming soon</span>
                         </div>
                         <div className="flex justify-between">
                           <span className="text-gray-600 dark:text-gray-300">Payment method:</span>
-                          <span className="text-gray-900 dark:text-white">•••• •••• •••• 4242</span>
+                          <span className="text-white dark:text-white">•••• •••• •••• 4242</span>
                         </div>
                       </div>
                     </div>
@@ -353,7 +353,7 @@ const Settings = () => {
                   {/* Quick Upgrade Options */}
                   {authUser?.subscription_tier === 'free' && (
                   <div>
-                      <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Upgrade to Unlock More</h3>
+                      <h3 className="text-lg font-semibold text-white dark:text-white mb-4">Upgrade to Unlock More</h3>
                     <div className="grid gap-4 md:grid-cols-2">
                         {subscriptionPlans.filter(plan => plan.id !== 'free').map((plan) => (
                         <div
@@ -365,14 +365,14 @@ const Settings = () => {
                           }`}
                         >
                           <div className="flex items-center justify-between mb-3">
-                            <h4 className="font-semibold text-gray-900 dark:text-white">{plan.name}</h4>
+                            <h4 className="font-semibold text-white dark:text-white">{plan.name}</h4>
                             {plan.isPopular && (
                               <span className="bg-purple-500 text-white text-xs px-2 py-1 rounded-full">
                                 Popular
                               </span>
                             )}
                           </div>
-                          <div className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
+                          <div className="text-2xl font-bold text-white dark:text-white mb-2">
                               £{plan.price}
                               <span className="text-sm font-normal text-gray-600 dark:text-gray-300">
                                 /{plan.interval}
@@ -400,7 +400,7 @@ const Settings = () => {
               {/* Notifications Tab */}
               {activeTab === 'notifications' && (
                 <div className="space-y-6">
-                  <h2 className="text-xl font-bold text-gray-900 dark:text-white">Notifications</h2>
+                  <h2 className="text-xl font-bold text-white dark:text-white">Notifications</h2>
                   
                   <div className="space-y-4">
                     {notifications.slice(0, 10).map((notification) => (
@@ -414,7 +414,7 @@ const Settings = () => {
                       >
                         <div className="flex items-start justify-between">
                           <div className="flex-1">
-                            <h4 className="font-medium text-gray-900 dark:text-white">
+                            <h4 className="font-medium text-white dark:text-white">
                               {notification.title}
                             </h4>
                             <p className="text-sm text-gray-600 dark:text-gray-300 mt-1">
@@ -445,7 +445,7 @@ const Settings = () => {
           <div className="bg-white dark:bg-gray-800 rounded-2xl p-6 w-full max-w-md">
             <div className="text-center">
               <Trash2 className="w-16 h-16 text-red-500 mx-auto mb-4" />
-              <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2">
+              <h3 className="text-xl font-bold text-white dark:text-white mb-2">
                 Delete All Data?
               </h3>
               <p className="text-gray-600 dark:text-gray-300 mb-6">

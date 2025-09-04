@@ -1,36 +1,38 @@
 @import "tailwindcss";
 
-/* WCAG-Compliant Feminine Color System */
+/* Vibrant Modern Feminine Color System */
 :root {
-  /* 🌸 Light Mode - WCAG AA Compliant */
-  --bg-primary: #FFF9FB; /* Soft Blush */
-  --bg-secondary: #FFFFFF; /* White Sand */
-  --bg-glass: rgba(255, 255, 255, 0.8);
-  --text-primary: #2C2C2C; /* Charcoal */
+  /* 🌸 Light Mode - Fresh, Vibrant, Clear */
+  --bg-primary: #FFF6F8; /* Soft Blush */
+  --bg-secondary: #FFFFFF; /* Pure White */
+  --bg-glass: rgba(255, 255, 255, 0.9);
+  --text-primary: #1E1E1E; /* Charcoal */
   --text-secondary: #555555; /* Warm Grey */
-  --accent-primary: #D87398; /* Rose Quartz */
-  --accent-secondary: #8C72B8; /* Lavender Mist */
-  --accent-tertiary: #F28C81; /* Coral Glow */
-  --success: #4E9B6C; /* Sage Green */
-  --error: #C94F4F; /* Soft Red */
-  --border-subtle: rgba(216, 115, 152, 0.2);
-  --shadow-soft: 0 10px 25px -5px rgba(216, 115, 152, 0.15), 0 4px 6px -2px rgba(216, 115, 152, 0.1);
+  --accent-primary: #E04382; /* Rose Pink */
+  --accent-secondary: #8C6BC9; /* Orchid */
+  --accent-gradient: linear-gradient(90deg, #E04382, #8C6BC9);
+  --info: #5865F2; /* Lavender Blue */
+  --success: #3FA77B; /* Fresh Sage */
+  --error: #D9304F; /* Bright Rose */
+  --border-subtle: rgba(224, 67, 130, 0.15);
+  --shadow-soft: 0 10px 25px -5px rgba(224, 67, 130, 0.15), 0 4px 6px -2px rgba(224, 67, 130, 0.08);
 }
 
 .dark {
-  /* 🌙 Dark Mode - WCAG AA Compliant */
-  --bg-primary: #14101A; /* Deep Plum */
-  --bg-secondary: #23192A; /* Midnight Mauve */
-  --bg-glass: rgba(35, 25, 42, 0.8);
-  --text-primary: #F5F0F7; /* Mist White */
-  --text-secondary: #C2AECF; /* Dusty Lilac */
-  --accent-primary: #B56FD9; /* Orchid Purple */
-  --accent-secondary: #D98697; /* Rosewood */
-  --accent-tertiary: #FF865C; /* Peach Glow */
-  --success: #6FBF8F; /* Sage Green */
-  --error: #E16262; /* Rose Ember */
-  --border-subtle: rgba(181, 111, 217, 0.3);
-  --shadow-soft: 0 20px 40px -10px rgba(181, 111, 217, 0.3), 0 0 0 1px rgba(181, 111, 217, 0.1);
+  /* 🌙 Dark Mode - Luxurious, Bold, Sensual */
+  --bg-primary: #0F0A1A; /* Deep Violet */
+  --bg-secondary: #1E1527; /* Midnight Purple */
+  --bg-glass: rgba(30, 21, 39, 0.9);
+  --text-primary: #F8F6FA; /* Mist White */
+  --text-secondary: #C7B7D6; /* Lilac Grey */
+  --accent-primary: #FF4F8B; /* Neon Rose */
+  --accent-secondary: #A78BFA; /* Amethyst */
+  --accent-gradient: linear-gradient(90deg, #FF4F8B, #A78BFA);
+  --info: #7289DA; /* Lavender Blue */
+  --success: #4ADE80; /* Emerald Glow */
+  --error: #FF5C77; /* Rose Ember */
+  --border-subtle: rgba(255, 79, 139, 0.2);
+  --shadow-soft: 0 20px 40px -10px rgba(255, 79, 139, 0.3), 0 0 0 1px rgba(255, 79, 139, 0.1);
 }
 
 /* Enhanced Base Styles */
@@ -43,6 +45,32 @@ body {
   font-variation-settings: 'opsz' 32;
 }
 
+/* Ensure proper text contrast */
+* {
+  color: inherit;
+}
+
+/* Light mode text contrast */
+:root h1, :root h2, :root h3, :root h4, :root h5, :root h6,
+:root p, :root span, :root div, :root label {
+  color: var(--text-primary); /* Charcoal #1E1E1E - good contrast on light backgrounds */
+}
+
+/* Dark mode text contrast */
+.dark h1, .dark h2, .dark h3, .dark h4, .dark h5, .dark h6,
+.dark p, .dark span, .dark div, .dark label {
+  color: var(--text-primary) !important; /* Mist White #F8F6FA - good contrast on dark backgrounds */
+}
+
+/* Secondary text */
+:root .text-secondary {
+  color: var(--text-secondary) !important; /* Warm Grey #555555 */
+}
+
+.dark .text-secondary {
+  color: var(--text-secondary) !important; /* Lilac Grey #C7B7D6 */
+}
+
 /* WCAG-Compliant Glass Morphism */
 .glass-effect {
   background: var(--bg-glass);
@@ -51,31 +79,61 @@ body {
   box-shadow: var(--shadow-soft);
 }
 
-/* WCAG-Compliant Gradient Text */
+/* Vibrant Gradient Text */
 .gradient-text {
-  background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+  background: var(--accent-gradient);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
+  font-weight: 700;
 }
 
-/* WCAG-Compliant Button Styles */
+/* Modern Vibrant Button Styles */
 .btn-primary {
-  background: var(--accent-primary);
+  background: var(--accent-gradient);
   color: white;
+  font-weight: 600;
   box-shadow: var(--shadow-soft);
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   transform: translateY(0);
+  border: none;
 }
 
 .btn-primary:hover {
   transform: translateY(-2px);
   filter: brightness(1.1);
-  box-shadow: 0 20px 40px -10px rgba(216, 115, 152, 0.4);
+  box-shadow: 0 20px 40px -10px rgba(224, 67, 130, 0.4);
 }
 
 .dark .btn-primary:hover {
-  box-shadow: 0 20px 40px -10px rgba(181, 111, 217, 0.4);
+  box-shadow: 0 20px 40px -10px rgba(255, 79, 139, 0.5);
+  filter: brightness(1.2); /* Extra glow in dark mode */
+}
+
+.btn-primary:active {
+  transform: translateY(0);
+  filter: brightness(0.9);
+}
+
+/* Enhanced Typography for Dark Mode */
+.dark h1, .dark h2, .dark h3, .dark h4, .dark h5, .dark h6 {
+  font-size: 1.1em; /* Slightly larger for better readability */
+  font-weight: 600;
+}
+
+/* Navigation Active States */
+.nav-active {
+  color: var(--accent-primary);
+}
+
+.nav-inactive {
+  color: var(--text-secondary);
+  opacity: 0.7;
+}
+
+.nav-inactive:hover {
+  color: var(--accent-primary);
+  opacity: 1;
 }
 
 /* Enhanced Dark Mode Overrides */

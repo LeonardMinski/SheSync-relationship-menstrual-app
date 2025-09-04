@@ -164,7 +164,7 @@ const Navigation = () => {
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-3">
               <div className="flex items-center space-x-3">
-                <div className="w-8 h-8 rounded-xl flex items-center justify-center shadow-md" style={{backgroundColor: 'var(--accent-primary)'}}>
+                <div className="w-8 h-8 rounded-xl flex items-center justify-center shadow-md" style={{background: 'var(--accent-gradient)'}}>
                   <Heart className="h-4 w-4 text-white" />
                 </div>
                 <div className="text-xl font-bold gradient-text">
@@ -226,7 +226,7 @@ const Navigation = () => {
               {/* Theme Toggle */}
               <button
                 onClick={toggleTheme}
-                className="p-2 text-gray-600 dark:text-gray-300 hover:text-rose-500 transition-colors"
+                className="p-2 nav-inactive hover:nav-active transition-all duration-300 rounded-lg"
               >
                 {isDarkMode ? <Sun size={20} /> : <Moon size={20} />}
               </button>
@@ -254,9 +254,12 @@ const Navigation = () => {
                   href={item.href}
                   className={`flex flex-col items-center py-2 px-3 rounded-lg transition-all duration-200 ${
                     isActive
-                      ? 'text-rose-600 dark:text-rose-400 bg-rose-50 dark:bg-rose-900/20'
-                      : 'text-gray-600 dark:text-gray-400 hover:text-rose-500 dark:hover:text-rose-300'
+                      ? 'nav-active'
+                      : 'nav-inactive hover:nav-active'
                   }`}
+                  style={{
+                    backgroundColor: isActive ? 'rgba(224, 67, 130, 0.1)' : 'transparent'
+                  }}
                 >
                   <div className="relative">
                     {item.emoji ? (
@@ -287,7 +290,7 @@ const Navigation = () => {
             
             <div className="relative z-10">
               <div className="flex items-center justify-between mb-6">
-                <h3 className="text-xl font-bold text-gray-900 dark:text-white">Profile Picture</h3>
+                <h3 className="text-xl font-bold text-white dark:text-white">Profile Picture</h3>
                 <button
                   onClick={() => setShowProfileModal(false)}
                   className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"

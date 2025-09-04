@@ -141,7 +141,7 @@ const Pricing = () => {
       <main className="max-w-7xl mx-auto px-4 py-8">
         {/* Header */}
         <div className="text-center mb-12">
-          <h1 className="text-4xl font-bold text-gray-900 dark:text-white mb-4">
+          <h1 className="text-4xl font-bold text-white dark:text-white mb-4">
             Choose Your Plan
           </h1>
           <p className="text-xl text-gray-600 dark:text-gray-300 max-w-2xl mx-auto">
@@ -156,7 +156,7 @@ const Pricing = () => {
               <div className="flex items-center space-x-3">
                 {getPlanIcon(user.subscriptionTier)}
                 <div>
-                  <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+                  <h3 className="text-lg font-semibold text-white dark:text-white">
                     Current Plan: {user.subscriptionTier.charAt(0).toUpperCase() + user.subscriptionTier.slice(1)}
                   </h3>
                   <p className="text-gray-600 dark:text-gray-300">
@@ -203,11 +203,11 @@ const Pricing = () => {
                 <div className={`inline-flex items-center justify-center w-16 h-16 rounded-full mb-4 ${getPlanGradient(plan.id)}`}>
                   {getPlanIcon(plan.id)}
                 </div>
-                <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
+                <h3 className="text-2xl font-bold text-white dark:text-white mb-2">
                   {plan.name}
                 </h3>
                 <div className="mb-4">
-                  <span className="text-4xl font-bold text-gray-900 dark:text-white">
+                  <span className="text-4xl font-bold text-white dark:text-white">
                     £{plan.price}
                   </span>
                   {plan.interval !== 'forever' && (
@@ -220,7 +220,7 @@ const Pricing = () => {
 
               {/* Features */}
               <div className="space-y-4 mb-8">
-                <h4 className="font-semibold text-gray-900 dark:text-white mb-3">Features:</h4>
+                <h4 className="font-semibold text-white dark:text-white mb-3">Features:</h4>
                 {plan.features.map((feature, index) => (
                   <div key={index} className="flex items-start space-x-3">
                     <Check className="text-green-500 mt-0.5 flex-shrink-0" size={16} />
@@ -230,7 +230,7 @@ const Pricing = () => {
                 
                 {plan.limitations && (
                   <>
-                    <h4 className="font-semibold text-gray-900 dark:text-white mb-3 mt-6">Limitations:</h4>
+                    <h4 className="font-semibold text-white dark:text-white mb-3 mt-6">Limitations:</h4>
                     {plan.limitations.map((limitation, index) => (
                       <div key={index} className="flex items-start space-x-3">
                         <X className="text-red-500 mt-0.5 flex-shrink-0" size={16} />
@@ -266,12 +266,12 @@ const Pricing = () => {
 
         {/* FAQ Section */}
         <div className="mt-16 max-w-4xl mx-auto">
-          <h2 className="text-2xl font-bold text-gray-900 dark:text-white text-center mb-8">
+          <h2 className="text-2xl font-bold text-white dark:text-white text-center mb-8">
             Frequently Asked Questions
           </h2>
           <div className="grid md:grid-cols-2 gap-8">
             <div className="bg-white/70 dark:bg-gray-800/70 backdrop-blur-sm rounded-xl p-6 border border-rose-200 dark:border-gray-700">
-              <h3 className="font-semibold text-gray-900 dark:text-white mb-2">
+              <h3 className="font-semibold text-white dark:text-white mb-2">
                 Can I change my plan anytime?
               </h3>
               <p className="text-gray-600 dark:text-gray-300 text-sm">
@@ -279,7 +279,7 @@ const Pricing = () => {
               </p>
             </div>
             <div className="bg-white/70 dark:bg-gray-800/70 backdrop-blur-sm rounded-xl p-6 border border-rose-200 dark:border-gray-700">
-              <h3 className="font-semibold text-gray-900 dark:text-white mb-2">
+              <h3 className="font-semibold text-white dark:text-white mb-2">
                 Is there a free trial?
               </h3>
               <p className="text-gray-600 dark:text-gray-300 text-sm">
@@ -287,7 +287,7 @@ const Pricing = () => {
               </p>
             </div>
             <div className="bg-white/70 dark:bg-gray-800/70 backdrop-blur-sm rounded-xl p-6 border border-rose-200 dark:border-gray-700">
-              <h3 className="font-semibold text-gray-900 dark:text-white mb-2">
+              <h3 className="font-semibold text-white dark:text-white mb-2">
                 How secure is my data?
               </h3>
               <p className="text-gray-600 dark:text-gray-300 text-sm">
@@ -295,7 +295,7 @@ const Pricing = () => {
               </p>
             </div>
             <div className="bg-white/70 dark:bg-gray-800/70 backdrop-blur-sm rounded-xl p-6 border border-rose-200 dark:border-gray-700">
-              <h3 className="font-semibold text-gray-900 dark:text-white mb-2">
+              <h3 className="font-semibold text-white dark:text-white mb-2">
                 Can I cancel anytime?
               </h3>
               <p className="text-gray-600 dark:text-gray-300 text-sm">
