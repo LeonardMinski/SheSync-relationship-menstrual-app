@@ -17,7 +17,7 @@ body {
   transition: background-color 0.3s ease, color 0.3s ease;
 }
 
-/* Force dark mode styles to work */
+/* Ensure dark mode applies to all elements */
 html.dark {
   background: #0f0f0f;
 }
@@ -27,10 +27,9 @@ html.dark body {
   color: #ffffff !important;
 }
 
-/* Test navigation dark mode */
-html.dark header {
-  background: rgba(17, 24, 39, 0.8) !important;
-  border-color: rgb(55, 65, 81) !important;
+/* Force all elements to respect dark mode */
+html.dark * {
+  color-scheme: dark;
 }
 
 /* Test if any dark mode is working at all */

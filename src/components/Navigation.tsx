@@ -224,6 +224,9 @@ const Navigation = () => {
               
               {/* Debug: Test if dark mode is working */}
               <div className="test-dark-mode w-4 h-4 bg-blue-500 dark:bg-red-500"></div>
+              <div className="text-xs text-gray-600 dark:text-white">
+                {typeof window !== 'undefined' ? (document.documentElement.classList.contains('dark') ? 'DARK' : 'LIGHT') : 'LOADING'}
+              </div>
             </div>
           </div>
         </div>
