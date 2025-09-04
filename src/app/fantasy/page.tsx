@@ -356,7 +356,12 @@ const FantasyVault = () => {
                   value={formData.title}
                   onChange={(e) => setFormData({...formData, title: e.target.value})}
                   placeholder="Give your entry a title..."
-                  className="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-white dark:text-white"
+                  className="w-full p-3 rounded-lg transition-all duration-200"
+                  style={{
+                    backgroundColor: 'var(--bg-secondary)',
+                    color: 'var(--text-primary)',
+                    border: '1px solid var(--border-subtle)'
+                  }}
                 />
               </div>
 
@@ -395,7 +400,12 @@ const FantasyVault = () => {
                   value={formData.content}
                   onChange={(e) => setFormData({...formData, content: e.target.value})}
                   placeholder="Share your thoughts, dreams, or fantasies..."
-                  className="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-white dark:text-white"
+                  className="w-full p-3 rounded-lg transition-all duration-200"
+                  style={{
+                    backgroundColor: 'var(--bg-secondary)',
+                    color: 'var(--text-primary)',
+                    border: '1px solid var(--border-subtle)'
+                  }}
                   rows={6}
                 />
               </div>

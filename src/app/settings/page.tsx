@@ -153,7 +153,12 @@ const Settings = () => {
                         type="text"
                         value={authUser?.name || ''}
                         readOnly
-                        className="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-700 text-white dark:text-white"
+                        className="w-full p-3 rounded-lg transition-all duration-200"
+                        style={{
+                          backgroundColor: 'var(--bg-secondary)',
+                          color: 'var(--text-primary)',
+                          border: '1px solid var(--border-subtle)'
+                        }}
                       />
                     </div>
                     
@@ -165,7 +170,12 @@ const Settings = () => {
                         type="email"
                         value={authUser?.email || ''}
                         readOnly
-                        className="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-700 text-white dark:text-white"
+                        className="w-full p-3 rounded-lg transition-all duration-200"
+                        style={{
+                          backgroundColor: 'var(--bg-secondary)',
+                          color: 'var(--text-primary)',
+                          border: '1px solid var(--border-subtle)'
+                        }}
                       />
                     </div>
                   </div>

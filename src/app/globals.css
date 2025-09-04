@@ -62,6 +62,76 @@ body {
   color: var(--text-primary) !important; /* Mist White #F8F6FA - good contrast on dark backgrounds */
 }
 
+/* Fix white backgrounds in dark mode */
+.dark .bg-white {
+  background-color: var(--bg-secondary) !important;
+}
+
+.dark .bg-gray-50 {
+  background-color: var(--bg-secondary) !important;
+}
+
+.dark .bg-rose-50 {
+  background-color: rgba(255, 79, 139, 0.1) !important;
+}
+
+.dark .bg-purple-50 {
+  background-color: rgba(167, 139, 250, 0.1) !important;
+}
+
+/* Fix input and textarea styling in dark mode */
+.dark input, .dark textarea, .dark select {
+  background-color: var(--bg-secondary) !important;
+  color: var(--text-primary) !important;
+  border-color: var(--border-subtle) !important;
+}
+
+/* Fix button text in dark mode */
+.dark button {
+  color: inherit;
+}
+
+/* Fix white text issues */
+.dark .text-white:not(.btn-primary):not(.bg-gradient-to-r):not([style*="background"]) {
+  color: var(--text-primary) !important;
+}
+
+/* Comprehensive dark mode fixes */
+.dark .bg-white\/70, .dark .bg-white\/80, .dark .bg-white\/90, .dark .bg-white\/95 {
+  background-color: var(--bg-secondary) !important;
+}
+
+.dark .bg-gray-50\/50, .dark .bg-gray-100, .dark .bg-gray-200 {
+  background-color: var(--bg-secondary) !important;
+}
+
+/* Fix modal backgrounds */
+.dark .bg-white\/95 {
+  background-color: var(--bg-secondary) !important;
+}
+
+/* Ensure all text in dark mode containers is visible */
+.dark .bg-white *,
+.dark .bg-gray-50 *,
+.dark .bg-white\/70 *,
+.dark .bg-white\/80 *,
+.dark .bg-white\/95 * {
+  color: var(--text-primary) !important;
+}
+
+/* Fix placeholder text */
+.dark input::placeholder,
+.dark textarea::placeholder {
+  color: var(--text-secondary) !important;
+  opacity: 0.7;
+}
+
+/* Fix option elements */
+.dark option {
+  background-color: var(--bg-secondary) !important;
+  color: var(--text-primary) !important;
+}
+
 /* Secondary text */
 :root .text-secondary {
   color: var(--text-secondary) !important; /* Warm Grey #555555 */

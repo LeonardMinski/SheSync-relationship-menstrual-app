@@ -704,7 +704,12 @@ const CycleTracker = () => {
                 <select
                   value={cycleLogData.phase}
                   onChange={(e) => setCycleLogData({...cycleLogData, phase: e.target.value})}
-                  className="w-full p-4 border border-gray-300/50 dark:border-slate-600/50 rounded-2xl bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm text-white dark:text-white shadow-sm dark:shadow-slate-900/20 focus:border-purple-500 dark:focus:border-violet-500 focus:ring-2 focus:ring-purple-500/20 dark:focus:ring-violet-500/20 transition-all duration-300"
+                  className="w-full p-4 rounded-2xl backdrop-blur-sm shadow-sm transition-all duration-300"
+                  style={{
+                    backgroundColor: 'var(--bg-secondary)',
+                    color: 'var(--text-primary)',
+                    border: '1px solid var(--border-subtle)'
+                  }}
                 >
                   <option value="menstrual">Menstrual</option>
                   <option value="follicular">Follicular</option>
