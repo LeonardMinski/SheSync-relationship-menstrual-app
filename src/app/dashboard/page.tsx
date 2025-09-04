@@ -458,7 +458,7 @@ const CycleTracker = () => {
                 )}
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 mb-1">
-                    <span className="text-xs font-medium text-purple-700 dark:text-black">
+                    <span className="text-xs font-medium text-purple-700 dark:!text-gray-900">
                       {smartPrediction.isActualData ? 'Recent Entry' : 'Smart Prediction'}
                     </span>
                     {!smartPrediction.isActualData && (
@@ -469,17 +469,17 @@ const CycleTracker = () => {
                             style={{ width: `${smartPrediction.confidence}%` }}
                           />
                         </div>
-                        <span className="text-xs text-purple-600 dark:text-gray-800 font-medium">
+                        <span className="text-xs text-purple-600 dark:!text-gray-900 font-medium">
                           {smartPrediction.confidence}%
                         </span>
                       </div>
                     )}
                   </div>
-                  <p className="text-xs text-gray-600 dark:text-gray-800 leading-relaxed">
+                  <p className="text-xs text-gray-600 dark:!text-gray-900 leading-relaxed">
                     {smartPrediction.explanation}
                   </p>
                   {!smartPrediction.isActualData && smartPrediction.averageCycleLength !== 28 && (
-                    <p className="text-xs text-purple-600 dark:text-gray-800 mt-1">
+                    <p className="text-xs text-purple-600 dark:!text-gray-900 mt-1">
                       Based on your {smartPrediction.averageCycleLength}-day average cycle
                     </p>
                   )}
@@ -488,7 +488,7 @@ const CycleTracker = () => {
             </div>
           </div>
           
-          <p className="mt-3 text-gray-700 dark:text-black">
+          <p className="mt-3 text-gray-700 dark:!text-gray-900">
             {getInsightForPhase(smartPrediction.predictedPhase)}
           </p>
           </div>
