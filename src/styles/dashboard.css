@@ -1,0 +1,437 @@
+/* ==========================================================================
+   DASHBOARD SPECIFIC STYLES - BEM METHODOLOGY
+   ========================================================================== */
+
+/* Dashboard Layout */
+.dashboard {
+  min-height: 100vh;
+  background: var(--bg-primary);
+  transition: background-color 0.3s ease;
+}
+
+.dashboard__main {
+  max-width: 80rem;
+  margin: 0 auto;
+  padding: 1.5rem 1rem;
+}
+
+.dashboard__section {
+  margin-bottom: 2rem;
+}
+
+/* Welcome Section */
+.welcome {
+  position: relative;
+  overflow: hidden;
+}
+
+.welcome__overlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, var(--bg-overlay) 0%, transparent 100%);
+  pointer-events: none;
+}
+
+.welcome__content {
+  position: relative;
+  z-index: 10;
+}
+
+.welcome__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1rem;
+}
+
+.welcome__greeting {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.welcome__date {
+  color: var(--text-secondary);
+  font-size: 0.875rem;
+}
+
+.welcome__emoji {
+  font-size: 2.5rem;
+}
+
+.welcome__info {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+/* Phase Prediction */
+.phase-prediction {
+  padding: 1rem;
+}
+
+.phase-prediction__badge {
+  margin-bottom: 1rem;
+}
+
+.phase-prediction__details {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+}
+
+.phase-prediction__icon {
+  flex-shrink: 0;
+  margin-top: 0.125rem;
+  color: var(--color-primary);
+}
+
+.phase-prediction__content {
+  flex: 1;
+  min-width: 0;
+}
+
+.phase-prediction__header {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.25rem;
+}
+
+.phase-prediction__label {
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: var(--text-inverse); /* This ensures white text */
+}
+
+.phase-prediction__confidence {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.phase-prediction__confidence-bar {
+  width: 2.5rem;
+  height: 0.5rem;
+  background: var(--border-subtle);
+  border-radius: 9999px;
+  overflow: hidden;
+}
+
+.phase-prediction__confidence-fill {
+  height: 100%;
+  background: var(--gradient-primary);
+  border-radius: 9999px;
+  transition: width 0.3s ease;
+}
+
+.phase-prediction__confidence-text {
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: var(--text-inverse); /* This ensures white text */
+}
+
+.phase-prediction__explanation {
+  font-size: 0.75rem;
+  line-height: 1.5;
+  color: var(--text-secondary);
+}
+
+.phase-prediction__cycle-info {
+  font-size: 0.75rem;
+  margin-top: 0.25rem;
+  color: var(--text-secondary);
+}
+
+.phase-prediction__insight {
+  margin-top: 0.75rem;
+  color: var(--text-secondary);
+  font-size: 0.875rem;
+  line-height: 1.5;
+}
+
+/* Stats Grid */
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1rem;
+}
+
+@media (min-width: 768px) {
+  .stats-grid {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+
+.stats-grid__item {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 1rem;
+}
+
+.stats-grid__icon {
+  flex-shrink: 0;
+}
+
+.stats-grid__content {
+  flex: 1;
+  min-width: 0;
+}
+
+.stats-grid__label {
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: var(--text-secondary);
+  margin-bottom: 0.25rem;
+}
+
+.stats-grid__value {
+  font-size: 1.125rem;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+/* Calendar */
+.calendar {
+  position: relative;
+  overflow: hidden;
+}
+
+.calendar__overlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, var(--bg-overlay) 0%, transparent 100%);
+  pointer-events: none;
+}
+
+.calendar__content {
+  position: relative;
+  z-index: 10;
+}
+
+.calendar__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1.5rem;
+}
+
+.calendar__title {
+  font-size: 1.125rem;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.calendar__nav {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.calendar__nav-button {
+  background: transparent;
+  border: none;
+  color: var(--text-secondary);
+  cursor: pointer;
+  padding: 0.5rem;
+  border-radius: 0.25rem;
+  transition: all 0.2s ease;
+}
+
+.calendar__nav-button:hover {
+  background: var(--bg-overlay);
+  color: var(--text-primary);
+}
+
+.calendar__month {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--text-secondary);
+  min-width: 7.5rem;
+  text-align: center;
+}
+
+.calendar__grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 0.5rem;
+}
+
+.calendar__day {
+  aspect-ratio: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  border-radius: 0.5rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  position: relative;
+}
+
+.calendar__day:hover {
+  background: var(--bg-overlay);
+}
+
+.calendar__day--today {
+  background: var(--color-primary);
+  color: var(--text-inverse);
+}
+
+.calendar__day--selected {
+  background: var(--color-secondary);
+  color: var(--text-inverse);
+}
+
+.calendar__day-number {
+  font-size: 0.875rem;
+  font-weight: 500;
+  margin-bottom: 0.125rem;
+}
+
+.calendar__day-label {
+  font-size: 0.625rem;
+  color: var(--text-tertiary);
+}
+
+/* Cycle Entries */
+.cycle-entries {
+  position: relative;
+  overflow: hidden;
+}
+
+.cycle-entries__overlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, var(--bg-overlay) 0%, transparent 100%);
+  pointer-events: none;
+}
+
+.cycle-entries__content {
+  position: relative;
+  z-index: 10;
+}
+
+.cycle-entries__title {
+  font-size: 1.125rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin-bottom: 1rem;
+}
+
+.cycle-entries__list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.cycle-entry {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.75rem;
+  background: var(--bg-secondary);
+  border-radius: 0.5rem;
+  border: 1px solid var(--border-subtle);
+}
+
+.cycle-entry__main {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex: 1;
+  min-width: 0;
+}
+
+.cycle-entry__emoji {
+  font-size: 1.125rem;
+  flex-shrink: 0;
+}
+
+.cycle-entry__info {
+  flex: 1;
+  min-width: 0;
+}
+
+.cycle-entry__phase {
+  font-weight: 500;
+  color: var(--text-primary);
+  margin-bottom: 0.125rem;
+}
+
+.cycle-entry__date {
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+}
+
+.cycle-entry__stats {
+  text-align: right;
+  flex-shrink: 0;
+}
+
+.cycle-entry__mood {
+  font-weight: 500;
+  color: var(--text-primary);
+  margin-bottom: 0.125rem;
+}
+
+.cycle-entry__symptoms {
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+}
+
+/* Cycle Log Button */
+.cycle-log-button {
+  display: flex;
+  justify-content: center;
+  margin: 2rem 0;
+}
+
+/* Loading States */
+.loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem;
+}
+
+.loading__spinner {
+  width: 2rem;
+  height: 2rem;
+  border: 2px solid var(--border-subtle);
+  border-top: 2px solid var(--color-primary);
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .dashboard__main {
+    padding: 1rem;
+  }
+  
+  .welcome__header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.5rem;
+  }
+  
+  .welcome__emoji {
+    align-self: flex-end;
+  }
+  
+  .phase-prediction__header {
+    flex-wrap: wrap;
+  }
+  
+  .stats-grid {
+    grid-template-columns: 1fr;
+  }
+}

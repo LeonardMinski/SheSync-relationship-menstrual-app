@@ -1,147 +1,12 @@
 @import "tailwindcss";
 
-/* Vibrant Modern Feminine Color System */
-:root {
-  /* 🌸 Light Mode - Fresh, Vibrant, Clear */
-  --bg-primary: #FFF6F8; /* Soft Blush */
-  --bg-secondary: #FFFFFF; /* Pure White */
-  --bg-glass: rgba(255, 255, 255, 0.9);
-  --text-primary: #1E1E1E; /* Charcoal */
-  --text-secondary: #555555; /* Warm Grey */
-  --accent-primary: #E04382; /* Rose Pink */
-  --accent-secondary: #8C6BC9; /* Orchid */
-  --accent-gradient: linear-gradient(90deg, #E04382, #8C6BC9);
-  --info: #5865F2; /* Lavender Blue */
-  --success: #3FA77B; /* Fresh Sage */
-  --error: #D9304F; /* Bright Rose */
-  --border-subtle: rgba(224, 67, 130, 0.15);
-  --shadow-soft: 0 10px 25px -5px rgba(224, 67, 130, 0.15), 0 4px 6px -2px rgba(224, 67, 130, 0.08);
-}
+/* Import organized CSS modules */
+@import "../styles/variables.css";
+@import "../styles/base.css";
+@import "../styles/components.css";
+@import "../styles/dashboard.css";
 
-.dark {
-  /* 🌙 Dark Mode - Luxurious, Bold, Sensual */
-  --bg-primary: #0F0A1A; /* Deep Violet */
-  --bg-secondary: #1E1527; /* Midnight Purple */
-  --bg-glass: rgba(30, 21, 39, 0.9);
-  --text-primary: #F8F6FA; /* Mist White */
-  --text-secondary: #C7B7D6; /* Lilac Grey */
-  --accent-primary: #FF4F8B; /* Neon Rose */
-  --accent-secondary: #A78BFA; /* Amethyst */
-  --accent-gradient: linear-gradient(90deg, #FF4F8B, #A78BFA);
-  --info: #7289DA; /* Lavender Blue */
-  --success: #4ADE80; /* Emerald Glow */
-  --error: #FF5C77; /* Rose Ember */
-  --border-subtle: rgba(255, 79, 139, 0.2);
-  --shadow-soft: 0 20px 40px -10px rgba(255, 79, 139, 0.3), 0 0 0 1px rgba(255, 79, 139, 0.1);
-}
-
-/* Enhanced Base Styles */
-body {
-  background: var(--bg-primary);
-  color: var(--text-primary);
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-  font-feature-settings: 'cv11', 'ss01';
-  font-variation-settings: 'opsz' 32;
-}
-
-/* Ensure proper text contrast */
-* {
-  color: inherit;
-}
-
-/* Light mode text contrast */
-:root h1, :root h2, :root h3, :root h4, :root h5, :root h6,
-:root p, :root span, :root div, :root label {
-  color: var(--text-primary); /* Charcoal #1E1E1E - good contrast on light backgrounds */
-}
-
-/* Dark mode text contrast */
-.dark h1, .dark h2, .dark h3, .dark h4, .dark h5, .dark h6,
-.dark p, .dark span, .dark div, .dark label {
-  color: var(--text-primary) !important; /* Mist White #F8F6FA - good contrast on dark backgrounds */
-}
-
-/* Fix white backgrounds in dark mode */
-.dark .bg-white {
-  background-color: var(--bg-secondary) !important;
-}
-
-.dark .bg-gray-50 {
-  background-color: var(--bg-secondary) !important;
-}
-
-.dark .bg-rose-50 {
-  background-color: rgba(255, 79, 139, 0.1) !important;
-}
-
-.dark .bg-purple-50 {
-  background-color: rgba(167, 139, 250, 0.1) !important;
-}
-
-/* Fix input and textarea styling in dark mode */
-.dark input, .dark textarea, .dark select {
-  background-color: var(--bg-secondary) !important;
-  color: var(--text-primary) !important;
-  border-color: var(--border-subtle) !important;
-}
-
-/* Fix button text in dark mode */
-.dark button {
-  color: inherit;
-}
-
-/* Fix white text issues */
-.dark .text-white:not(.btn-primary):not(.bg-gradient-to-r):not([style*="background"]) {
-  color: var(--text-primary) !important;
-}
-
-/* Comprehensive dark mode fixes */
-.dark .bg-white\/70, .dark .bg-white\/80, .dark .bg-white\/90, .dark .bg-white\/95 {
-  background-color: var(--bg-secondary) !important;
-}
-
-.dark .bg-gray-50\/50, .dark .bg-gray-100, .dark .bg-gray-200 {
-  background-color: var(--bg-secondary) !important;
-}
-
-/* Fix modal backgrounds */
-.dark .bg-white\/95 {
-  background-color: var(--bg-secondary) !important;
-}
-
-/* Ensure all text in dark mode containers is visible */
-.dark .bg-white *,
-.dark .bg-gray-50 *,
-.dark .bg-white\/70 *,
-.dark .bg-white\/80 *,
-.dark .bg-white\/95 * {
-  color: var(--text-primary) !important;
-}
-
-/* Fix placeholder text */
-.dark input::placeholder,
-.dark textarea::placeholder {
-  color: var(--text-secondary) !important;
-  opacity: 0.7;
-}
-
-/* Fix option elements */
-.dark option {
-  background-color: var(--bg-secondary) !important;
-  color: var(--text-primary) !important;
-}
-
-/* Secondary text */
-:root .text-secondary {
-  color: var(--text-secondary) !important; /* Warm Grey #555555 */
-}
-
-.dark .text-secondary {
-  color: var(--text-secondary) !important; /* Lilac Grey #C7B7D6 */
-}
-
-/* WCAG-Compliant Glass Morphism */
+/* Legacy utility classes for backward compatibility */
 .glass-effect {
   background: var(--bg-glass);
   backdrop-filter: blur(20px);
@@ -149,76 +14,74 @@ body {
   box-shadow: var(--shadow-soft);
 }
 
-/* Vibrant Gradient Text */
 .gradient-text {
-  background: var(--accent-gradient);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
+  background: var(--gradient-primary);
   background-clip: text;
-  font-weight: 700;
+  -webkit-background-clip: text;
+  color: transparent;
 }
 
-/* Modern Vibrant Button Styles */
 .btn-primary {
-  background: var(--accent-gradient);
-  color: white !important; /* Always white text on gradient buttons */
-  font-weight: 600;
-  box-shadow: var(--shadow-soft);
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  transform: translateY(0);
+  background: var(--gradient-primary);
+  color: var(--text-inverse) !important;
+  padding: 0.75rem 1.5rem;
+  border-radius: 0.5rem;
+  font-weight: 500;
   border: none;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: var(--shadow-soft);
 }
 
 .btn-primary:hover {
-  transform: translateY(-2px);
-  filter: brightness(1.1);
-  box-shadow: 0 20px 40px -10px rgba(224, 67, 130, 0.4);
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-strong);
 }
 
-.dark .btn-primary:hover {
-  box-shadow: 0 20px 40px -10px rgba(255, 79, 139, 0.5);
-  filter: brightness(1.2); /* Extra glow in dark mode */
-}
-
-.btn-primary:active {
-  transform: translateY(0);
-  filter: brightness(0.9);
-}
-
-/* Enhanced Typography for Dark Mode */
-.dark h1, .dark h2, .dark h3, .dark h4, .dark h5, .dark h6 {
-  font-size: 1.1em; /* Slightly larger for better readability */
-  font-weight: 600;
-}
-
-/* Navigation Active States */
+/* Navigation utility classes */
 .nav-active {
-  color: var(--accent-primary);
+  color: var(--color-primary);
 }
 
 .nav-inactive {
   color: var(--text-secondary);
-  opacity: 0.7;
+  transition: color 0.2s ease;
 }
 
 .nav-inactive:hover {
-  color: var(--accent-primary);
-  opacity: 1;
+  color: var(--color-primary);
 }
 
-/* Enhanced Dark Mode Overrides */
-html.dark {
-  background: var(--bg-primary) !important;
-  color-scheme: dark;
+/* Global overrides for dark mode consistency */
+.dark input,
+.dark textarea,
+.dark select {
+  background: var(--bg-secondary) !important;
+  color: var(--text-primary) !important;
+  border-color: var(--border-subtle) !important;
 }
 
-html.dark body {
-  background: var(--bg-primary) !important;
+.dark option {
+  background: var(--bg-secondary) !important;
   color: var(--text-primary) !important;
 }
 
-/* Override Tailwind gradients with our modern palette */
-html.dark .bg-gradient-to-br {
-  background: var(--bg-primary) !important;
+.dark .bg-white {
+  background: var(--bg-secondary) !important;
 }
 
+.dark .bg-gray-50,
+.dark .bg-gray-100,
+.dark .bg-gray-200 {
+  background: var(--bg-secondary) !important;
+}
+
+.dark .text-white {
+  color: var(--text-primary) !important;
+}
+
+.dark .text-gray-600,
+.dark .text-gray-700,
+.dark .text-gray-800 {
+  color: var(--text-secondary) !important;
+}
