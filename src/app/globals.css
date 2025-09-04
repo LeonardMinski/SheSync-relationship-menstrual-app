@@ -1,6 +1,4 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import "tailwindcss";
 
 /* Custom CSS variables for themes */
 :root {
@@ -37,7 +35,3 @@ html.dark .bg-gradient-to-br {
   background: linear-gradient(to bottom right, #111827, #1f2937, #374151) !important;
 }
 
-/* Test element for debugging */
-.dark .test-dark-mode {
-  background: red !important;
-}

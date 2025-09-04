@@ -210,18 +210,8 @@ export const AppProvider: React.FC<AppProviderProps> = ({ children }) => {
 
   const toggleTheme = () => {
     const newTheme = !state.isDarkMode;
-    console.log('🎨 TOGGLE THEME:', state.isDarkMode, '->', newTheme);
     saveTheme(newTheme ? 'dark' : 'light');
     dispatch({ type: 'SET_THEME', payload: newTheme });
-    
-    // Force apply dark class immediately
-    if (newTheme) {
-      document.documentElement.classList.add('dark');
-      console.log('🌙 FORCED dark class added to HTML');
-    } else {
-      document.documentElement.classList.remove('dark');
-      console.log('☀️ FORCED dark class removed from HTML');
-    }
   };
 
   const addCycleEntry = (entry: CycleData) => {
