@@ -1,5 +1,8 @@
-@import "tailwindcss";
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
 
+/* Custom CSS variables for themes */
 :root {
   --background: #ffffff;
   --foreground: #171717;
@@ -10,6 +13,7 @@
   --foreground: #ededed;
 }
 
+/* Base styles */
 body {
   background: var(--background);
   color: var(--foreground);
@@ -17,22 +21,23 @@ body {
   transition: background-color 0.3s ease, color 0.3s ease;
 }
 
-/* Ensure dark mode applies to all elements */
+/* Force dark mode styles */
 html.dark {
-  background: #0f0f0f;
-}
-
-html.dark body {
-  background: #0f0f0f !important;
-  color: #ffffff !important;
-}
-
-/* Force all elements to respect dark mode */
-html.dark * {
+  background: #111827 !important;
   color-scheme: dark;
 }
 
-/* Test if any dark mode is working at all */
+html.dark body {
+  background: #111827 !important;
+  color: #ffffff !important;
+}
+
+/* Ensure all containers respect dark mode */
+html.dark .bg-gradient-to-br {
+  background: linear-gradient(to bottom right, #111827, #1f2937, #374151) !important;
+}
+
+/* Test element for debugging */
 .dark .test-dark-mode {
   background: red !important;
 }
