@@ -332,10 +332,10 @@ export const getPhaseEmoji = (phase: CyclePhase): string => {
 
 export const getPhaseColor = (phase: CyclePhase): string => {
   const colors = {
-    menstrual: 'bg-red-100 text-red-800',
-    follicular: 'bg-green-100 text-green-800',
-    ovulation: 'bg-yellow-100 text-yellow-800',
-    luteal: 'bg-orange-100 text-orange-800'
+    menstrual: 'bg-red-100 dark:bg-red-900/30 text-red-800 dark:text-red-200',
+    follicular: 'bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-200',
+    ovulation: 'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-800 dark:text-yellow-200',
+    luteal: 'bg-orange-100 dark:bg-orange-900/30 text-orange-800 dark:text-orange-200'
   };
   return colors[phase];
 };
