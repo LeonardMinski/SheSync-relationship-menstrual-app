@@ -20,6 +20,36 @@ if (!supabaseUrl || !supabaseAnonKey) {
   }
 }
 
+// Custom storage that uses localStorage for persistent sessions and sessionStorage for temporary ones
+const createCustomStorage = () => {
+  if (typeof window === 'undefined') return undefined
+  
+  return {
+    getItem: (key: string) => {
+      // Check localStorage first (for remember me sessions)
+      const localValue = window.localStorage.getItem(key)
+      if (localValue) return localValue
+      
+      // Fall back to sessionStorage (for temporary sessions)
+      return window.sessionStorage.getItem(key)
+    },
+    setItem: (key: string, value: string) => {
+      // Check if this is a remember me session by looking for a flag
+      const rememberMe = window.localStorage.getItem('supabase-remember-me') === 'true'
+      
+      if (rememberMe) {
+        window.localStorage.setItem(key, value)
+      } else {
+        window.sessionStorage.setItem(key, value)
+      }
+    },
+    removeItem: (key: string) => {
+      window.localStorage.removeItem(key)
+      window.sessionStorage.removeItem(key)
+    }
+  }
+}
+
 // Create Supabase client with proper error handling
 export const supabase = createClient(
   supabaseUrl || 'https://placeholder.supabase.co',
@@ -28,6 +58,7 @@ export const supabase = createClient(
     auth: {
       persistSession: true,
       autoRefreshToken: true,
+      storage: createCustomStorage(),
     },
   }
 )

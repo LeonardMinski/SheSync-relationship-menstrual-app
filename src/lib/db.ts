@@ -33,6 +33,7 @@ export interface CreateUserData {
 export interface LoginData {
   email: string
   password: string
+  rememberMe?: boolean
 }
 
 // Auth functions
@@ -156,6 +157,15 @@ export const auth = {
 
   async signIn(data: LoginData): Promise<{ user: User | null; error: string | null }> {
     try {
+      // Set remember me flag before authentication
+      if (typeof window !== 'undefined') {
+        if (data.rememberMe) {
+          window.localStorage.setItem('supabase-remember-me', 'true')
+        } else {
+          window.localStorage.removeItem('supabase-remember-me')
+        }
+      }
+      
       const { data: authData, error: authError } = await supabase.auth.signInWithPassword({
         email: data.email,
         password: data.password
@@ -190,6 +200,11 @@ export const auth = {
 
   async signOut(): Promise<{ error: string | null }> {
     try {
+      // Clear remember me flag on sign out
+      if (typeof window !== 'undefined') {
+        window.localStorage.removeItem('supabase-remember-me')
+      }
+      
       const { error } = await supabase.auth.signOut()
       return { error: error?.message || null }
     } catch (error) {

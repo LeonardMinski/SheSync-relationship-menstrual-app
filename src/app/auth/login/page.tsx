@@ -10,6 +10,7 @@ export default function LoginPage() {
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
+  const [rememberMe, setRememberMe] = useState(false)
   
   const { signIn } = useAuth()
   const router = useRouter()
@@ -21,7 +22,7 @@ export default function LoginPage() {
 
     try {
       console.log('🔍 Starting login process...')
-      const result = await signIn({ email, password })
+      const result = await signIn({ email, password, rememberMe })
       console.log('🔍 Login result:', result)
       
       if (result.success) {
@@ -106,6 +107,8 @@ export default function LoginPage() {
                 id="remember-me"
                 name="remember-me"
                 type="checkbox"
+                checked={rememberMe}
+                onChange={(e) => setRememberMe(e.target.checked)}
                 className="h-4 w-4 text-rose-600 focus:ring-rose-500 border-gray-300 rounded"
               />
               <label htmlFor="remember-me" className="ml-2 block text-sm text-white">

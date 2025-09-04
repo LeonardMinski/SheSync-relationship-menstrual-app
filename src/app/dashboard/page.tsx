@@ -458,7 +458,7 @@ const CycleTracker = () => {
                 )}
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 mb-1">
-                    <span className="text-xs font-medium text-purple-700 dark:text-purple-300">
+                    <span className="text-xs font-medium text-purple-700 dark:text-black">
                       {smartPrediction.isActualData ? 'Recent Entry' : 'Smart Prediction'}
                     </span>
                     {!smartPrediction.isActualData && (
@@ -469,17 +469,17 @@ const CycleTracker = () => {
                             style={{ width: `${smartPrediction.confidence}%` }}
                           />
                         </div>
-                        <span className="text-xs text-purple-600 dark:text-purple-400 font-medium">
+                        <span className="text-xs text-purple-600 dark:text-gray-800 font-medium">
                           {smartPrediction.confidence}%
                         </span>
                       </div>
                     )}
                   </div>
-                  <p className="text-xs text-gray-600 dark:text-gray-300 leading-relaxed">
+                  <p className="text-xs text-gray-600 dark:text-gray-800 leading-relaxed">
                     {smartPrediction.explanation}
                   </p>
                   {!smartPrediction.isActualData && smartPrediction.averageCycleLength !== 28 && (
-                    <p className="text-xs text-purple-600 dark:text-purple-400 mt-1">
+                    <p className="text-xs text-purple-600 dark:text-gray-800 mt-1">
                       Based on your {smartPrediction.averageCycleLength}-day average cycle
                     </p>
                   )}
@@ -488,7 +488,7 @@ const CycleTracker = () => {
             </div>
           </div>
           
-          <p className="mt-3 text-gray-700 dark:text-gray-300">
+          <p className="mt-3 text-gray-700 dark:text-black">
             {getInsightForPhase(smartPrediction.predictedPhase)}
           </p>
           </div>
@@ -497,40 +497,40 @@ const CycleTracker = () => {
         {/* Today's Cycle Stats */}
         {todaysData && (
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            <div className="bg-white/70 dark:bg-gray-800/70 backdrop-blur-sm rounded-xl p-4 border border-rose-200 dark:border-gray-700">
+            <div className="glass-effect rounded-xl p-4">
               <div className="flex items-center space-x-2 mb-2">
                 <Brain className="text-rose-500" size={20} />
-                <span className="text-sm font-medium text-gray-600 dark:text-gray-300">Mood</span>
+                <span className="text-sm font-medium" style={{color: 'var(--text-secondary)'}}>Mood</span>
               </div>
-              <div className="text-2xl font-bold text-white dark:text-white">
+              <div className="text-2xl font-bold" style={{color: 'var(--text-primary)'}}>
                 {todaysData.mood}/10
               </div>
             </div>
             
-            <div className="bg-white/70 dark:bg-gray-800/70 backdrop-blur-sm rounded-xl p-4 border border-rose-200 dark:border-gray-700">
+            <div className="glass-effect rounded-xl p-4">
               <div className="flex items-center space-x-2 mb-2">
-                <span className="text-sm font-medium text-gray-600 dark:text-gray-300">Phase</span>
+                <span className="text-sm font-medium" style={{color: 'var(--text-secondary)'}}>Phase</span>
               </div>
-              <div className="text-lg font-bold text-white dark:text-white">
+              <div className="text-lg font-bold" style={{color: 'var(--text-primary)'}}>
                 {todaysData.phase.charAt(0).toUpperCase() + todaysData.phase.slice(1)}
               </div>
             </div>
             
-            <div className="bg-white/70 dark:bg-gray-800/70 backdrop-blur-sm rounded-xl p-4 border border-rose-200 dark:border-gray-700">
+            <div className="glass-effect rounded-xl p-4">
               <div className="flex items-center space-x-2 mb-2">
-                <span className="text-sm font-medium text-gray-600 dark:text-gray-300">Symptoms</span>
+                <span className="text-sm font-medium" style={{color: 'var(--text-secondary)'}}>Symptoms</span>
               </div>
-              <div className="text-lg font-bold text-white dark:text-white">
+              <div className="text-lg font-bold" style={{color: 'var(--text-primary)'}}>
                 {todaysData.symptoms.length}
               </div>
             </div>
             
-            <div className="bg-white/70 dark:bg-gray-800/70 backdrop-blur-sm rounded-xl p-4 border border-rose-200 dark:border-gray-700">
+            <div className="glass-effect rounded-xl p-4">
               <div className="flex items-center space-x-2 mb-2">
                 <Calendar className="text-blue-500" size={20} />
-                <span className="text-sm font-medium text-gray-600 dark:text-gray-300">Logged</span>
+                <span className="text-sm font-medium" style={{color: 'var(--text-secondary)'}}>Logged</span>
               </div>
-              <div className="text-lg font-bold text-white dark:text-white">
+              <div className="text-lg font-bold" style={{color: 'var(--text-primary)'}}>
                 {format(new Date(todaysData.created_at || ''), 'MMM d')}
               </div>
             </div>
@@ -544,7 +544,7 @@ const CycleTracker = () => {
             className="flex items-center space-x-2 bg-gradient-to-r from-rose-500 to-purple-600 dark:from-violet-600 dark:via-purple-600 dark:to-rose-500 text-white px-8 py-4 rounded-2xl font-semibold hover:from-rose-600 hover:to-purple-700 dark:hover:from-violet-700 dark:hover:via-purple-700 dark:hover:to-rose-600 transition-all duration-300 shadow-lg hover:shadow-2xl dark:shadow-purple-900/50 hover:scale-105 active:scale-95 backdrop-blur-sm"
           >
             <Plus size={20} />
-            <span>Log Cycle Entry</span>
+            <span >Log Cycle Entry</span>
           </button>
         </div>
 
@@ -643,24 +643,24 @@ const CycleTracker = () => {
             <h3 className="text-lg font-bold text-white dark:text-white mb-4">Recent Cycle Entries</h3>
             <div className="space-y-3">
               {cycles.slice(0, 5).map((cycle) => (
-                <div key={cycle.id} className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-700/50 rounded-lg">
+                <div key={cycle.id} className="flex items-center justify-between p-3 rounded-lg" style={{backgroundColor: 'var(--bg-secondary)'}}>
                   <div className="flex items-center space-x-3">
                     <span className="text-lg">{getPhaseEmoji(cycle.phase as CyclePhase)}</span>
                     <div>
-                      <div className="font-medium text-white dark:text-white">
+                      <div className="font-medium" style={{color: 'var(--text-primary)'}}>
                         {cycle.phase.charAt(0).toUpperCase() + cycle.phase.slice(1)} Phase
                       </div>
-                      <div className="text-sm text-gray-600 dark:text-gray-400">
+                      <div className="text-sm" style={{color: 'var(--text-secondary)'}}>
                         {format(new Date(cycle.created_at || ''), 'MMM d, yyyy')}
                       </div>
                     </div>
                   </div>
                   <div className="text-right">
-                    <div className="font-medium text-white dark:text-white">
+                    <div className="font-medium" style={{color: 'var(--text-primary)'}}>
                       Mood: {cycle.mood}/10
                     </div>
                     {cycle.symptoms.length > 0 && (
-                      <div className="text-sm text-gray-600 dark:text-gray-400">
+                      <div className="text-sm" style={{color: 'var(--text-secondary)'}}>
                         {cycle.symptoms.length} symptoms
                       </div>
                     )}
