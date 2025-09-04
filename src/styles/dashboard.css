@@ -331,7 +331,8 @@
   align-items: center;
   justify-content: space-between;
   padding: 0.75rem;
-  background: var(--bg-secondary);
+  background: var(--bg-glass);
+  backdrop-filter: blur(10px);
   border-radius: 0.5rem;
   border: 1px solid var(--border-subtle);
 }

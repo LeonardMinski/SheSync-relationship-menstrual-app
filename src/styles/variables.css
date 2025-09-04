@@ -48,21 +48,21 @@
 
   /* Backgrounds */
   --bg-primary: #0F0A1A; /* Deep Violet */
-  --bg-secondary: #1E1527; /* Midnight Purple */
-  --bg-glass: rgba(30, 21, 39, 0.9);
-  --bg-overlay: rgba(30, 21, 39, 0.2);
+  --bg-secondary: rgba(30, 21, 39, 0.6); /* Transparent Midnight Purple */
+  --bg-glass: rgba(30, 21, 39, 0.4); /* More transparent glass */
+  --bg-overlay: rgba(30, 21, 39, 0.1);
 
   /* Text Colors */
   --text-primary: #F8F6FA; /* Mist White */
   --text-secondary: #C7B7D6; /* Lilac Grey */
   --text-tertiary: #9CA3AF; /* Medium Grey */
-  --text-inverse: #1E1E1E; /* Charcoal */
+  --text-inverse: #F8F6FA; /* White for dark backgrounds */
 
   /* Borders & Shadows */
-  --border-subtle: rgba(255, 79, 139, 0.2);
-  --border-strong: rgba(255, 79, 139, 0.4);
-  --shadow-soft: 0 10px 25px -5px rgba(0, 0, 0, 0.3);
-  --shadow-strong: 0 20px 40px -10px rgba(0, 0, 0, 0.5);
+  --border-subtle: rgba(255, 79, 139, 0.15);
+  --border-strong: rgba(255, 79, 139, 0.3);
+  --shadow-soft: 0 10px 25px -5px rgba(0, 0, 0, 0.4);
+  --shadow-strong: 0 20px 40px -10px rgba(0, 0, 0, 0.6);
 
   /* Gradients */
   --gradient-primary: linear-gradient(90deg, #FF4F8B, #A78BFA);
@@ -82,12 +82,12 @@
 }
 
 .dark {
-  --phase-menstrual-bg: rgba(153, 27, 27, 0.3);
-  --phase-menstrual-text: #FCA5A5;
-  --phase-follicular-bg: rgba(22, 101, 52, 0.3);
-  --phase-follicular-text: #86EFAC;
-  --phase-ovulation-bg: rgba(146, 64, 14, 0.3);
+  --phase-menstrual-bg: rgba(255, 79, 139, 0.15);
+  --phase-menstrual-text: #FF9EC7;
+  --phase-follicular-bg: rgba(167, 139, 250, 0.15);
+  --phase-follicular-text: #C7B7F7;
+  --phase-ovulation-bg: rgba(255, 206, 84, 0.15);
   --phase-ovulation-text: #FDE047;
-  --phase-luteal-bg: rgba(194, 65, 12, 0.3);
+  --phase-luteal-bg: rgba(251, 146, 60, 0.15);
   --phase-luteal-text: #FDBA74;
 }

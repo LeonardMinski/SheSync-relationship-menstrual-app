@@ -52,13 +52,14 @@
   color: var(--color-primary);
 }
 
-/* Global overrides for dark mode consistency */
+/* Global overrides for dark mode consistency - NO WHITE BACKGROUNDS */
 .dark input,
 .dark textarea,
 .dark select {
-  background: var(--bg-secondary) !important;
+  background: var(--bg-glass) !important;
   color: var(--text-primary) !important;
   border-color: var(--border-subtle) !important;
+  backdrop-filter: blur(10px) !important;
 }
 
 .dark option {
@@ -66,14 +67,23 @@
   color: var(--text-primary) !important;
 }
 
-.dark .bg-white {
-  background: var(--bg-secondary) !important;
+/* Eliminate ALL white backgrounds in dark mode */
+.dark .bg-white,
+.dark .bg-white\/70,
+.dark .bg-white\/80,
+.dark .bg-white\/90,
+.dark .bg-white\/95 {
+  background: var(--bg-glass) !important;
+  backdrop-filter: blur(20px) !important;
 }
 
 .dark .bg-gray-50,
 .dark .bg-gray-100,
-.dark .bg-gray-200 {
-  background: var(--bg-secondary) !important;
+.dark .bg-gray-200,
+.dark .bg-rose-50,
+.dark .bg-purple-50 {
+  background: var(--bg-glass) !important;
+  backdrop-filter: blur(10px) !important;
 }
 
 .dark .text-white {
@@ -82,6 +92,30 @@
 
 .dark .text-gray-600,
 .dark .text-gray-700,
-.dark .text-gray-800 {
+.dark .text-gray-800,
+.dark .text-gray-900 {
   color: var(--text-secondary) !important;
+}
+
+/* Force glass effect on all containers */
+.dark [class*="bg-white"],
+.dark [class*="bg-gray"] {
+  background: var(--bg-glass) !important;
+  backdrop-filter: blur(15px) !important;
+  border: 1px solid var(--border-subtle) !important;
+}
+
+/* Ensure text is always visible */
+.dark * {
+  color: var(--text-primary);
+}
+
+.dark .text-xs,
+.dark .text-sm,
+.dark .text-base {
+  color: var(--text-secondary) !important;
+}
+
+.dark h1, .dark h2, .dark h3, .dark h4, .dark h5, .dark h6 {
+  color: var(--text-primary) !important;
 }
