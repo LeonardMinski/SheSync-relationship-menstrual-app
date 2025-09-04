@@ -155,12 +155,17 @@ const Navigation = () => {
   return (
     <>
       {/* Top Header */}
-      <header className="bg-white/80 dark:bg-gray-900/80 backdrop-blur-md border-b border-rose-200 dark:border-gray-700 sticky top-0 z-50">
+      <header className="bg-white/80 dark:bg-slate-900/80 backdrop-blur-2xl border-b border-pink-200/50 dark:border-purple-500/20 sticky top-0 z-50 shadow-lg dark:shadow-purple-900/20">
         <div className="max-w-7xl mx-auto px-4 py-3">
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-3">
-              <div className="text-2xl font-bold bg-gradient-to-r from-rose-500 to-purple-600 bg-clip-text text-transparent">
-                SheSync+
+              <div className="flex items-center space-x-3">
+                <div className="w-8 h-8 bg-gradient-to-br from-pink-500 to-purple-600 rounded-xl flex items-center justify-center shadow-md">
+                  <Heart className="h-4 w-4 text-white" />
+                </div>
+                <div className="text-xl font-bold bg-gradient-to-r from-pink-600 to-purple-600 bg-clip-text text-transparent">
+                  SheSync+
+                </div>
               </div>
               <div className="text-lg">{getPhaseEmoji(currentPhase)}</div>
             </div>
@@ -228,7 +233,7 @@ const Navigation = () => {
       </header>
 
       {/* Bottom Navigation */}
-      <nav className="fixed bottom-0 left-0 right-0 bg-white/80 dark:bg-gray-900/80 backdrop-blur-md border-t border-rose-200 dark:border-gray-700 z-50">
+      <nav className="fixed bottom-0 left-0 right-0 bg-white/80 dark:bg-slate-900/80 backdrop-blur-2xl border-t border-pink-200/50 dark:border-purple-500/20 z-50 shadow-2xl dark:shadow-purple-900/30">
         <div className="max-w-7xl mx-auto px-4">
           <div className="flex items-center justify-around py-2">
             {navItems.map((item) => {

@@ -1,37 +1,84 @@
 @import "tailwindcss";
 
-/* Custom CSS variables for themes */
+/* Modern Feminine Color System */
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  /* Light Theme - Soft & Elegant */
+  --bg-primary: linear-gradient(135deg, #fdf2f8 0%, #fef7ff 50%, #f0f9ff 100%);
+  --bg-secondary: rgba(255, 255, 255, 0.8);
+  --bg-glass: rgba(255, 255, 255, 0.25);
+  --text-primary: #1f2937;
+  --text-secondary: #6b7280;
+  --accent-primary: linear-gradient(135deg, #ec4899 0%, #8b5cf6 100%);
+  --accent-secondary: linear-gradient(135deg, #f472b6 0%, #a855f7 100%);
+  --border-subtle: rgba(236, 72, 153, 0.1);
+  --shadow-soft: 0 20px 25px -5px rgba(236, 72, 153, 0.1), 0 10px 10px -5px rgba(236, 72, 153, 0.04);
 }
 
 .dark {
-  --background: #0a0a0a;
-  --foreground: #ededed;
+  /* Dark Theme - Luxurious & Modern */
+  --bg-primary: linear-gradient(135deg, #0f0f23 0%, #1a1a2e 50%, #16213e 100%);
+  --bg-secondary: rgba(30, 41, 59, 0.8);
+  --bg-glass: rgba(15, 23, 42, 0.4);
+  --text-primary: #f8fafc;
+  --text-secondary: #cbd5e1;
+  --accent-primary: linear-gradient(135deg, #f472b6 0%, #a855f7 100%);
+  --accent-secondary: linear-gradient(135deg, #ec4899 0%, #8b5cf6 100%);
+  --border-subtle: rgba(244, 114, 182, 0.2);
+  --shadow-soft: 0 25px 50px -12px rgba(244, 114, 182, 0.25), 0 0 0 1px rgba(244, 114, 182, 0.05);
 }
 
-/* Base styles */
+/* Enhanced Base Styles */
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
-  transition: background-color 0.3s ease, color 0.3s ease;
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  font-feature-settings: 'cv11', 'ss01';
+  font-variation-settings: 'opsz' 32;
 }
 
-/* Force dark mode styles */
+/* Modern Glass Morphism */
+.glass-effect {
+  background: var(--bg-glass);
+  backdrop-filter: blur(20px);
+  border: 1px solid var(--border-subtle);
+  box-shadow: var(--shadow-soft);
+}
+
+/* Gradient Text */
+.gradient-text {
+  background: var(--accent-primary);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* Modern Button Styles */
+.btn-primary {
+  background: var(--accent-primary);
+  box-shadow: var(--shadow-soft);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  transform: translateY(0);
+}
+
+.btn-primary:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 32px 64px -12px rgba(236, 72, 153, 0.4);
+}
+
+/* Enhanced Dark Mode Overrides */
 html.dark {
-  background: #111827 !important;
+  background: var(--bg-primary) !important;
   color-scheme: dark;
 }
 
 html.dark body {
-  background: #111827 !important;
-  color: #ffffff !important;
+  background: var(--bg-primary) !important;
+  color: var(--text-primary) !important;
 }
 
-/* Ensure all containers respect dark mode */
+/* Override Tailwind gradients with our modern palette */
 html.dark .bg-gradient-to-br {
-  background: linear-gradient(to bottom right, #111827, #1f2937, #374151) !important;
+  background: var(--bg-primary) !important;
 }
 
