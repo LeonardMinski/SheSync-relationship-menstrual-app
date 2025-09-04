@@ -458,7 +458,7 @@ const CycleTracker = () => {
                 )}
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 mb-1">
-                    <span className="text-xs font-medium" style={{color: 'var(--text-primary)'}}>
+                    <span className="text-xs font-medium" style={{color: '#1E1E1E'}}>
                       {smartPrediction.isActualData ? 'Recent Entry' : 'Smart Prediction'}
                     </span>
                     {!smartPrediction.isActualData && (
@@ -469,17 +469,17 @@ const CycleTracker = () => {
                             style={{ width: `${smartPrediction.confidence}%` }}
                           />
                         </div>
-                        <span className="text-xs font-medium" style={{color: 'var(--text-primary)'}}>
+                        <span className="text-xs font-medium" style={{color: '#1E1E1E'}}>
                           {smartPrediction.confidence}%
                         </span>
                       </div>
                     )}
                   </div>
-                  <p className="text-xs leading-relaxed" style={{color: 'var(--text-secondary)'}}>
+                  <p className="text-xs leading-relaxed" style={{color: '#555555'}}>
                     {smartPrediction.explanation}
                   </p>
                   {!smartPrediction.isActualData && smartPrediction.averageCycleLength !== 28 && (
-                    <p className="text-xs mt-1" style={{color: 'var(--text-secondary)'}}>
+                    <p className="text-xs mt-1" style={{color: '#555555'}}>
                       Based on your {smartPrediction.averageCycleLength}-day average cycle
                     </p>
                   )}
@@ -488,7 +488,7 @@ const CycleTracker = () => {
             </div>
           </div>
           
-          <p className="mt-3" style={{color: 'var(--text-secondary)'}}>
+          <p className="mt-3" style={{color: '#555555'}}>
             {getInsightForPhase(smartPrediction.predictedPhase)}
           </p>
           </div>
