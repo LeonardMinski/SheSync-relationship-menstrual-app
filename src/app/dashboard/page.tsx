@@ -636,7 +636,7 @@ const CycleTracker = () => {
 
         {/* Recent Cycle Entries */}
         {cycles.length > 0 && (
-          <div className="bg-white/70 dark:bg-slate-900/40 backdrop-blur-xl rounded-3xl p-8 border border-rose-200/50 dark:border-slate-700/50 shadow-xl dark:shadow-2xl dark:shadow-purple-900/20 relative overflow-hidden">
+          <div className="bg-white/70 dark:bg-slate-700/60 backdrop-blur-xl rounded-3xl p-8 border border-rose-200/50 dark:border-slate-600/50 shadow-xl dark:shadow-2xl dark:shadow-purple-900/20 relative overflow-hidden">
             {/* Glass morphism overlay */}
             <div className="absolute inset-0 bg-gradient-to-br from-white/10 to-transparent dark:from-slate-800/20 dark:to-transparent pointer-events-none" />
             <div className="relative z-10">
