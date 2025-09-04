@@ -2,8 +2,27 @@
 
 import Link from 'next/link'
 import { Heart, Calendar, Brain, Users, Sparkles, ArrowRight } from 'lucide-react'
+import { useEffect, useState } from 'react'
+import { getTheme } from '@/lib/storage'
 
 export default function LandingPage() {
+  const [isInitialized, setIsInitialized] = useState(false)
+
+  useEffect(() => {
+    // Ensure theme is applied immediately to prevent flickering
+    const theme = getTheme()
+    if (theme === 'dark') {
+      document.documentElement.classList.add('dark')
+    } else {
+      document.documentElement.classList.remove('dark')
+    }
+    setIsInitialized(true)
+  }, [])
+
+  // Prevent flash by not rendering until theme is set
+  if (!isInitialized) {
+    return null
+  }
   return (
     <div className="min-h-screen" style={{backgroundColor: 'var(--bg-primary)'}}>
       {/* Header */}

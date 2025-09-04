@@ -161,7 +161,7 @@ body {
 /* Modern Vibrant Button Styles */
 .btn-primary {
   background: var(--accent-gradient);
-  color: white;
+  color: white !important; /* Always white text on gradient buttons */
   font-weight: 600;
   box-shadow: var(--shadow-soft);
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);

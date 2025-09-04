@@ -415,16 +415,16 @@ const CycleTracker = () => {
         
         <main className="max-w-7xl mx-auto px-4 py-6 space-y-6">
         {/* Welcome Section */}
-        <div className="bg-white/70 dark:bg-slate-900/40 backdrop-blur-xl rounded-3xl p-8 border border-rose-200/50 dark:border-slate-700/50 shadow-xl dark:shadow-2xl dark:shadow-purple-900/20 relative overflow-hidden">
+        <div className="glass-effect rounded-3xl p-8 shadow-xl relative overflow-hidden">
           {/* Glass morphism overlay */}
           <div className="absolute inset-0 bg-gradient-to-br from-white/10 to-transparent dark:from-slate-800/20 dark:to-transparent pointer-events-none" />
           <div className="relative z-10">
             <div className="flex items-center justify-between mb-4">
               <div>
-                <h1 className="text-2xl font-bold text-white dark:text-white">
+                <h1 className="text-2xl font-bold" style={{color: 'var(--text-primary)'}}>
                   Hi, {authUser?.name?.split(' ')[0] || authUser?.email?.split('@')[0]}!
                 </h1>
-                <p className="text-gray-600 dark:text-gray-300">
+                <p style={{color: 'var(--text-secondary)'}}>
                   {format(new Date(), 'EEEE, MMMM do')}
                 </p>
               </div>
