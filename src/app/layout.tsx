@@ -42,7 +42,7 @@ export default function RootLayout({
         <AuthProvider>
           <AppProvider>
             <ThemeProvider>
-              <div className="min-h-screen transition-all duration-500 bg-white dark:bg-[#0F0A1A]">
+              <div className="min-h-screen transition-all duration-500 bg-white dark:bg-[#17121F]">
                 {children}
               </div>
             </ThemeProvider>

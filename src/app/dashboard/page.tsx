@@ -402,7 +402,7 @@ const CycleTracker = () => {
   ];
 
   return (
-    <div className="min-h-screen pb-20 bg-gradient-to-br from-rose-50 via-white to-purple-50 dark:bg-[#0F0A1A] transition-all duration-500 relative overflow-hidden">
+    <div className="min-h-screen pb-20 bg-gradient-to-br from-rose-50 via-white to-purple-50 dark:bg-[#17121F] transition-all duration-500 relative overflow-hidden">
       
       {/* Content wrapper */}
       <div className="relative z-10">

@@ -112,16 +112,12 @@
 }
 
 /* Dark mode body background - match card surfaces */
-.dark {
-  background-color: var(--color-bg) !important;
-}
-
 .dark body {
-  background-color: var(--color-bg) !important;
+  background-color: var(--color-surface) !important;
 }
 
 .dark html {
-  background-color: var(--color-bg) !important;
+  background-color: var(--color-surface) !important;
 }
 
 /* Global dark mode overrides - SOLID SURFACES ONLY */
@@ -167,16 +163,6 @@
   backdrop-filter: none !important;
 }
 
-/* Force dark background on all containers */
-.dark div,
-.dark main,
-.dark section {
-  background-color: transparent !important;
-}
-
-.dark div[style*="background"] {
-  background: var(--color-bg) !important;
-}
 
 .dark .bg-gray-50,
 .dark .bg-gray-100,
