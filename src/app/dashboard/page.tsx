@@ -402,12 +402,7 @@ const CycleTracker = () => {
   ];
 
   return (
-    <div className="min-h-screen pb-20 bg-gradient-to-br from-rose-50 via-white to-purple-50 dark:from-slate-950 dark:via-slate-900 dark:to-slate-950 transition-all duration-500 relative overflow-hidden">
-      {/* Dark mode ambient background effects */}
-      <div className="absolute inset-0 dark:bg-gradient-to-br dark:from-violet-950/20 dark:via-transparent dark:to-rose-950/20 pointer-events-none" />
-      <div className="absolute top-0 left-0 w-96 h-96 dark:bg-violet-600/10 rounded-full blur-3xl pointer-events-none animate-pulse" />
-      <div className="absolute bottom-0 right-0 w-96 h-96 dark:bg-rose-600/10 rounded-full blur-3xl pointer-events-none animate-pulse" style={{ animationDelay: '1s' }} />
-      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-64 h-64 dark:bg-purple-600/5 rounded-full blur-2xl pointer-events-none animate-pulse" style={{ animationDelay: '2s' }} />
+    <div className="min-h-screen pb-20 bg-gradient-to-br from-rose-50 via-white to-purple-50 dark:bg-[#0F0A1A] transition-all duration-500 relative overflow-hidden">
       
       {/* Content wrapper */}
       <div className="relative z-10">

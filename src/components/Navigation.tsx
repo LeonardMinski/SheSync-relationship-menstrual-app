@@ -155,9 +155,7 @@ const Navigation = () => {
   return (
     <>
       {/* Top Header */}
-      <header className="backdrop-blur-2xl border-b sticky top-0 z-50" style={{
-        backgroundColor: 'var(--bg-glass)',
-        borderColor: 'var(--border-subtle)',
+      <header className="border-b sticky top-0 z-50 bg-white dark:bg-[#17121F] dark:border-[#34263F]" style={{
         boxShadow: 'var(--shadow-soft)'
       }}>
         <div className="max-w-7xl mx-auto px-4 py-3">
@@ -237,9 +235,7 @@ const Navigation = () => {
       </header>
 
       {/* Bottom Navigation */}
-      <nav className="fixed bottom-0 left-0 right-0 backdrop-blur-2xl border-t z-50" style={{
-        backgroundColor: 'var(--bg-glass)',
-        borderColor: 'var(--border-subtle)',
+      <nav className="fixed bottom-0 left-0 right-0 border-t z-50 bg-white dark:bg-[#17121F] dark:border-[#34263F]" style={{
         boxShadow: 'var(--shadow-soft)'
       }}>
         <div className="max-w-7xl mx-auto px-4">

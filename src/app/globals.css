@@ -111,6 +111,11 @@
   box-shadow: 0 0 0 2px #FF4F8B;
 }
 
+/* Dark mode body background - match card surfaces */
+.dark body {
+  background-color: var(--color-bg) !important;
+}
+
 /* Global dark mode overrides - SOLID SURFACES ONLY */
 .dark input,
 .dark textarea,
