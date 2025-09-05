@@ -1,0 +1,290 @@
+/* ==========================================================================
+   COMPONENT STYLES - BEM METHODOLOGY
+   ========================================================================== */
+
+/* Glass Effect Components */
+.glass {
+  background: var(--bg-glass);
+  backdrop-filter: blur(20px);
+  border: 1px solid var(--border-subtle);
+  box-shadow: var(--shadow-soft);
+}
+
+.glass--rounded {
+  border-radius: 1rem;
+}
+
+.glass--rounded-lg {
+  border-radius: 1.5rem;
+}
+
+.glass--rounded-xl {
+  border-radius: 2rem;
+}
+
+/* Button Components */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.75rem 1.5rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  border-radius: 0.5rem;
+  transition: all 0.2s ease;
+  text-decoration: none;
+  border: none;
+  cursor: pointer;
+}
+
+.btn--primary {
+  background: var(--gradient-primary);
+  color: var(--text-inverse);
+  box-shadow: var(--shadow-soft);
+}
+
+.btn--primary:hover {
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-strong);
+}
+
+.btn--secondary {
+  background: var(--bg-secondary);
+  color: var(--text-primary);
+  border: 1px solid var(--border-subtle);
+}
+
+.btn--secondary:hover {
+  border-color: var(--color-primary);
+  color: var(--color-primary);
+}
+
+.btn--ghost {
+  background: transparent;
+  color: var(--text-secondary);
+}
+
+.btn--ghost:hover {
+  background: var(--bg-overlay);
+  color: var(--text-primary);
+}
+
+/* Badge Components */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.5rem 1rem;
+  border-radius: 9999px;
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: help;
+}
+
+.badge--menstrual {
+  background-color: var(--phase-menstrual-bg);
+  color: var(--phase-menstrual-text);
+}
+
+.badge--follicular {
+  background-color: var(--phase-follicular-bg);
+  color: var(--phase-follicular-text);
+}
+
+.badge--ovulation {
+  background-color: var(--phase-ovulation-bg);
+  color: var(--phase-ovulation-text);
+}
+
+.badge--luteal {
+  background-color: var(--phase-luteal-bg);
+  color: var(--phase-luteal-text);
+}
+
+/* Card Components */
+.card {
+  background: var(--bg-glass);
+  backdrop-filter: blur(20px);
+  border: 1px solid var(--border-subtle);
+  border-radius: 1rem;
+  padding: 1.5rem;
+  box-shadow: var(--shadow-soft);
+}
+
+.card__header {
+  margin-bottom: 1rem;
+}
+
+.card__title {
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin-bottom: 0.5rem;
+}
+
+.card__subtitle {
+  color: var(--text-secondary);
+  font-size: 0.875rem;
+}
+
+.card__content {
+  color: var(--text-secondary);
+  line-height: 1.6;
+}
+
+.card__footer {
+  margin-top: 1rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--border-subtle);
+}
+
+/* Stat Components */
+.stat {
+  text-align: center;
+  padding: 1rem;
+}
+
+.stat__value {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin-bottom: 0.25rem;
+}
+
+.stat__label {
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+/* Navigation Components */
+.nav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1rem;
+  background: var(--bg-glass);
+  backdrop-filter: blur(20px);
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+.nav__brand {
+  font-size: 1.25rem;
+  font-weight: 700;
+  background: var(--gradient-primary);
+  background-clip: text;
+  -webkit-background-clip: text;
+  color: transparent;
+}
+
+.nav__item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 0.5rem;
+  color: var(--text-secondary);
+  transition: color 0.2s ease;
+  text-decoration: none;
+}
+
+.nav__item--active {
+  color: var(--color-primary);
+}
+
+.nav__item:hover {
+  color: var(--color-primary);
+}
+
+.nav__icon {
+  margin-bottom: 0.25rem;
+}
+
+.nav__label {
+  font-size: 0.75rem;
+}
+
+/* Form Components */
+.form-group {
+  margin-bottom: 1.5rem;
+}
+
+.form-label {
+  display: block;
+  margin-bottom: 0.5rem;
+  color: var(--text-primary);
+  font-weight: 500;
+}
+
+.form-input {
+  width: 100%;
+  padding: 0.75rem;
+  background: var(--bg-secondary);
+  color: var(--text-primary);
+  border: 1px solid var(--border-subtle);
+  border-radius: 0.5rem;
+  transition: border-color 0.2s ease;
+}
+
+.form-input:focus {
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 3px rgba(224, 67, 130, 0.1);
+}
+
+.form-error {
+  margin-top: 0.25rem;
+  color: var(--color-error);
+  font-size: 0.875rem;
+}
+
+/* Modal Components */
+.modal {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 50;
+  padding: 1rem;
+}
+
+.modal__content {
+  background: var(--bg-glass);
+  backdrop-filter: blur(20px);
+  border-radius: 1.5rem;
+  padding: 2rem;
+  width: 100%;
+  max-width: 28rem;
+  max-height: 90vh;
+  overflow-y: auto;
+  border: 1px solid var(--border-subtle);
+  box-shadow: var(--shadow-strong);
+}
+
+.modal__header {
+  margin-bottom: 1.5rem;
+}
+
+.modal__title {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.modal__close {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  background: transparent;
+  border: none;
+  color: var(--text-secondary);
+  cursor: pointer;
+  padding: 0.5rem;
+  border-radius: 0.25rem;
+}
+
+.modal__close:hover {
+  background: var(--bg-overlay);
+  color: var(--text-primary);
+}
