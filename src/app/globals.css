@@ -57,26 +57,45 @@
 
 /* New Design System Utility Classes */
 .card {
-  @apply bg-surface border border-border rounded-3xl p-6 shadow;
+  background: white;
+  border: 1px solid #e5e7eb;
+  border-radius: 1.5rem;
+  padding: 1.5rem;
+  box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
 }
 
 .dark .card {
-  @apply dark:bg-surface dark:border-border;
+  background: var(--color-surface);
+  border-color: var(--color-border);
 }
 
 .elevated {
-  @apply bg-elevated border border-border;
+  background: #f9fafb;
+  border: 1px solid #e5e7eb;
 }
 
 .dark .elevated {
-  @apply dark:bg-elevated dark:border-border;
+  background: var(--color-elevated);
+  border-color: var(--color-border);
 }
 
 /* CTA Button */
 .btn-cta {
-  @apply inline-flex items-center justify-center px-4 py-2 rounded-xl text-white;
-  background: linear-gradient(90deg, var(--cta-start), var(--cta-end));
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.5rem 1rem;
+  border-radius: 0.75rem;
+  color: white;
+  background: linear-gradient(90deg, #E04382, #8C6BC9);
   transition: filter 0.2s ease;
+  border: none;
+  cursor: pointer;
+  font-weight: 500;
+}
+
+.dark .btn-cta {
+  background: linear-gradient(90deg, var(--cta-start), var(--cta-end));
 }
 
 .btn-cta:hover {
@@ -88,8 +107,8 @@
 }
 
 .btn-cta:focus {
-  @apply outline-none ring-2;
-  ring-color: var(--ring);
+  outline: none;
+  box-shadow: 0 0 0 2px #FF4F8B;
 }
 
 /* Global dark mode overrides - SOLID SURFACES ONLY */

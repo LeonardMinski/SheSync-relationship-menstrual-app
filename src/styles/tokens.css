@@ -2,7 +2,7 @@
    DESIGN TOKENS - DARK MODE ONLY
    ========================================================================== */
 
-:root.dark {
+.dark {
   --color-bg: #0F0A1A;        /* page background */
   --color-surface: #17121F;   /* cards, content areas */
   --color-elevated: #1E1626;  /* headers, modals, nav */
@@ -30,8 +30,4 @@
 /* Global dark mode styles */
 html.dark {
   color-scheme: dark;
-}
-
-body {
-  @apply bg-bg text-foreground;
 }

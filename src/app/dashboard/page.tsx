@@ -415,14 +415,14 @@ const CycleTracker = () => {
         
         <main className="max-w-7xl mx-auto px-4 py-6 space-y-6">
         {/* Welcome Section - Hero */}
-        <div className="card dark:bg-surface dark:border-border">
+        <div className="card">
           <div>
             <div className="flex items-center justify-between mb-4">
               <div>
-                <h1 className="text-foreground text-2xl font-semibold">
+                <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
                   Hi, {authUser?.name?.split(' ')[0] || authUser?.email?.split('@')[0]}!
                 </h1>
-                <p className="text-muted mt-2">
+                <p className="text-gray-600 dark:text-gray-300 mt-2">
                   {format(new Date(), 'EEEE, MMMM do')}
                 </p>
               </div>
@@ -484,7 +484,7 @@ const CycleTracker = () => {
             </div>
           </div>
           
-          <p className="mt-3 text-muted">
+          <p className="mt-3 text-gray-600 dark:text-gray-300">
             {getInsightForPhase(smartPrediction.predictedPhase)}
           </p>
           </div>
@@ -545,23 +545,23 @@ const CycleTracker = () => {
         </div>
 
         {/* Calendar View */}
-        <div className="card dark:bg-surface dark:border-border">
+        <div className="card">
           <div>
           <div className="flex items-center justify-between mb-6">
-            <h2 className="text-foreground text-lg font-semibold">Calendar View</h2>
+            <h2 className="text-xl font-bold text-gray-900 dark:text-white">Calendar View</h2>
             <div className="flex items-center space-x-2">
               <button
                 onClick={() => setSelectedDate(subDays(selectedDate, 7))}
-                className="elevated p-2 rounded-xl text-foreground hover:bg-elevated/90 dark:bg-elevated dark:border-border dark:hover:bg-elevated/90"
+                className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
               >
                 <ChevronLeft size={20} />
               </button>
-              <span className="text-foreground text-sm font-medium min-w-[120px] text-center">
+              <span className="text-sm font-medium text-gray-600 dark:text-gray-300 min-w-[120px] text-center">
                 {format(selectedDate, 'MMM yyyy')}
               </span>
               <button
                 onClick={() => setSelectedDate(addDays(selectedDate, 7))}
-                className="elevated p-2 rounded-xl text-foreground hover:bg-elevated/90 dark:bg-elevated dark:border-border dark:hover:bg-elevated/90"
+                className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
               >
                 <ChevronRight size={20} />
               </button>
