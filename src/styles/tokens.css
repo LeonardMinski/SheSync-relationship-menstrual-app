@@ -1,0 +1,37 @@
+/* ==========================================================================
+   DESIGN TOKENS - DARK MODE ONLY
+   ========================================================================== */
+
+:root.dark {
+  --color-bg: #0F0A1A;        /* page background */
+  --color-surface: #17121F;   /* cards, content areas */
+  --color-elevated: #1E1626;  /* headers, modals, nav */
+  --color-border: #34263F;    /* borders */
+  
+  /* Text hierarchy */
+  --text-primary: #F8F6FA;    /* headings, primary text */
+  --text-secondary: #C7B7D6;  /* body text, descriptions */
+  --text-muted: #A394B6;      /* helper text, labels */
+  
+  /* Brand colors */
+  --cta-start: #FF4F8B;       /* gradient start */
+  --cta-end: #A78BFA;         /* gradient end */
+  --link: #FF77A7;            /* links */
+  
+  /* Status colors */
+  --success: #4ADE80;
+  --warning: #F2B84B;
+  --error: #FF5C77;
+  
+  /* Focus ring */
+  --ring: #FF4F8B;
+}
+
+/* Global dark mode styles */
+html.dark {
+  color-scheme: dark;
+}
+
+body {
+  @apply bg-bg text-foreground;
+}

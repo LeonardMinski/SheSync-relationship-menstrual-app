@@ -414,17 +414,15 @@ const CycleTracker = () => {
         <Navigation />
         
         <main className="max-w-7xl mx-auto px-4 py-6 space-y-6">
-        {/* Welcome Section */}
-        <div className="glass-effect rounded-3xl p-8 shadow-xl relative overflow-hidden">
-          {/* Glass morphism overlay */}
-          <div className="absolute inset-0 bg-gradient-to-br from-white/10 to-transparent dark:from-slate-800/20 dark:to-transparent pointer-events-none" />
-          <div className="relative z-10">
+        {/* Welcome Section - Hero */}
+        <div className="card dark:bg-surface dark:border-border">
+          <div>
             <div className="flex items-center justify-between mb-4">
               <div>
-                <h1 className="text-2xl font-bold" style={{color: 'var(--text-primary)'}}>
+                <h1 className="text-foreground text-2xl font-semibold">
                   Hi, {authUser?.name?.split(' ')[0] || authUser?.email?.split('@')[0]}!
                 </h1>
-                <p style={{color: 'var(--text-secondary)'}}>
+                <p className="text-muted mt-2">
                   {format(new Date(), 'EEEE, MMMM do')}
                 </p>
               </div>
@@ -486,7 +484,7 @@ const CycleTracker = () => {
             </div>
           </div>
           
-          <p className="mt-3 text-gray-300">
+          <p className="mt-3 text-muted">
             {getInsightForPhase(smartPrediction.predictedPhase)}
           </p>
           </div>
@@ -539,33 +537,31 @@ const CycleTracker = () => {
         <div className="flex justify-center">
           <button
             onClick={() => setShowCycleLog(true)}
-            className="flex items-center space-x-2 bg-gradient-to-r from-rose-500 to-purple-600 dark:from-violet-600 dark:via-purple-600 dark:to-rose-500 text-white px-8 py-4 rounded-2xl font-semibold hover:from-rose-600 hover:to-purple-700 dark:hover:from-violet-700 dark:hover:via-purple-700 dark:hover:to-rose-600 transition-all duration-300 shadow-lg hover:shadow-2xl dark:shadow-purple-900/50 hover:scale-105 active:scale-95 backdrop-blur-sm"
+            className="btn-cta mt-4 px-6 py-3"
           >
-            <Plus size={20} />
-            <span >Log Cycle Entry</span>
+            <Plus size={20} className="mr-2" />
+            Log Cycle Entry
           </button>
         </div>
 
         {/* Calendar View */}
-        <div className="bg-white/70 dark:bg-slate-900/40 backdrop-blur-xl rounded-3xl p-8 border border-rose-200/50 dark:border-slate-700/50 shadow-xl dark:shadow-2xl dark:shadow-purple-900/20 relative overflow-hidden">
-          {/* Glass morphism overlay */}
-          <div className="absolute inset-0 bg-gradient-to-br from-white/10 to-transparent dark:from-slate-800/20 dark:to-transparent pointer-events-none" />
-          <div className="relative z-10">
+        <div className="card dark:bg-surface dark:border-border">
+          <div>
           <div className="flex items-center justify-between mb-6">
-            <h2 className="text-xl font-bold text-white dark:text-white">Calendar View</h2>
+            <h2 className="text-foreground text-lg font-semibold">Calendar View</h2>
             <div className="flex items-center space-x-2">
               <button
                 onClick={() => setSelectedDate(subDays(selectedDate, 7))}
-                className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
+                className="elevated p-2 rounded-xl text-foreground hover:bg-elevated/90 dark:bg-elevated dark:border-border dark:hover:bg-elevated/90"
               >
                 <ChevronLeft size={20} />
               </button>
-              <span className="text-sm font-medium text-gray-600 dark:text-gray-300 min-w-[120px] text-center">
+              <span className="text-foreground text-sm font-medium min-w-[120px] text-center">
                 {format(selectedDate, 'MMM yyyy')}
               </span>
               <button
                 onClick={() => setSelectedDate(addDays(selectedDate, 7))}
-                className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
+                className="elevated p-2 rounded-xl text-foreground hover:bg-elevated/90 dark:bg-elevated dark:border-border dark:hover:bg-elevated/90"
               >
                 <ChevronRight size={20} />
               </button>
