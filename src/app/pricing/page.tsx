@@ -31,11 +31,77 @@ const Pricing = () => {
 
   const fetchPlans = async () => {
     try {
-      const response = await fetch('/api/checkout');
-      const data = await response.json();
-      setPlans(data.plans || []);
+      // Static plans configuration - in a real app, these would come from Stripe
+      const staticPlans: SubscriptionPlan[] = [
+        {
+          id: 'free',
+          name: 'Free',
+          price: 0,
+          interval: 'forever',
+          features: [
+            'Basic cycle tracking',
+            '5 intimacy cards',
+            'Simple mood logging',
+            'Basic calendar view'
+          ],
+          limitations: [
+            'No AI coach',
+            'Limited partner features',
+            'No fantasy vault',
+            'Basic insights only'
+          ]
+        },
+        {
+          id: 'premium',
+          name: 'Premium',
+          price: 15,
+          interval: 'month',
+          priceId: 'price_premium_monthly', // This would be your actual Stripe price ID
+          popular: true,
+          features: [
+            'Full cycle tracker with predictions',
+            'Partner access portal',
+            '100+ intimacy questions',
+            'AI coaching & insights',
+            'Advanced mood tracking',
+            'Symptom correlation',
+            'Custom reminders'
+          ]
+        },
+        {
+          id: 'vip',
+          name: 'VIP',
+          price: 39,
+          interval: 'month',
+          priceId: 'price_vip_monthly', // This would be your actual Stripe price ID
+          features: [
+            'Everything in Premium',
+            'Fantasy Vault with privacy controls',
+            'Custom wellness rituals',
+            'Priority AI coaching',
+            'Advanced analytics',
+            'Telehealth integration',
+            'Priority support'
+          ]
+        },
+        {
+          id: 'lifetime',
+          name: 'Lifetime',
+          price: 199,
+          interval: 'forever',
+          priceId: 'price_lifetime', // This would be your actual Stripe price ID
+          features: [
+            'All VIP features forever',
+            'Exclusive lifetime benefits',
+            'Early access to new features',
+            'Lifetime updates',
+            'VIP community access'
+          ]
+        }
+      ];
+      setPlans(staticPlans);
     } catch (error) {
-      console.error('Error fetching plans:', error);
+      console.error('Error loading plans:', error);
     } finally {
       setLoading(false);
     }

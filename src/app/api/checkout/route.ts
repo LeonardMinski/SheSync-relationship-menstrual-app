@@ -1,14 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server'
 import Stripe from 'stripe'
-import { supabase } from '@/lib/supabase'
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
-  apiVersion: '2025-06-30.basil',
+  apiVersion: '2025-08-27.basil',
 })
 
 export async function POST(request: NextRequest) {
   try {
-    const { priceId, userId, userEmail } = await request.json()
+    const { priceId, userId } = await request.json()
 
     if (!priceId || !userId) {
       return NextResponse.json(
@@ -17,21 +16,21 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // Validate price ID against our known plans
-    const validPriceIds = {
-      premium: process.env.STRIPE_PREMIUM_PRICE_ID || 'price_premium_monthly',
-      vip: process.env.STRIPE_VIP_PRICE_ID || 'price_vip_monthly'
+    // Determine subscription mode based on price ID
+    const isLifetime = priceId.includes('lifetime')
+    const mode = isLifetime ? 'payment' : 'subscription'
+
+    // Determine plan type from price ID
+    let planType = 'premium'
+    if (priceId.includes('vip')) {
+      planType = 'vip'
+    } else if (priceId.includes('lifetime')) {
+      planType = 'lifetime'
     }
 
-    if (!Object.values(validPriceIds).includes(priceId)) {
-      return NextResponse.json(
-        { error: 'Invalid price ID' },
-        { status: 400 }
-      )
-    }
+    const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'
 
-    // Create Stripe Checkout Session
-    const session = await stripe.checkout.sessions.create({
+    const sessionConfig: Stripe.Checkout.SessionCreateParams = {
       payment_method_types: ['card'],
       line_items: [
         {
@@ -39,27 +38,21 @@ export async function POST(request: NextRequest) {
           quantity: 1,
         },
       ],
-      mode: 'subscription',
-      success_url: `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/settings?success=true&session_id={CHECKOUT_SESSION_ID}`,
-      cancel_url: `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/pricing?canceled=true`,
-      customer_email: userEmail,
+      mode,
+      success_url: `${baseUrl}/dashboard?success=true`,
+      cancel_url: `${baseUrl}/pricing?canceled=true`,
+      client_reference_id: userId,
       metadata: {
-        userId: userId,
-        plan: priceId === validPriceIds.premium ? 'premium' : 'vip'
-      },
-      subscription_data: {
-        metadata: {
-          userId: userId,
-          plan: priceId === validPriceIds.premium ? 'premium' : 'vip'
-        }
-      },
-      allow_promotion_codes: true,
-      billing_address_collection: 'required',
-    })
+        userId,
+        plan: planType
+      }
+    }
 
-    return NextResponse.json({ 
-      sessionId: session.id,
-      url: session.url 
+    const session = await stripe.checkout.sessions.create(sessionConfig)
+
+    return NextResponse.json({
+      url: session.url,
+      sessionId: session.id
     })
 
   } catch (error) {
@@ -74,81 +67,6 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json(
       { error: 'Failed to create checkout session' },
-      { status: 500 }
-    )
-  }
-}
-
-// Get available subscription plans
-export async function GET() {
-  try {
-    const plans = [
-      {
-        id: 'free',
-        name: 'Free',
-        price: 0,
-        interval: 'forever',
-        features: [
-          'Basic cycle tracking',
-          'Mood and symptom logging',
-          '7-day data history',
-          'Basic AI coach access (5 questions/day)',
-          'Community support'
-        ],
-        limitations: [
-          'Limited AI coach interactions',
-          'Basic analytics only',
-          'No partner sharing',
-          'No premium features'
-        ]
-      },
-      {
-        id: 'premium',
-        name: 'Premium',
-        price: 15,
-        currency: 'GBP',
-        interval: 'month',
-        priceId: process.env.STRIPE_PREMIUM_PRICE_ID || 'price_premium_monthly',
-        features: [
-          'Everything in Free',
-          'Unlimited AI coach access',
-          'Advanced cycle analytics',
-          'Partner sharing & sync',
-          'Intimacy deck access',
-          'Fantasy vault',
-          'Custom notifications',
-          'Data export',
-          'Priority support'
-        ],
-        popular: true
-      },
-      {
-        id: 'vip',
-        name: 'VIP',
-        price: 39,
-        currency: 'GBP',
-        interval: 'month',
-        priceId: process.env.STRIPE_VIP_PRICE_ID || 'price_vip_monthly',
-        features: [
-          'Everything in Premium',
-          'Personalized AI coaching',
-          'Advanced relationship insights',
-          'Custom meal plans',
-          'Workout recommendations',
-          '1-on-1 wellness consultation',
-          'Early access to new features',
-          'White-label options',
-          'Dedicated support'
-        ]
-      }
-    ]
-
-    return NextResponse.json({ plans })
-
-  } catch (error) {
-    console.error('Error fetching plans:', error)
-    return NextResponse.json(
-      { error: 'Failed to fetch subscription plans' },
       { status: 500 }
     )
   }

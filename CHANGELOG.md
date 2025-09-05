@@ -22,6 +22,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Authentication middleware for route protection
 - Environment variable configuration for Supabase
 - Supabase configuration documentation
+- Stripe payments integration with subscription tier syncing
+- API routes for checkout session creation (`/api/checkout`)
+- Stripe webhook handling for subscription events (`/api/webhooks/stripe`)
+- Subscription tier management (free, premium, vip, lifetime)
+- Pricing page with subscription plan selection
+- TDD unit tests for payment processing and webhook handling
 
 ### Changed
 - Moved cycle tracking functionality from `/` to `/dashboard`

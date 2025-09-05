@@ -6,6 +6,8 @@ export interface User {
   email: string
   name: string
   subscription_tier: 'free' | 'premium' | 'vip' | 'lifetime'
+  subscription_status?: 'active' | 'canceled' | 'past_due' | null
+  stripe_subscription_id?: string | null
   created_at: string
   partner_id?: string
   privacy_settings: {
