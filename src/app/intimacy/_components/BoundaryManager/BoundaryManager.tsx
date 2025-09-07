@@ -13,7 +13,7 @@ interface BoundaryManagerProps {
 export default function BoundaryManager({ boundaries }: BoundaryManagerProps) {
   const [isAdding, setIsAdding] = useState(false)
   const [editingId, setEditingId] = useState<string | null>(null)
-  const [newBoundary, setNewBoundary] = useState({ label: '', status: 'yes' as const })
+  const [newBoundary, setNewBoundary] = useState<{ label: string; status: 'yes' | 'maybe' | 'no' }>({ label: '', status: 'yes' })
   const [isSubmitting, setIsSubmitting] = useState(false)
 
   const handleAddBoundary = async () => {

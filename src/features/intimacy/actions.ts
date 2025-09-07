@@ -182,7 +182,7 @@ export async function updateReflection(formData: FormData) {
     const sessionData = {
       date,
       selectedCardId: '', // This will be ignored in the upsert
-      reflection: reflection || null
+      reflection: reflection || undefined
     }
 
     const result = await upsertSession(user.id, sessionData)

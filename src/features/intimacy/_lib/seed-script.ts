@@ -1,5 +1,5 @@
 import { supabase } from '@/lib/supabaseClient'
-import { seedCards } from './seed'
+import { seedIntimacyCards } from './seed'
 
 /**
  * Seed the intimacy_cards table with initial data
@@ -23,21 +23,27 @@ export async function seedIntimacyCardsDatabase() {
       return { success: true, message: `${count} cards already exist` }
     }
 
-    // Insert seed cards
-    const { data, error } = await supabase
+    // Use the seed function from seed.ts
+    const result = await seedIntimacyCards()
+    
+    if (!result.success) {
+      throw new Error(result.error || 'Failed to seed cards')
+    }
+    
+    // Get final count after seeding
+    const { count: finalCount, error: finalCountError } = await supabase
       .from('intimacy_cards')
-      .insert(seedCards)
-      .select('id')
+      .select('*', { count: 'exact', head: true })
 
-    if (error) {
-      throw new Error(`Failed to insert seed cards: ${error.message}`)
+    if (finalCountError) {
+      throw new Error(`Failed to get final count: ${finalCountError.message}`)
     }
 
-    console.log(`✅ Successfully seeded ${data?.length || 0} intimacy cards`)
+    console.log(`✅ Successfully seeded ${finalCount || 0} intimacy cards`)
     
     return { 
       success: true, 
-      message: `Successfully seeded ${data?.length || 0} intimacy cards` 
+      message: `Successfully seeded ${finalCount || 0} intimacy cards` 
     }
 
   } catch (error) {
@@ -126,5 +132,4 @@ export async function getSeedingStats() {
 }
 
 // Export for use in development/admin scripts
-export { seedCards }
 

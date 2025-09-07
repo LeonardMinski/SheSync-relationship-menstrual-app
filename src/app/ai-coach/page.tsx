@@ -1,10 +1,22 @@
+/**
+ * AI Coach Page - Personalized AI coaching for wellness and relationships
+ * 
+ * Features:
+ * - Chat interface with AI coach
+ * - Context-aware responses based on cycle data
+ * - Message history and conversation management
+ * - Real-time typing indicators
+ * - Error handling and loading states
+ * 
+ * Route: /ai-coach
+ */
 'use client';
 
 import React, { useState, useRef, useEffect } from 'react';
 import { format } from 'date-fns';
 import { Send, Bot, User, Sparkles, Brain, Heart, Zap, AlertCircle } from 'lucide-react';
 import { useApp } from '@/context/AppContext';
-import { useCoach } from '@/features/ai-coach/useCoach';
+import { useCoach } from '@/features/ai-coach/hooks/useCoach';
 import Navigation from '@/components/Navigation';
 import LoadingSpinner from '@/components/LoadingSpinner';
 

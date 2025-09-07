@@ -1,3 +1,15 @@
+/**
+ * Landing Page - Main entry point for SheSync+ application
+ * 
+ * Features:
+ * - Hero section with app introduction
+ * - Feature showcase (Cycle Tracking, Intimacy Cards, Fantasy Vault, AI Coach)
+ * - Partner features section
+ * - Call-to-action sections
+ * - Responsive design with dark/light mode support
+ * 
+ * Route: /
+ */
 'use client'
 
 import Link from 'next/link'

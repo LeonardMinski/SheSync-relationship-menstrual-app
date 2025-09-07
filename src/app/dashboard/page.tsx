@@ -1,3 +1,16 @@
+/**
+ * Dashboard Page - Main user dashboard for cycle tracking and insights
+ * 
+ * Features:
+ * - Cycle phase display with tooltips
+ * - Today's cycle stats (Mood, Phase, Symptoms, Logged date)
+ * - Cycle logging form with mood slider and symptom selection
+ * - Smart predictions based on cycle data
+ * - Interactive calendar view
+ * - Phase-specific insights and recommendations
+ * 
+ * Route: /dashboard
+ */
 'use client';
 
 import React, { useState, useEffect, useRef } from 'react';
@@ -22,7 +35,7 @@ import {
 } from 'lucide-react';
 import { useApp } from '@/context/AppContext';
 import { useAuth } from '@/context/AuthContext';
-import { useCycleLogger } from '@/features/cycle/useCycleLogger';
+import { useCycleLogger } from '@/features/cycle/hooks/useCycleLogger';
 import Navigation from '@/components/Navigation';
 import LoadingSpinner from '@/components/LoadingSpinner';
 import { getPhaseEmoji, getPhaseColor } from '@/lib/mockData';

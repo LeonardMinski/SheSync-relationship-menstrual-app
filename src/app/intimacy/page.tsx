@@ -1,3 +1,16 @@
+/**
+ * Intimacy Page - Main intimacy feature page for couples
+ * 
+ * Features:
+ * - Needs & Boundaries management
+ * - Daily intimacy card selection
+ * - Reflection form for session feedback
+ * - Share toggle for partner visibility
+ * - Partner connection status
+ * - Back to dashboard navigation
+ * 
+ * Route: /intimacy
+ */
 'use client'
 
 import { useEffect, useState } from 'react'
