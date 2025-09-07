@@ -346,7 +346,7 @@ const Dashboard = () => {
         {/* Header */}
         <div className="text-center mb-8">
           <h1 className="text-3xl font-bold mb-2" style={{color: 'var(--text-primary)'}}>
-            Hi, {user?.name || 'there'}!
+            Hi, {authUser?.name?.split(' ')[0] || 'there'}!
           </h1>
           <p className="text-lg" style={{color: 'var(--text-secondary)'}}>
             {format(new Date(), 'EEEE, MMMM do')}
@@ -357,15 +357,14 @@ const Dashboard = () => {
         <div className="text-center mb-8">
           <PhaseTooltip phase={currentPhase}>
             <div 
-              className="inline-flex items-center px-6 py-3 rounded-full text-white font-semibold shadow-lg"
-              style={{backgroundColor: getPhaseColor(currentPhase)}}
+              className={`inline-flex items-center px-6 py-3 rounded-full font-semibold shadow-lg ${getPhaseColor(currentPhase)}`}
             >
               <span className="mr-2 text-2xl">{getPhaseEmoji(currentPhase)}</span>
               {currentPhase.charAt(0).toUpperCase() + currentPhase.slice(1)} Phase
               <Info className="ml-2 h-4 w-4" />
             </div>
           </PhaseTooltip>
-          <p className="mt-3 text-sm" style={{color: 'var(--text-secondary)'}}>
+          <p className="mt-3 text-sm text-gray-900 dark:text-gray-300">
             {getInsightForPhase(currentPhase)}
           </p>
         </div>
@@ -373,7 +372,7 @@ const Dashboard = () => {
         {/* Today's Cycle Stats */}
         {todaysData && (
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            <div className="bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm border border-gray-200 dark:border-gray-700 rounded-xl p-4 shadow-sm">
+            <div className="bg-white dark:bg-gray-800/90 backdrop-blur-sm border border-gray-200 dark:border-gray-700 rounded-xl p-4 shadow-sm">
               <div className="flex items-center space-x-2 mb-2">
                 <Brain className="text-rose-500" size={20} />
                 <span className="text-sm font-medium text-gray-600 dark:text-gray-300">Mood</span>
@@ -383,16 +382,16 @@ const Dashboard = () => {
               </div>
             </div>
             
-            <div className="bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm border border-gray-200 dark:border-gray-700 rounded-xl p-4 shadow-sm">
+            <div className="bg-white dark:bg-gray-800/90 backdrop-blur-sm border border-gray-200 dark:border-gray-700 rounded-xl p-4 shadow-sm">
               <div className="flex items-center space-x-2 mb-2">
                 <span className="text-sm font-medium text-gray-600 dark:text-gray-300">Phase</span>
               </div>
-              <div className="text-lg font-bold text-gray-900 dark:text-white">
-                {todaysData.phase.charAt(0).toUpperCase() + todaysData.phase.slice(1)}
+              <div className="text-lg font-bold text-gray-900 dark:text-white" style={{color: 'var(--text-primary)'}}>
+                {currentPhase.charAt(0).toUpperCase() + currentPhase.slice(1)}
               </div>
             </div>
             
-            <div className="bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm border border-gray-200 dark:border-gray-700 rounded-xl p-4 shadow-sm">
+            <div className="bg-white dark:bg-gray-800/90 backdrop-blur-sm border border-gray-200 dark:border-gray-700 rounded-xl p-4 shadow-sm">
               <div className="flex items-center space-x-2 mb-2">
                 <span className="text-sm font-medium text-gray-600 dark:text-gray-300">Symptoms</span>
               </div>
@@ -401,7 +400,7 @@ const Dashboard = () => {
               </div>
             </div>
             
-            <div className="bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm border border-gray-200 dark:border-gray-700 rounded-xl p-4 shadow-sm">
+            <div className="bg-white dark:bg-gray-800/90 backdrop-blur-sm border border-gray-200 dark:border-gray-700 rounded-xl p-4 shadow-sm">
               <div className="flex items-center space-x-2 mb-2">
                 <Calendar className="text-blue-500" size={20} />
                 <span className="text-sm font-medium text-gray-600 dark:text-gray-300">Logged</span>

@@ -36,6 +36,7 @@
   --gradient-accent: linear-gradient(135deg, #FF4F8B, #A78BFA);
   --accent-gradient: linear-gradient(135deg, #FF4F8B, #A78BFA);
   --cta-gradient: linear-gradient(135deg, #FF4F8B, #A78BFA);
+  --accent-start: #FF4F8B;
   
   /* Additional variables for landing page */
   --accent-secondary: #8C6BC9;
@@ -78,6 +79,7 @@
   --gradient-accent: linear-gradient(135deg, #E04382, #8C6BC9);
   --accent-gradient: linear-gradient(135deg, #FF4F8B, #A78BFA);
   --cta-gradient: linear-gradient(135deg, #FF4F8B, #A78BFA);
+  --accent-start: #FF4F8B;
   
   /* Additional variables for landing page */
   --accent-secondary: #A78BFA;

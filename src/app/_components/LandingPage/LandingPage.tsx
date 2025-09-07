@@ -79,10 +79,7 @@ export default function LandingPage() {
           </h1>
           
           <div className="flex justify-center mb-12">
-            <p 
-              className="text-xl max-w-2xl leading-relaxed text-gray-600 dark:text-gray-300"
-              style={{ textAlign: 'center' }}
-            >
+            <p className="text-xl max-w-2xl leading-relaxed text-gray-600 dark:text-gray-300 text-center">
               Track your menstrual cycle, enhance intimacy with your partner, explore fantasies safely, 
               and get AI-powered coaching - all in one beautiful, private app.
             </p>
@@ -161,13 +158,12 @@ export default function LandingPage() {
           <h2 className="text-3xl md:text-4xl font-bold text-gray-900 dark:text-white mb-4">
             Better Together
           </h2>
-          <p 
-            className="text-lg text-gray-600 dark:text-gray-300 mb-8 max-w-2xl mx-auto leading-relaxed"
-            style={{ textAlign: 'center' }}
-          >
-            Connect with your partner to share cycle insights, explore intimacy cards together, 
-            and build deeper understanding through synchronized wellness tracking.
-          </p>
+          <div className="flex justify-center mb-8">
+            <p className="text-lg text-gray-600 dark:text-gray-300 max-w-2xl leading-relaxed text-center">
+              Connect with your partner to share cycle insights, explore intimacy cards together, 
+              and build deeper understanding through synchronized wellness tracking.
+            </p>
+          </div>
           <div className="flex flex-wrap justify-center gap-4 text-sm text-gray-600 dark:text-gray-300">
             <span className="bg-white/50 dark:bg-gray-800/50 px-4 py-2 rounded-full">🔒 Private & Secure</span>
             <span className="bg-white/50 dark:bg-gray-800/50 px-4 py-2 rounded-full">💕 Couple Syncing</span>

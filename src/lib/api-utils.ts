@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { supabase } from './supabase'
+import { supabase } from './supabaseClient'
 
 export interface AuthenticatedRequest extends NextRequest {
   user?: {

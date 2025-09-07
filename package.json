@@ -10,7 +10,9 @@
     "test": "vitest",
     "test:watch": "vitest --watch",
     "test:coverage": "vitest --coverage",
-    "test:ci": "vitest --run --coverage"
+    "test:ci": "vitest --run --coverage",
+    "setup:db": "node scripts/setup-database.js",
+    "seed:intimacy": "node scripts/seed-intimacy.js"
   },
   "dependencies": {
     "@heroicons/react": "^2.2.0",
