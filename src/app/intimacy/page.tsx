@@ -16,10 +16,10 @@ import {
   hasConsentRequirement,
   getTodayDate
 } from '@/features/intimacy/selectors'
-import BoundaryManager from './_components/BoundaryManager'
-import TodayCardSelector from './_components/TodayCardSelector'
-import ReflectionForm from './_components/ReflectionForm'
-import ShareToggle from './_components/ShareToggle'
+import BoundaryManager from './_components/BoundaryManager/BoundaryManager'
+import TodayCardSelector from './_components/TodayCardSelector/TodayCardSelector'
+import ReflectionForm from './_components/ReflectionForm/ReflectionForm'
+import ShareToggle from './_components/ShareToggle/ShareToggle'
 import LoadingSpinner from '@/components/LoadingSpinner'
 import type { BoundaryItemRecord, IntimacyCard, IntimacySession } from '@/features/intimacy/schemas'
 
