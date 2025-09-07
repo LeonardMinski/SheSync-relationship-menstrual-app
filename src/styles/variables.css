@@ -34,6 +34,15 @@
   /* Gradients */
   --gradient-primary: linear-gradient(90deg, #E04382, #8C6BC9);
   --gradient-accent: linear-gradient(135deg, #FF4F8B, #A78BFA);
+  --accent-gradient: linear-gradient(135deg, #FF4F8B, #A78BFA);
+  --cta-gradient: linear-gradient(135deg, #FF4F8B, #A78BFA);
+  
+  /* Additional variables for landing page */
+  --accent-secondary: #8C6BC9;
+  --info: #5865F2;
+  --success: #3FA77B;
+  --error: #D9304F;
+  --warning: #F59E0B;
 }
 
 .dark {
@@ -67,6 +76,15 @@
   /* Gradients */
   --gradient-primary: linear-gradient(90deg, #FF4F8B, #A78BFA);
   --gradient-accent: linear-gradient(135deg, #E04382, #8C6BC9);
+  --accent-gradient: linear-gradient(135deg, #FF4F8B, #A78BFA);
+  --cta-gradient: linear-gradient(135deg, #FF4F8B, #A78BFA);
+  
+  /* Additional variables for landing page */
+  --accent-secondary: #A78BFA;
+  --info: #7289DA;
+  --success: #4ADE80;
+  --error: #FF5C77;
+  --warning: #FBBF24;
 }
 
 /* Phase Colors */

@@ -8,6 +8,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- **INTIMACY feature**: Complete intimacy and connection system with:
+  - Boundaries management (yes/maybe/no preferences)
+  - Daily intimacy card selection with phase-aware suggestions
+  - Reflection system for connection experiences
+  - Partner sharing with strict RLS policies
+  - 40+ curated non-explicit intimacy cards across 5 categories
+  - Partner portal for viewing shared activities
+  - Comprehensive database schema with proper RLS
+  - Full test coverage for schemas and selectors
 - Supabase integration for authentication and database operations
 - Complete authentication flow with signup, login, and email verification
 - Landing page with project branding and feature highlights
