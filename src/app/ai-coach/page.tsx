@@ -4,7 +4,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { format } from 'date-fns';
 import { Send, Bot, User, Sparkles, Brain, Heart, Zap, AlertCircle } from 'lucide-react';
 import { useApp } from '@/context/AppContext';
-import { useCoach } from '@/hooks/useCoach';
+import { useCoach } from '@/features/ai-coach/useCoach';
 import Navigation from '@/components/Navigation';
 import LoadingSpinner from '@/components/LoadingSpinner';
 

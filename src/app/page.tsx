@@ -68,10 +68,15 @@ export default function LandingPage() {
             & Intimacy Companion
           </h1>
           
-          <p className="text-xl mb-12 max-w-2xl mx-auto leading-relaxed text-gray-600 dark:text-gray-300">
-            Track your menstrual cycle, enhance intimacy with your partner, explore fantasies safely, 
-            and get AI-powered coaching - all in one beautiful, private app.
-          </p>
+          <div className="flex justify-center mb-12">
+            <p 
+              className="text-xl max-w-2xl leading-relaxed text-gray-600 dark:text-gray-300"
+              style={{ textAlign: 'center' }}
+            >
+              Track your menstrual cycle, enhance intimacy with your partner, explore fantasies safely, 
+              and get AI-powered coaching - all in one beautiful, private app.
+            </p>
+          </div>
           
           <div className="flex flex-col sm:flex-row gap-6 justify-center mb-16">
             <Link
@@ -146,7 +151,10 @@ export default function LandingPage() {
           <h2 className="text-3xl md:text-4xl font-bold text-gray-900 dark:text-white mb-4">
             Better Together
           </h2>
-          <p className="text-lg text-gray-600 dark:text-gray-300 mb-8 max-w-2xl mx-auto">
+          <p 
+            className="text-lg text-gray-600 dark:text-gray-300 mb-8 max-w-2xl mx-auto leading-relaxed"
+            style={{ textAlign: 'center' }}
+          >
             Connect with your partner to share cycle insights, explore intimacy cards together, 
             and build deeper understanding through synchronized wellness tracking.
           </p>
@@ -179,7 +187,7 @@ export default function LandingPage() {
       {/* Footer */}
       <footer className="container mx-auto px-4 py-12 border-t border-gray-200 dark:border-gray-700 mt-20">
         <div className="text-center text-gray-600 dark:text-gray-400">
-          <p>&copy; 2024 SheSync+. Empowering women through technology.</p>
+          <p>&copy; 2025 SheSync+. Empowering women through technology.</p>
         </div>
       </footer>
     </div>

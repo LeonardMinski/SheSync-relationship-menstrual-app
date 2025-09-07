@@ -23,6 +23,42 @@ export const useCycleLogger = () => {
   const [cycles, setCycles] = useState<CycleEntry[]>([])
   const { user } = useAuth()
 
+  const fetchCycles = useCallback(async (): Promise<void> => {
+    if (!user) {
+      setError('User not authenticated')
+      return
+    }
+
+    setLoading(true)
+    setError(null)
+
+    try {
+      // Get the current session and access token
+      const { data: { session } } = await supabase.auth.getSession()
+      if (!session?.access_token) {
+        throw new Error('No valid session found')
+      }
+
+      const response = await fetch('/api/log-cycle', {
+        headers: {
+          'Authorization': `Bearer ${session.access_token}`
+        }
+      })
+      const result = await response.json()
+
+      if (!response.ok) {
+        throw new Error(result.error || 'Failed to fetch cycles')
+      }
+
+      setCycles(result.data || [])
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : 'Failed to fetch cycles'
+      setError(errorMessage)
+    } finally {
+      setLoading(false)
+    }
+  }, [user])
+
   const logCycle = useCallback(async (data: LogCycleData): Promise<boolean> => {
     if (!user) {
       setError('User not authenticated')
@@ -64,43 +100,7 @@ export const useCycleLogger = () => {
     } finally {
       setLoading(false)
     }
-  }, [user])
-
-  const fetchCycles = useCallback(async (): Promise<void> => {
-    if (!user) {
-      setError('User not authenticated')
-      return
-    }
-
-    setLoading(true)
-    setError(null)
-
-    try {
-      // Get the current session and access token
-      const { data: { session } } = await supabase.auth.getSession()
-      if (!session?.access_token) {
-        throw new Error('No valid session found')
-      }
-
-      const response = await fetch('/api/log-cycle', {
-        headers: {
-          'Authorization': `Bearer ${session.access_token}`
-        }
-      })
-      const result = await response.json()
-
-      if (!response.ok) {
-        throw new Error(result.error || 'Failed to fetch cycles')
-      }
-
-      setCycles(result.data || [])
-    } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'Failed to fetch cycles'
-      setError(errorMessage)
-    } finally {
-      setLoading(false)
-    }
-  }, [user])
+  }, [user, fetchCycles])
 
   const clearError = useCallback(() => {
     setError(null)

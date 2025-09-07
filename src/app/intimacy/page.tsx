@@ -1,8 +1,9 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { Heart, Plus, Share2, Edit3 } from 'lucide-react'
+import { Heart, Plus, Share2, Edit3, ArrowLeft } from 'lucide-react'
 import { useAuth } from '@/context/AuthContext'
+import Link from 'next/link'
 import { 
   listBoundaries, 
   getTodayCard, 
@@ -86,6 +87,17 @@ export default function IntimacyPage() {
   return (
     <div className="min-h-screen pb-20 bg-gradient-to-br from-rose-50 via-white to-purple-50 dark:bg-[#0F0A1A]">
       <main className="max-w-4xl mx-auto px-4 py-8">
+        {/* Back to Dashboard Button */}
+        <div className="mb-6">
+          <Link
+            href="/dashboard"
+            className="inline-flex items-center space-x-2 text-sm text-rose-600 hover:text-rose-700 dark:text-rose-400 dark:hover:text-rose-300 transition-colors"
+          >
+            <ArrowLeft size={16} />
+            <span>Back to Dashboard</span>
+          </Link>
+        </div>
+
         {/* Header */}
         <div className="text-center mb-8">
           <div className="flex items-center justify-center mb-4">

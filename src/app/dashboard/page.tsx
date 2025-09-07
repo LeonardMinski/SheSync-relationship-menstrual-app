@@ -22,7 +22,7 @@ import {
 } from 'lucide-react';
 import { useApp } from '@/context/AppContext';
 import { useAuth } from '@/context/AuthContext';
-import { useCycleLogger } from '@/hooks/useCycleLogger';
+import { useCycleLogger } from '@/features/cycle/useCycleLogger';
 import Navigation from '@/components/Navigation';
 import LoadingSpinner from '@/components/LoadingSpinner';
 import { getPhaseEmoji, getPhaseColor } from '@/lib/mockData';
@@ -488,40 +488,40 @@ const CycleTracker = () => {
         {/* Today's Cycle Stats */}
         {todaysData && (
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            <div className="glass-effect rounded-xl p-4">
+            <div className="bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm border border-gray-200 dark:border-gray-700 rounded-xl p-4 shadow-sm">
               <div className="flex items-center space-x-2 mb-2">
                 <Brain className="text-rose-500" size={20} />
-                <span className="text-sm font-medium" style={{color: 'var(--text-secondary)'}}>Mood</span>
+                <span className="text-sm font-medium text-gray-600 dark:text-gray-300">Mood</span>
               </div>
-              <div className="text-2xl font-bold" style={{color: 'var(--text-primary)'}}>
+              <div className="text-2xl font-bold text-gray-900 dark:text-white">
                 {todaysData.mood}/10
               </div>
             </div>
             
-            <div className="glass-effect rounded-xl p-4">
+            <div className="bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm border border-gray-200 dark:border-gray-700 rounded-xl p-4 shadow-sm">
               <div className="flex items-center space-x-2 mb-2">
-                <span className="text-sm font-medium" style={{color: 'var(--text-secondary)'}}>Phase</span>
+                <span className="text-sm font-medium text-gray-600 dark:text-gray-300">Phase</span>
               </div>
-              <div className="text-lg font-bold" style={{color: 'var(--text-primary)'}}>
+              <div className="text-lg font-bold text-gray-900 dark:text-white">
                 {todaysData.phase.charAt(0).toUpperCase() + todaysData.phase.slice(1)}
               </div>
             </div>
             
-            <div className="glass-effect rounded-xl p-4">
+            <div className="bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm border border-gray-200 dark:border-gray-700 rounded-xl p-4 shadow-sm">
               <div className="flex items-center space-x-2 mb-2">
-                <span className="text-sm font-medium" style={{color: 'var(--text-secondary)'}}>Symptoms</span>
+                <span className="text-sm font-medium text-gray-600 dark:text-gray-300">Symptoms</span>
               </div>
-              <div className="text-lg font-bold" style={{color: 'var(--text-primary)'}}>
+              <div className="text-lg font-bold text-gray-900 dark:text-white">
                 {todaysData.symptoms.length}
               </div>
             </div>
             
-            <div className="glass-effect rounded-xl p-4">
+            <div className="bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm border border-gray-200 dark:border-gray-700 rounded-xl p-4 shadow-sm">
               <div className="flex items-center space-x-2 mb-2">
                 <Calendar className="text-blue-500" size={20} />
-                <span className="text-sm font-medium" style={{color: 'var(--text-secondary)'}}>Logged</span>
+                <span className="text-sm font-medium text-gray-600 dark:text-gray-300">Logged</span>
               </div>
-              <div className="text-lg font-bold" style={{color: 'var(--text-primary)'}}>
+              <div className="text-lg font-bold text-gray-900 dark:text-white">
                 {format(new Date(todaysData.created_at || ''), 'MMM d')}
               </div>
             </div>
@@ -718,7 +718,10 @@ const CycleTracker = () => {
                   max="10"
                   value={cycleLogData.mood}
                   onChange={(e) => setCycleLogData({...cycleLogData, mood: parseInt(e.target.value)})}
-                  className="w-full"
+                  className="w-full h-2 bg-gray-200 dark:bg-gray-700 rounded-lg appearance-none cursor-pointer slider"
+                  style={{
+                    background: `linear-gradient(to right, var(--accent-start) 0%, var(--accent-start) ${(cycleLogData.mood - 1) * 11.11}%, var(--bg-secondary) ${(cycleLogData.mood - 1) * 11.11}%, var(--bg-secondary) 100%)`
+                  }}
                 />
                 <div className="text-center text-sm text-gray-600 dark:text-gray-400">
                   {cycleLogData.mood}/10
@@ -740,10 +743,10 @@ const CycleTracker = () => {
                           : [...cycleLogData.symptoms, symptom];
                         setCycleLogData({...cycleLogData, symptoms});
                       }}
-                      className={`p-2 rounded-lg text-sm transition-colors ${
+                      className={`p-2 rounded-lg text-sm transition-colors border ${
                         cycleLogData.symptoms.includes(symptom)
-                          ? 'bg-rose-100 dark:bg-rose-900/30 text-rose-800 dark:text-rose-200'
-                          : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300'
+                          ? 'bg-rose-100 dark:bg-rose-900/30 text-rose-800 dark:text-rose-200 border-rose-300 dark:border-rose-700'
+                          : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700'
                       }`}
                     >
                       {symptom}
