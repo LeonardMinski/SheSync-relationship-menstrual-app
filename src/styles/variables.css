@@ -1,0 +1,113 @@
+/* ==========================================================================
+   CSS VARIABLES & THEME SYSTEM
+   ========================================================================== */
+
+/* Base Variables */
+:root {
+  /* 🌸 Light Mode - Fresh, Vibrant, Clear */
+  --color-primary: #E04382; /* Rose Pink */
+  --color-secondary: #8C6BC9; /* Orchid */
+  --color-accent: #FF4F8B; /* Neon Rose */
+  --color-info: #5865F2; /* Lavender Blue */
+  --color-success: #3FA77B; /* Fresh Sage */
+  --color-error: #D9304F; /* Bright Rose */
+  --color-warning: #F59E0B; /* Amber */
+
+  /* Backgrounds */
+  --bg-primary: #FFF6F8; /* Soft Blush */
+  --bg-secondary: #FFFFFF; /* Pure White */
+  --bg-glass: rgba(255, 255, 255, 0.9);
+  --bg-overlay: rgba(255, 255, 255, 0.1);
+
+  /* Text Colors */
+  --text-primary: #1E1E1E; /* Charcoal */
+  --text-secondary: #555555; /* Warm Grey */
+  --text-tertiary: #888888; /* Light Grey */
+  --text-inverse: #FFFFFF; /* White */
+
+  /* Borders & Shadows */
+  --border-subtle: rgba(224, 67, 130, 0.15);
+  --border-strong: rgba(224, 67, 130, 0.3);
+  --shadow-soft: 0 10px 25px -5px rgba(224, 67, 130, 0.15), 0 4px 6px -2px rgba(224, 67, 130, 0.08);
+  --shadow-strong: 0 20px 40px -10px rgba(224, 67, 130, 0.25);
+
+  /* Gradients */
+  --gradient-primary: linear-gradient(90deg, #E04382, #8C6BC9);
+  --gradient-accent: linear-gradient(135deg, #FF4F8B, #A78BFA);
+  --accent-gradient: linear-gradient(135deg, #FF4F8B, #A78BFA);
+  --cta-gradient: linear-gradient(135deg, #FF4F8B, #A78BFA);
+  --accent-start: #FF4F8B;
+  
+  /* Additional variables for landing page */
+  --accent-secondary: #8C6BC9;
+  --info: #5865F2;
+  --success: #3FA77B;
+  --error: #D9304F;
+  --warning: #F59E0B;
+}
+
+.dark {
+  /* 🌙 Dark Mode - Luxurious, Bold, Sensual */
+  --color-primary: #FF4F8B; /* Neon Rose */
+  --color-secondary: #A78BFA; /* Amethyst */
+  --color-accent: #E04382; /* Rose Pink */
+  --color-info: #7289DA; /* Lavender Blue */
+  --color-success: #4ADE80; /* Emerald Glow */
+  --color-error: #FF5C77; /* Rose Ember */
+  --color-warning: #FBBF24; /* Amber */
+
+  /* Backgrounds */
+  --bg-primary: #0F0A1A; /* Deep Violet */
+  --bg-secondary: rgba(30, 21, 39, 0.6); /* Transparent Midnight Purple */
+  --bg-glass: rgba(30, 21, 39, 0.4); /* More transparent glass */
+  --bg-overlay: rgba(30, 21, 39, 0.1);
+
+  /* Text Colors */
+  --text-primary: #F8F6FA; /* Mist White */
+  --text-secondary: #C7B7D6; /* Lilac Grey */
+  --text-tertiary: #9CA3AF; /* Medium Grey */
+  --text-inverse: #F8F6FA; /* White for dark backgrounds */
+
+  /* Borders & Shadows */
+  --border-subtle: rgba(255, 79, 139, 0.15);
+  --border-strong: rgba(255, 79, 139, 0.3);
+  --shadow-soft: 0 10px 25px -5px rgba(0, 0, 0, 0.4);
+  --shadow-strong: 0 20px 40px -10px rgba(0, 0, 0, 0.6);
+
+  /* Gradients */
+  --gradient-primary: linear-gradient(90deg, #FF4F8B, #A78BFA);
+  --gradient-accent: linear-gradient(135deg, #E04382, #8C6BC9);
+  --accent-gradient: linear-gradient(135deg, #FF4F8B, #A78BFA);
+  --cta-gradient: linear-gradient(135deg, #FF4F8B, #A78BFA);
+  --accent-start: #FF4F8B;
+  
+  /* Additional variables for landing page */
+  --accent-secondary: #A78BFA;
+  --info: #7289DA;
+  --success: #4ADE80;
+  --error: #FF5C77;
+  --warning: #FBBF24;
+}
+
+/* Phase Colors */
+:root {
+  --phase-menstrual-bg: #FEE2E2;
+  --phase-menstrual-text: #991B1B;
+  --phase-follicular-bg: #DCFCE7;
+  --phase-follicular-text: #166534;
+  --phase-ovulation-bg: #FEF3C7;
+  --phase-ovulation-text: #92400E;
+  --phase-luteal-bg: #FED7AA;
+  --phase-luteal-text: #C2410C;
+}
+
+.dark {
+  --phase-menstrual-bg: rgba(255, 79, 139, 0.15);
+  --phase-menstrual-text: #FF9EC7;
+  --phase-follicular-bg: rgba(167, 139, 250, 0.15);
+  --phase-follicular-text: #C7B7F7;
+  --phase-ovulation-bg: rgba(255, 206, 84, 0.15);
+  --phase-ovulation-text: #FDE047;
+  --phase-luteal-bg: rgba(251, 146, 60, 0.15);
+  --phase-luteal-text: #FDBA74;
+}
