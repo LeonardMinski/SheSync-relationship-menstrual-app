@@ -61,7 +61,7 @@ export async function GET(request: NextRequest) {
     }
 
     const today = new Date().toISOString().split('T')[0]
-    const sharedData = {
+    const sharedData: any = {
       partnerName: partnerInfo.name,
       privacySettings: {
         shareWithPartner: privacySettings.share_with_partner,
@@ -186,7 +186,7 @@ export async function GET(request: NextRequest) {
       if (recentIntimacy) {
         recentIntimacy.forEach(session => {
           sharedData.recentActivity.push({
-            description: `Completed ${session.selected_card?.category} connection card`,
+            description: `Completed ${(session as any).selected_card?.category || 'intimacy'} connection card`,
             date: session.date,
             type: 'intimacy'
           })
@@ -217,7 +217,7 @@ export async function GET(request: NextRequest) {
     }
 
     // Sort recent activity by date
-    sharedData.recentActivity.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
+    sharedData.recentActivity.sort((a: any, b: any) => new Date(b.date).getTime() - new Date(a.date).getTime())
 
     return createSuccessResponse({ sharedData, partnerLink })
 
