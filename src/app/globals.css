@@ -473,6 +473,24 @@ a:focus {
   background-color: var(--color-surface) !important;
 }
 
+/* Theme persistence */
+html {
+  color-scheme: light;
+}
+
+html.dark {
+  color-scheme: dark;
+}
+
+/* Ensure theme is applied on page load */
+html[data-theme="dark"] {
+  color-scheme: dark;
+}
+
+html[data-theme="light"] {
+  color-scheme: light;
+}
+
 .dark html {
   background-color: var(--color-surface) !important;
 }

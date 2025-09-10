@@ -108,6 +108,8 @@ export default function NewPartnerPortal() {
             </Button>
           </div>
         }
+        showNotifications={true}
+        showThemeToggle={true}
       />
 
       <div className="container mx-auto px-4 py-6 space-y-6">

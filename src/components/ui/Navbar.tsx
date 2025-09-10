@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { cn } from '@/lib/utils'
@@ -8,7 +8,10 @@ import {
   Heart,
   Sparkles,
   MessageCircle,
-  Settings
+  Settings,
+  Bell,
+  Sun,
+  Moon
 } from 'lucide-react'
 
 interface NavItem {
@@ -68,11 +71,57 @@ interface TopNavbarProps {
   subtitle?: string
   actions?: React.ReactNode
   className?: string
+  showNotifications?: boolean
+  showThemeToggle?: boolean
 }
 
-export function TopNavbar({ title, subtitle, actions, className }: TopNavbarProps) {
+export function TopNavbar({ 
+  title, 
+  subtitle, 
+  actions, 
+  className,
+  showNotifications = true,
+  showThemeToggle = true
+}: TopNavbarProps) {
+  const [isDark, setIsDark] = useState(false)
+  const [notifications, setNotifications] = useState(0)
+
+  useEffect(() => {
+    // Check initial theme from localStorage or system preference
+    const savedTheme = localStorage.getItem('theme')
+    const systemPrefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches
+    const isDarkMode = savedTheme === 'dark' || (!savedTheme && systemPrefersDark)
+    
+    setIsDark(isDarkMode)
+    
+    if (isDarkMode) {
+      document.documentElement.classList.add('dark')
+    } else {
+      document.documentElement.classList.remove('dark')
+    }
+  }, [])
+
+  const toggleTheme = () => {
+    const newTheme = !isDark
+    setIsDark(newTheme)
+    
+    if (newTheme) {
+      document.documentElement.classList.add('dark')
+      localStorage.setItem('theme', 'dark')
+    } else {
+      document.documentElement.classList.remove('dark')
+      localStorage.setItem('theme', 'light')
+    }
+  }
+
+  // Mock notifications count - in real app, this would come from context/API
+  useEffect(() => {
+    // Simulate notifications count
+    setNotifications(Math.floor(Math.random() * 5))
+  }, [])
+
   return (
-    <header className={cn('sticky top-0 z-50 bg-surface border-b border-border', className)}>
+    <header className={cn('sticky top-0 z-50 bg-bg-surface border-b border-border', className)}>
       <div className="container mx-auto px-4 py-4">
         <div className="flex items-center justify-between">
           <div>
@@ -81,11 +130,45 @@ export function TopNavbar({ title, subtitle, actions, className }: TopNavbarProp
               <p className="text-sm text-muted-foreground">{subtitle}</p>
             )}
           </div>
-          {actions && (
-            <div className="flex items-center gap-2">
-              {actions}
-            </div>
-          )}
+          
+          <div className="flex items-center gap-3">
+            {/* Notifications */}
+            {showNotifications && (
+              <button
+                className="relative p-2 rounded-lg hover:bg-bg-elevated transition-colors"
+                aria-label={`Notifications ${notifications > 0 ? `(${notifications} unread)` : ''}`}
+              >
+                <Bell className="h-5 w-5 text-foreground" />
+                {notifications > 0 && (
+                  <span className="absolute -top-1 -right-1 h-5 w-5 bg-error text-white text-xs rounded-full flex items-center justify-center">
+                    {notifications > 9 ? '9+' : notifications}
+                  </span>
+                )}
+              </button>
+            )}
+            
+            {/* Theme Toggle */}
+            {showThemeToggle && (
+              <button
+                onClick={toggleTheme}
+                className="p-2 rounded-lg hover:bg-bg-elevated transition-colors"
+                aria-label={`Switch to ${isDark ? 'light' : 'dark'} mode`}
+              >
+                {isDark ? (
+                  <Sun className="h-5 w-5 text-foreground" />
+                ) : (
+                  <Moon className="h-5 w-5 text-foreground" />
+                )}
+              </button>
+            )}
+            
+            {/* Custom Actions */}
+            {actions && (
+              <div className="flex items-center gap-2">
+                {actions}
+              </div>
+            )}
+          </div>
         </div>
       </div>
     </header>

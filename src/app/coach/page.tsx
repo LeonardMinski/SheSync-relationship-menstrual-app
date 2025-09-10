@@ -172,6 +172,8 @@ export default function CoachPage() {
             Back
           </Button>
         }
+        showNotifications={true}
+        showThemeToggle={true}
       />
 
       <div className="container mx-auto px-4 py-6 space-y-6">
