@@ -8,6 +8,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- **PARTNER PORTAL**: Comprehensive partner sharing system with:
+  - Privacy-respecting shared data display (cycle phase, mood, intimacy cards, fantasy teasers)
+  - Real-time partner data updates based on privacy settings
+  - Partner linking system using `partner_links` table with RLS
+  - "Today at a glance" dashboard for partner's shared activities
+  - Recent activity feed showing partner's shared experiences
+  - Supportive actions and connection tips for partners
+  - Comprehensive API endpoints for partner data management
+  - Full test coverage with Vitest for privacy settings validation
+  - Playwright E2E tests for sharing/unsharing flow scenarios
 - **INTIMACY feature**: Complete intimacy and connection system with:
   - Boundaries management (yes/maybe/no preferences)
   - Daily intimacy card selection with phase-aware suggestions
