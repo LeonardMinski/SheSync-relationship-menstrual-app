@@ -4,6 +4,9 @@ import { useState, useEffect } from 'react'
 import { useAuth } from '@/context/AuthContext'
 import { getPrivacySettings, updatePrivacySettings } from '@/features/privacy/services'
 import { PRIVACY_SETTING_DEFINITIONS } from '@/features/privacy/schemas'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/Card'
+import { Button } from '@/components/ui/Button'
+import { Toggle, ToggleGroup } from '@/components/ui/Toggle'
 import type { PrivacySettings } from '@/features/privacy/schemas'
 
 interface PrivacySettingsFormProps {
@@ -112,7 +115,7 @@ export default function PrivacySettingsForm({ initialSettings }: PrivacySettings
   if (loading) {
     return (
       <div className="flex items-center justify-center p-8">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-cta-start"></div>
       </div>
     )
   }
@@ -121,72 +124,85 @@ export default function PrivacySettingsForm({ initialSettings }: PrivacySettings
     <div className="space-y-6">
       {/* Success/Error Messages */}
       {success && (
-        <div className="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg p-4">
-          <p className="text-green-800 dark:text-green-200 text-sm">{success}</p>
+        <div className="bg-success/10 border border-success/20 text-success px-4 py-3 rounded-lg text-sm">
+          {success}
         </div>
       )}
       
       {error && (
-        <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-4">
-          <p className="text-red-800 dark:text-red-200 text-sm">{error}</p>
+        <div className="bg-error/10 border border-error/20 text-error px-4 py-3 rounded-lg text-sm">
+          {error}
         </div>
       )}
 
       {/* Privacy Settings */}
       <div className="space-y-6">
         {/* Partner Sharing Section */}
-        <div>
-          <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
-            Partner Sharing
-          </h3>
-          <div className="space-y-4">
-            {PRIVACY_SETTING_DEFINITIONS
-              .filter(setting => setting.category === 'partner_sharing')
-              .map(setting => (
-                <PrivacyToggle
-                  key={setting.key}
-                  label={setting.label}
-                  description={setting.description}
-                  checked={settings[setting.key]}
-                  onChange={(checked) => handleSettingChange(setting.key, checked)}
-                  disabled={saving}
-                />
-              ))}
-          </div>
-        </div>
+        <Card>
+          <CardHeader>
+            <CardTitle>Partner Sharing</CardTitle>
+            <CardDescription>
+              Control what information you share with your partner
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <ToggleGroup>
+              {PRIVACY_SETTING_DEFINITIONS
+                .filter(setting => setting.category === 'partner_sharing')
+                .map(setting => (
+                  <PrivacyToggle
+                    key={setting.key}
+                    label={setting.label}
+                    description={setting.description}
+                    checked={settings[setting.key]}
+                    onChange={(checked) => handleSettingChange(setting.key, checked)}
+                    disabled={saving}
+                  />
+                ))}
+            </ToggleGroup>
+          </CardContent>
+        </Card>
 
         {/* Data Sharing Section */}
-        <div>
-          <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
-            Data Sharing
-          </h3>
-          <div className="space-y-4">
-            {PRIVACY_SETTING_DEFINITIONS
-              .filter(setting => setting.category === 'data_sharing')
-              .map(setting => (
-                <PrivacyToggle
-                  key={setting.key}
-                  label={setting.label}
-                  description={setting.description}
-                  checked={settings[setting.key]}
-                  onChange={(checked) => handleSettingChange(setting.key, checked)}
-                  disabled={saving}
-                />
-              ))}
-          </div>
-        </div>
+        <Card>
+          <CardHeader>
+            <CardTitle>Data Sharing</CardTitle>
+            <CardDescription>
+              Control what specific data is shared with your partner
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <ToggleGroup>
+              {PRIVACY_SETTING_DEFINITIONS
+                .filter(setting => setting.category === 'data_sharing')
+                .map(setting => (
+                  <PrivacyToggle
+                    key={setting.key}
+                    label={setting.label}
+                    description={setting.description}
+                    checked={settings[setting.key]}
+                    onChange={(checked) => handleSettingChange(setting.key, checked)}
+                    disabled={saving}
+                  />
+                ))}
+            </ToggleGroup>
+          </CardContent>
+        </Card>
       </div>
 
       {/* Reset Button */}
-      <div className="pt-6 border-t border-gray-200 dark:border-gray-700">
-        <button
-          onClick={handleReset}
-          disabled={saving}
-          className="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-md hover:bg-gray-50 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary disabled:opacity-50 disabled:cursor-not-allowed"
-        >
-          {saving ? 'Resetting...' : 'Reset to Defaults'}
-        </button>
-      </div>
+      <Card>
+        <CardContent className="pt-6">
+          <Button
+            variant="secondary"
+            onClick={handleReset}
+            disabled={saving}
+            className="w-full"
+          >
+            {saving ? 'Resetting...' : 'Reset to Defaults'}
+          </Button>
+        </CardContent>
+      </Card>
     </div>
   )
 }
@@ -201,25 +217,20 @@ interface PrivacyToggleProps {
 
 function PrivacyToggle({ label, description, checked, onChange, disabled }: PrivacyToggleProps) {
   return (
-    <div className="flex items-start space-x-3">
-      <div className="flex items-center h-5">
-        <input
-          id={label}
-          type="checkbox"
-          checked={checked}
-          onChange={(e) => onChange(e.target.checked)}
-          disabled={disabled}
-          className="h-4 w-4 text-primary focus:ring-primary border-gray-300 dark:border-gray-600 rounded disabled:opacity-50 disabled:cursor-not-allowed"
-        />
-      </div>
-      <div className="flex-1 min-w-0">
-        <label htmlFor={label} className="text-sm font-medium text-gray-900 dark:text-white cursor-pointer">
+    <div className="flex items-center justify-between p-4 bg-bg-elevated rounded-lg">
+      <div className="flex-1">
+        <h4 className="text-sm font-medium text-foreground mb-1">
           {label}
-        </label>
-        <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
+        </h4>
+        <p className="text-sm text-muted-foreground">
           {description}
         </p>
       </div>
+      <Toggle
+        checked={checked}
+        onChange={onChange}
+        disabled={disabled}
+      />
     </div>
   )
 }

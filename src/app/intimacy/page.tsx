@@ -30,14 +30,14 @@ import {
   hasConsentRequirement,
   getTodayDate
 } from '@/features/intimacy/selectors'
-import BoundaryManager from './_components/BoundaryManager/BoundaryManager'
-import TodayCardSelector from './_components/TodayCardSelector/TodayCardSelector'
-import ReflectionForm from './_components/ReflectionForm/ReflectionForm'
-import ShareToggle from './_components/ShareToggle/ShareToggle'
-import LoadingSpinner from '@/components/LoadingSpinner'
+import NewIntimacyPage from './NewIntimacyPage'
 import type { BoundaryItemRecord, IntimacyCard, IntimacySession } from '@/features/intimacy/schemas'
 
 export default function IntimacyPage() {
+  return <NewIntimacyPage />
+}
+
+export function OldIntimacyPage() {
   const { user, loading } = useAuth()
   const [boundaries, setBoundaries] = useState<BoundaryItemRecord[]>([])
   const [todaySession, setTodaySession] = useState<IntimacySession | null>(null)

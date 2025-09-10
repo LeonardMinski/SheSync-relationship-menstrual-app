@@ -1,6 +1,7 @@
 {
   "/api/log-cycle/route": "app/api/log-cycle/route.js",
   "/auth/login/page": "app/auth/login/page.js",
+  "/cycle/page": "app/cycle/page.js",
   "/dashboard/page": "app/dashboard/page.js",
   "/fantasy/page": "app/fantasy/page.js",
   "/favicon.ico/route": "app/favicon.ico/route.js",

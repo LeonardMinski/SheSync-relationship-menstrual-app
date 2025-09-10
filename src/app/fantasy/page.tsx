@@ -10,8 +10,8 @@
  * 
  * Route: /fantasy
  */
-import FantasyPage from './_components/FantasyPage/FantasyPage';
+import NewFantasyPage from './NewFantasyPage';
 
 export default function FantasyPageRoute() {
-  return <FantasyPage />;
+  return <NewFantasyPage />;
 }

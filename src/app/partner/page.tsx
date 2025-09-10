@@ -1,5 +1,5 @@
-import PartnerPortal from './_components/PartnerPortal/PartnerPortal'
+import NewPartnerPortal from './NewPartnerPortal'
 
 export default function PartnerPage() {
-  return <PartnerPortal />
+  return <NewPartnerPortal />
 }
