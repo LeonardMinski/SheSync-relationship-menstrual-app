@@ -37,7 +37,8 @@ export default function IntimacyPage() {
   return <NewIntimacyPage />
 }
 
-export function OldIntimacyPage() {
+// Old intimacy page implementation - kept for reference
+function OldIntimacyPage() {
   const { user, loading } = useAuth()
   const [boundaries, setBoundaries] = useState<BoundaryItemRecord[]>([])
   const [todaySession, setTodaySession] = useState<IntimacySession | null>(null)
@@ -103,7 +104,7 @@ export function OldIntimacyPage() {
         {/* Back to Dashboard Button */}
         <div className="mb-6">
           <Link
-            href="/dashboard"
+            href="/"
             className="inline-flex items-center space-x-2 text-sm text-rose-600 hover:text-rose-700 dark:text-rose-400 dark:hover:text-rose-300 transition-colors"
           >
             <ArrowLeft size={16} />

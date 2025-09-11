@@ -28,8 +28,20 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/Button'
 import { Input, Textarea } from '@/components/ui/Input'
 import { Toggle } from '@/components/ui/Toggle'
-import { listEntries } from '@/features/fantasy/services'
-import type { FantasyEntry } from '@/features/fantasy/schemas'
+// Mock fantasy service - replace with real implementation
+const listEntries = async () => {
+  return []
+}
+// Mock fantasy entry type - replace with real schema
+interface FantasyEntry {
+  id: string
+  title: string
+  content: string
+  tags: string[]
+  isPrivate: boolean
+  createdAt: string
+  updatedAt: string
+}
 
 export default function NewFantasyPage() {
   const { user, loading: authLoading } = useAuth()

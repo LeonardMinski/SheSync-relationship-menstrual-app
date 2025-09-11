@@ -60,7 +60,7 @@ export default function PrivacySettingsError({
               
               <div>
                 <button
-                  onClick={() => window.location.href = '/dashboard'}
+                  onClick={() => window.location.href = '/'}
                   className="text-sm text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300"
                 >
                   Return to Dashboard

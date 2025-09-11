@@ -1,17 +1,18 @@
 /**
- * Landing Page - Main entry point for SheSync+ application
+ * Home Page - Main user dashboard for cycle tracking and insights
  * 
  * Features:
- * - Hero section with app introduction
- * - Feature showcase (Cycle Tracking, Intimacy Cards, Fantasy Vault, AI Coach)
- * - Partner features section
- * - Call-to-action sections
- * - Responsive design with dark/light mode support
+ * - Cycle phase display with tooltips
+ * - Today's cycle stats (Mood, Phase, Symptoms, Logged date)
+ * - Cycle logging form with mood slider and symptom selection
+ * - Smart predictions based on cycle data
+ * - Interactive calendar view
+ * - Phase-specific insights and recommendations
  * 
  * Route: /
  */
-import LandingPage from './_components/LandingPage/LandingPage';
+import NewDashboard from './dashboard/_components/Dashboard/NewDashboard';
 
 export default function HomePage() {
-  return <LandingPage />;
+  return <NewDashboard />;
 }

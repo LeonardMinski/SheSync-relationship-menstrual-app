@@ -115,16 +115,16 @@ export default function NewDashboard() {
   return (
     <div className="min-h-screen bg-bg pb-20">
       <TopNavbar 
-        title="Dashboard" 
+        title="SheSync" 
         subtitle={format(new Date(), 'EEEE, MMMM d')}
         actions={
           <Button
             variant="cta"
             size="sm"
-            onClick={() => setShowLogForm(true)}
+            onClick={() => router.push('/cycle')}
           >
-            <Plus className="h-4 w-4" />
-            Log Today
+            <Calendar className="h-4 w-4" />
+            Track Cycle
           </Button>
         }
         showNotifications={true}
@@ -132,13 +132,16 @@ export default function NewDashboard() {
       />
 
       <div className="container mx-auto px-4 py-6 space-y-6">
-        {/* Cycle Phase Card */}
+        {/* Welcome Card */}
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <Calendar className="h-5 w-5 text-cta-start" />
-              Today's Cycle
+              <Heart className="h-5 w-5 text-cta-start" />
+              Welcome back, {user?.name || 'User'}!
             </CardTitle>
+            <CardDescription>
+              Here's your wellness overview for today
+            </CardDescription>
           </CardHeader>
           <CardContent>
             <div className="flex items-center justify-between">
@@ -147,11 +150,11 @@ export default function NewDashboard() {
                   {todaysData ? getPhaseEmoji(todaysData.phase) : '🌙'} {todaysData?.phase || 'Unknown'}
                 </div>
                 <CardDescription>
-                  {todaysData ? `Day ${todaysData.day} of cycle` : 'No data logged today'}
+                  {todaysData ? `Day logged today` : 'Ready to track your cycle'}
                 </CardDescription>
               </div>
               <div className="text-right">
-                <div className="text-sm text-muted-foreground">Mood</div>
+                <div className="text-sm text-muted-foreground">Today's Mood</div>
                 <div className="text-lg font-semibold text-foreground">
                   {todaysData?.mood || '—'}/10
                 </div>
@@ -159,73 +162,6 @@ export default function NewDashboard() {
             </div>
           </CardContent>
         </Card>
-
-        {/* Stats Grid */}
-        <div className="grid grid-cols-2 gap-4">
-          <Card>
-            <CardContent className="p-4">
-              <div className="flex items-center gap-3">
-                <div className="p-2 rounded-lg bg-accent-rose/10">
-                  <Heart className="h-5 w-5 text-accent-rose" />
-                </div>
-                <div>
-                  <div className="text-sm text-muted-foreground">Energy</div>
-                  <div className="text-lg font-semibold text-foreground">
-                    {todaysData?.energy || '—'}/10
-                  </div>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardContent className="p-4">
-              <div className="flex items-center gap-3">
-                <div className="p-2 rounded-lg bg-accent-purple/10">
-                  <Zap className="h-5 w-5 text-accent-purple" />
-                </div>
-                <div>
-                  <div className="text-sm text-muted-foreground">Libido</div>
-                  <div className="text-lg font-semibold text-foreground">
-                    {todaysData?.libido || '—'}/10
-                  </div>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardContent className="p-4">
-              <div className="flex items-center gap-3">
-                <div className="p-2 rounded-lg bg-warning/10">
-                  <Brain className="h-5 w-5 text-warning" />
-                </div>
-                <div>
-                  <div className="text-sm text-muted-foreground">Stress</div>
-                  <div className="text-lg font-semibold text-foreground">
-                    {todaysData?.stress || '—'}/10
-                  </div>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardContent className="p-4">
-              <div className="flex items-center gap-3">
-                <div className="p-2 rounded-lg bg-info/10">
-                  <TrendingUp className="h-5 w-5 text-info" />
-                </div>
-                <div>
-                  <div className="text-sm text-muted-foreground">Symptoms</div>
-                  <div className="text-lg font-semibold text-foreground">
-                    {todaysData?.symptoms?.length || 0}
-                  </div>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
 
         {/* Quick Actions */}
         <Card>

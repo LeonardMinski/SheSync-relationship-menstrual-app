@@ -41,7 +41,10 @@ export default function CyclePage() {
 
   // Get selected date's cycle data
   const selectedDateStr = format(selectedDate, 'yyyy-MM-dd')
-  const selectedData = cycles.find(cycle => cycle.date === selectedDateStr)
+  const selectedData = cycles.find(cycle => {
+    const cycleDateStr = format(cycle.date, 'yyyy-MM-dd')
+    return cycleDateStr === selectedDateStr
+  })
 
   useEffect(() => {
     if (user && !authLoading) {

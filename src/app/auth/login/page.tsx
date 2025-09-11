@@ -32,7 +32,7 @@ export default function LoginPage() {
       
       if (result.success) {
         console.log('✅ Login successful, redirecting to dashboard...')
-        router.push('/dashboard') // Redirect to dashboard after successful login
+        router.push('/') // Redirect to dashboard after successful login
       } else {
         console.error('❌ Login failed:', result.error)
         setError(result.error || 'Login failed')
@@ -48,7 +48,7 @@ export default function LoginPage() {
   return (
     <div className="min-h-screen bg-bg">
       <TopNavbar 
-        title="SheSync+" 
+        title="SheSync" 
         subtitle="Welcome back"
         showNotifications={false}
       />

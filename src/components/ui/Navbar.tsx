@@ -1,3 +1,5 @@
+'use client'
+
 import React, { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
@@ -21,7 +23,7 @@ interface NavItem {
 }
 
 const navItems: NavItem[] = [
-  { href: '/dashboard', label: 'Dashboard', icon: Home },
+  { href: '/', label: 'Home', icon: Home },
   { href: '/cycle', label: 'Cycle', icon: Calendar },
   { href: '/intimacy', label: 'Intimacy', icon: Heart },
   { href: '/fantasy', label: 'Fantasy', icon: Sparkles },
@@ -43,7 +45,7 @@ export function Navbar({ className }: NavbarProps) {
           {navItems.map((item) => {
             const Icon = item.icon
             const isActive = pathname === item.href || 
-              (item.href !== '/dashboard' && pathname.startsWith(item.href))
+              (item.href !== '/' && pathname.startsWith(item.href))
             
             return (
               <Link

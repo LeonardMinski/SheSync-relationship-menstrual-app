@@ -101,7 +101,7 @@ export default function NewPartnerPortal() {
             <Button
               variant="secondary"
               size="sm"
-              onClick={() => router.push('/dashboard')}
+              onClick={() => router.push('/')}
             >
               <ArrowLeft className="h-4 w-4" />
               Back
