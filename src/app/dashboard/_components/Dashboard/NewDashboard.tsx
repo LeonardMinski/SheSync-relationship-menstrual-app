@@ -20,8 +20,11 @@ import { TopNavbar } from '@/components/ui/Navbar'
 import { Navbar } from '@/components/ui/Navbar'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/Card'
 import { Button } from '@/components/ui/Button'
+import { Footer } from '@/components/ui/Footer'
 import { getPhaseEmoji, getPhaseColor } from '@/lib/mockData'
+import { getHealthInsights, getNutritionSuggestion, getHealthNews, API_FALLBACKS } from '@/lib/api-services'
 import type { CycleData } from '@/types'
+import type { HealthInsight, NutritionSuggestion, HealthNews } from '@/lib/api-services'
 
 export default function NewDashboard() {
   const { user, loading: authLoading } = useAuth()
@@ -36,6 +39,10 @@ export default function NewDashboard() {
   const [symptoms, setSymptoms] = useState<string[]>([])
   const [notes, setNotes] = useState('')
   const [logging, setLogging] = useState(false)
+  const [healthInsights, setHealthInsights] = useState<HealthInsight[]>([])
+  const [nutritionSuggestion, setNutritionSuggestion] = useState<NutritionSuggestion | null>(null)
+  const [healthNews, setHealthNews] = useState<HealthNews[]>([])
+  const [apiLoading, setApiLoading] = useState(true)
 
   // Get today's cycle data
   const todaysData = cycles.find(cycle =>
@@ -47,6 +54,32 @@ export default function NewDashboard() {
       fetchCycles()
     }
   }, [user, authLoading, fetchCycles])
+
+  // Load API insights
+  useEffect(() => {
+    const loadInsights = async () => {
+      if (!todaysData) return
+      
+      setApiLoading(true)
+      try {
+        const [insights, nutrition, news] = await Promise.all([
+          getHealthInsights(todaysData.phase, todaysData.symptoms),
+          getNutritionSuggestion(todaysData.phase, todaysData.mood),
+          getHealthNews()
+        ])
+        
+        setHealthInsights(insights)
+        setNutritionSuggestion(nutrition)
+        setHealthNews(news.slice(0, 1)) // Show only latest news
+      } catch (error) {
+        console.error('Error loading insights:', error)
+      } finally {
+        setApiLoading(false)
+      }
+    }
+
+    loadInsights()
+  }, [todaysData])
 
   // Redirect if not authenticated
   useEffect(() => {
@@ -115,53 +148,155 @@ export default function NewDashboard() {
   return (
     <div className="min-h-screen bg-bg pb-20">
       <TopNavbar 
-        title="SheSync" 
+        title="Shesync+" 
         subtitle={format(new Date(), 'EEEE, MMMM d')}
-        actions={
-          <Button
-            variant="cta"
-            size="sm"
-            onClick={() => router.push('/cycle')}
-          >
-            <Calendar className="h-4 w-4" />
-            Track Cycle
-          </Button>
-        }
         showNotifications={true}
         showThemeToggle={true}
+        showMeeting={true}
+        userAvatar={user?.profileImageUrl}
       />
 
       <div className="container mx-auto px-4 py-6 space-y-6">
-        {/* Welcome Card */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Heart className="h-5 w-5 text-cta-start" />
-              Welcome back, {user?.name || 'User'}!
-            </CardTitle>
-            <CardDescription>
-              Here's your wellness overview for today
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="flex items-center justify-between">
-              <div>
-                <div className="text-2xl font-bold text-foreground">
-                  {todaysData ? getPhaseEmoji(todaysData.phase) : '🌙'} {todaysData?.phase || 'Unknown'}
-                </div>
-                <CardDescription>
-                  {todaysData ? `Day logged today` : 'Ready to track your cycle'}
-                </CardDescription>
+        {/* No Cycle Data CTA */}
+        {cycles.length === 0 && (
+          <Card className="text-center py-8">
+            <CardContent>
+              <div className="w-16 h-16 mx-auto mb-4 rounded-2xl bg-gradient-to-r from-cta-start to-cta-end flex items-center justify-center">
+                <Calendar className="h-8 w-8 text-white" />
               </div>
-              <div className="text-right">
-                <div className="text-sm text-muted-foreground">Today's Mood</div>
-                <div className="text-lg font-semibold text-foreground">
-                  {todaysData?.mood || '—'}/10
+              <h2 className="text-2xl font-bold text-foreground mb-2">Start Tracking Your Cycle</h2>
+              <p className="text-muted mb-6">Log your first cycle entry to unlock personalized insights and recommendations.</p>
+              <Button
+                variant="cta"
+                size="lg"
+                onClick={() => router.push('/cycle')}
+              >
+                <Plus className="h-5 w-5" />
+                Log your cycle
+              </Button>
+            </CardContent>
+          </Card>
+        )}
+
+        {/* Cycle Summary Card */}
+        {cycles.length > 0 && (
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Heart className="h-5 w-5 text-cta-start" />
+                Welcome back, {user?.name || 'User'}!
+              </CardTitle>
+              <CardDescription>
+                Here's your wellness overview for today
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="flex items-center justify-between">
+                <div>
+                  <div className="text-2xl font-bold text-foreground">
+                    {todaysData ? getPhaseEmoji(todaysData.phase) : '🌙'} {todaysData?.phase || 'Unknown'}
+                  </div>
+                  <CardDescription>
+                    {todaysData ? `Day logged today` : 'Ready to track your cycle'}
+                  </CardDescription>
+                </div>
+                <div className="text-right">
+                  <div className="text-sm text-muted-foreground">Today's Mood</div>
+                  <div className="text-lg font-semibold text-foreground">
+                    {todaysData?.mood || '—'}/10
+                  </div>
                 </div>
               </div>
-            </div>
-          </CardContent>
-        </Card>
+            </CardContent>
+          </Card>
+        )}
+
+        {/* Wellbeing Insights Section */}
+        {cycles.length > 0 && (
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Brain className="h-5 w-5 text-cta-start" />
+                Today's Insights
+              </CardTitle>
+              <CardDescription>
+                Personalized recommendations based on your cycle data
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              {apiLoading ? (
+                <div className="animate-pulse space-y-3">
+                  <div className="h-4 bg-bg-muted rounded"></div>
+                  <div className="h-4 bg-bg-muted rounded w-3/4"></div>
+                  <div className="h-4 bg-bg-muted rounded w-1/2"></div>
+                </div>
+              ) : (
+                <>
+                  {/* Health Insights */}
+                  {healthInsights.length > 0 ? (
+                    <div className="space-y-2">
+                      {healthInsights.slice(0, 2).map((insight, index) => (
+                        <div key={index} className="p-3 bg-bg-elevated rounded-lg">
+                          <div className="text-sm font-medium text-foreground capitalize mb-1">
+                            {insight.type} Tip
+                          </div>
+                          <div className="text-sm text-muted">
+                            {insight.tip}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="text-sm text-muted">{API_FALLBACKS.healthInsights}</div>
+                  )}
+
+                  {/* Nutrition Suggestion */}
+                  {nutritionSuggestion ? (
+                    <div className="p-3 bg-bg-elevated rounded-lg">
+                      <div className="text-sm font-medium text-foreground mb-1">
+                        Nutrition Suggestion
+                      </div>
+                      <div className="text-sm font-medium text-foreground mb-1">
+                        {nutritionSuggestion.food}
+                      </div>
+                      <div className="text-sm text-muted mb-2">
+                        {nutritionSuggestion.reason}
+                      </div>
+                      <div className="flex flex-wrap gap-1">
+                        {nutritionSuggestion.benefits.map((benefit, index) => (
+                          <span key={index} className="text-xs bg-accent-rose/10 text-accent-rose px-2 py-1 rounded-full">
+                            {benefit}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="text-sm text-muted">{API_FALLBACKS.nutrition}</div>
+                  )}
+
+                  {/* Health News */}
+                  {healthNews.length > 0 ? (
+                    <div className="p-3 bg-bg-elevated rounded-lg">
+                      <div className="text-sm font-medium text-foreground mb-1">
+                        Latest Health News
+                      </div>
+                      <a 
+                        href={healthNews[0].url} 
+                        target="_blank" 
+                        rel="noopener noreferrer"
+                        className="text-sm text-cta-start hover:text-cta-end transition-colors"
+                      >
+                        {healthNews[0].title}
+                      </a>
+                    </div>
+                  ) : (
+                    <div className="text-sm text-muted">{API_FALLBACKS.news}</div>
+                  )}
+                </>
+              )}
+            </CardContent>
+          </Card>
+        )}
 
         {/* Quick Actions */}
         <Card>
@@ -177,16 +312,7 @@ export default function NewDashboard() {
                 onClick={() => router.push('/cycle')}
               >
                 <Calendar className="h-6 w-6" />
-                <span>Cycle History</span>
-              </Button>
-              
-              <Button
-                variant="secondary"
-                className="h-auto p-4 flex-col gap-2"
-                onClick={() => router.push('/intimacy')}
-              >
-                <Heart className="h-6 w-6" />
-                <span>Intimacy Deck</span>
+                <span>Log Cycle</span>
               </Button>
               
               <Button
@@ -195,7 +321,16 @@ export default function NewDashboard() {
                 onClick={() => router.push('/fantasy')}
               >
                 <Sparkles className="h-6 w-6" />
-                <span>Fantasy Vault</span>
+                <span>Add Fantasy</span>
+              </Button>
+              
+              <Button
+                variant="secondary"
+                className="h-auto p-4 flex-col gap-2"
+                onClick={() => router.push('/intimacy')}
+              >
+                <Heart className="h-6 w-6" />
+                <span>Open Intimacy</span>
               </Button>
               
               <Button
@@ -210,6 +345,9 @@ export default function NewDashboard() {
           </CardContent>
         </Card>
       </div>
+
+      {/* Footer */}
+      <Footer />
 
       {/* Log Cycle Modal */}
       {showLogForm && (

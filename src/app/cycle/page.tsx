@@ -22,7 +22,10 @@ import { Navbar } from '@/components/ui/Navbar'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/Card'
 import { Button } from '@/components/ui/Button'
 import { getPhaseEmoji, getPhaseColor } from '@/lib/mockData'
+import { getHealthInsights, getNutritionSuggestion, API_FALLBACKS } from '@/lib/api-services'
+import { Footer } from '@/components/ui/Footer'
 import type { CycleData } from '@/types'
+import type { HealthInsight, NutritionSuggestion } from '@/lib/api-services'
 
 export default function CyclePage() {
   const { user, loading: authLoading } = useAuth()
@@ -38,6 +41,9 @@ export default function CyclePage() {
   const [symptoms, setSymptoms] = useState<string[]>([])
   const [notes, setNotes] = useState('')
   const [logging, setLogging] = useState(false)
+  const [healthInsights, setHealthInsights] = useState<HealthInsight[]>([])
+  const [nutritionSuggestion, setNutritionSuggestion] = useState<NutritionSuggestion | null>(null)
+  const [apiLoading, setApiLoading] = useState(true)
 
   // Get selected date's cycle data
   const selectedDateStr = format(selectedDate, 'yyyy-MM-dd')
@@ -51,6 +57,30 @@ export default function CyclePage() {
       fetchCycles()
     }
   }, [user, authLoading, fetchCycles])
+
+  // Load API insights for selected date
+  useEffect(() => {
+    const loadInsights = async () => {
+      if (!selectedData) return
+      
+      setApiLoading(true)
+      try {
+        const [insights, nutrition] = await Promise.all([
+          getHealthInsights(selectedData.phase, selectedData.symptoms),
+          getNutritionSuggestion(selectedData.phase, selectedData.mood)
+        ])
+        
+        setHealthInsights(insights)
+        setNutritionSuggestion(nutrition)
+      } catch (error) {
+        console.error('Error loading insights:', error)
+      } finally {
+        setApiLoading(false)
+      }
+    }
+
+    loadInsights()
+  }, [selectedData])
 
   // Redirect if not authenticated
   useEffect(() => {
@@ -129,37 +159,44 @@ export default function CyclePage() {
       <TopNavbar 
         title="Cycle Tracking" 
         subtitle={format(selectedDate, 'EEEE, MMMM d')}
-        actions={
-          <div className="flex items-center gap-2">
-            <Button
-              variant="secondary"
-              size="sm"
-              onClick={() => navigateDate('prev')}
-            >
-              <ChevronLeft className="h-4 w-4" />
-            </Button>
-            <Button
-              variant="secondary"
-              size="sm"
-              onClick={() => navigateDate('next')}
-            >
-              <ChevronRight className="h-4 w-4" />
-            </Button>
-            <Button
-              variant="cta"
-              size="sm"
-              onClick={() => setShowLogForm(true)}
-            >
-              <Plus className="h-4 w-4" />
-              Log
-            </Button>
-          </div>
-        }
         showNotifications={true}
         showThemeToggle={true}
+        showMeeting={true}
+        userAvatar={user?.profileImageUrl}
       />
 
       <div className="container mx-auto px-4 py-6 space-y-6">
+        {/* No Cycle Data CTA */}
+        {cycles.length === 0 && (
+          <Card className="text-center py-8">
+            <CardContent>
+              <div className="w-16 h-16 mx-auto mb-4 rounded-2xl bg-gradient-to-r from-cta-start to-cta-end flex items-center justify-center">
+                <Calendar className="h-8 w-8 text-white" />
+              </div>
+              <h2 className="text-2xl font-bold text-foreground mb-2">Start Tracking Your Cycle</h2>
+              <p className="text-muted mb-6">Log your first cycle entry to begin your wellness journey.</p>
+              <div className="flex flex-col sm:flex-row gap-3 justify-center">
+                <Button
+                  variant="cta"
+                  size="lg"
+                  onClick={() => setShowLogForm(true)}
+                >
+                  <Plus className="h-5 w-5" />
+                  Log Period
+                </Button>
+                <Button
+                  variant="secondary"
+                  size="lg"
+                  onClick={() => setShowLogForm(true)}
+                >
+                  <Droplet className="h-5 w-5" />
+                  Log Symptoms
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
         {/* Selected Date Card */}
         <Card>
           <CardHeader>
@@ -453,6 +490,75 @@ export default function CyclePage() {
         </div>
       )}
 
+      {/* API Insights Section */}
+      {selectedData && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Brain className="h-5 w-5 text-cta-start" />
+              Mood & Symptoms Tips
+            </CardTitle>
+            <CardDescription>
+              Personalized recommendations based on your cycle data
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            {apiLoading ? (
+              <div className="animate-pulse space-y-3">
+                <div className="h-4 bg-bg-muted rounded"></div>
+                <div className="h-4 bg-bg-muted rounded w-3/4"></div>
+                <div className="h-4 bg-bg-muted rounded w-1/2"></div>
+              </div>
+            ) : (
+              <>
+                {/* Health Insights */}
+                {healthInsights.length > 0 ? (
+                  <div className="space-y-2">
+                    {healthInsights.map((insight, index) => (
+                      <div key={index} className="p-3 bg-bg-elevated rounded-lg">
+                        <div className="text-sm font-medium text-foreground capitalize mb-1">
+                          {insight.type} Tip
+                        </div>
+                        <div className="text-sm text-muted">
+                          {insight.tip}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="text-sm text-muted">{API_FALLBACKS.healthInsights}</div>
+                )}
+
+                {/* Wellness Suggestion */}
+                {nutritionSuggestion ? (
+                  <div className="p-3 bg-bg-elevated rounded-lg">
+                    <div className="text-sm font-medium text-foreground mb-1">
+                      Wellness Suggestion
+                    </div>
+                    <div className="text-sm font-medium text-foreground mb-1">
+                      {nutritionSuggestion.food}
+                    </div>
+                    <div className="text-sm text-muted mb-2">
+                      {nutritionSuggestion.reason}
+                    </div>
+                    <div className="flex flex-wrap gap-1">
+                      {nutritionSuggestion.benefits.map((benefit, index) => (
+                        <span key={index} className="text-xs bg-accent-rose/10 text-accent-rose px-2 py-1 rounded-full">
+                          {benefit}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                ) : (
+                  <div className="text-sm text-muted">{API_FALLBACKS.nutrition}</div>
+                )}
+              </>
+            )}
+          </CardContent>
+        </Card>
+      )}
+
+      <Footer />
       <Navbar />
     </div>
   )

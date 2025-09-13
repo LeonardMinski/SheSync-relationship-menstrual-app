@@ -13,8 +13,10 @@ import {
   Settings,
   Bell,
   Sun,
-  Moon
+  Moon,
+  Video
 } from 'lucide-react'
+import { Avatar } from './Avatar'
 
 interface NavItem {
   href: string
@@ -75,6 +77,9 @@ interface TopNavbarProps {
   className?: string
   showNotifications?: boolean
   showThemeToggle?: boolean
+  showMeeting?: boolean
+  userAvatar?: string
+  onAvatarUpload?: (file: File) => void
 }
 
 export function TopNavbar({ 
@@ -83,7 +88,10 @@ export function TopNavbar({
   actions, 
   className,
   showNotifications = true,
-  showThemeToggle = true
+  showThemeToggle = true,
+  showMeeting = true,
+  userAvatar,
+  onAvatarUpload
 }: TopNavbarProps) {
   const [isDark, setIsDark] = useState(false)
   const [notifications, setNotifications] = useState(0)
@@ -126,21 +134,38 @@ export function TopNavbar({
     <header className={cn('sticky top-0 z-50 bg-bg-surface border-b border-border', className)}>
       <div className="container mx-auto px-4 py-4">
         <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-xl font-semibold text-foreground">{title}</h1>
-            {subtitle && (
-              <p className="text-sm text-muted-foreground">{subtitle}</p>
-            )}
+          {/* Left side - Brand */}
+          <div className="flex items-center gap-3">
+            <div className="w-8 h-8 rounded-lg bg-gradient-to-r from-cta-start to-cta-end flex items-center justify-center">
+              <span className="text-white font-bold text-sm">S</span>
+            </div>
+            <div>
+              <h1 className="text-xl font-semibold text-foreground">Shesync+</h1>
+              {subtitle && (
+                <p className="text-sm text-muted-foreground">{subtitle}</p>
+              )}
+            </div>
           </div>
           
+          {/* Right side - Actions */}
           <div className="flex items-center gap-3">
+            {/* Meeting Button */}
+            {showMeeting && (
+              <button
+                className="p-2 rounded-lg hover:bg-bg-elevated transition-colors"
+                aria-label="Start meeting"
+              >
+                <Video className="h-5 w-5 text-foreground" />
+              </button>
+            )}
+            
             {/* Notifications */}
             {showNotifications && (
               <button
                 className="relative p-2 rounded-lg hover:bg-bg-elevated transition-colors"
                 aria-label={`Notifications ${notifications > 0 ? `(${notifications} unread)` : ''}`}
               >
-                <Bell className="h-5 w-5 text-foreground" />
+                <Bell className={`h-5 w-5 ${notifications > 0 ? 'text-cta-start fill-cta-start' : 'text-foreground'}`} />
                 {notifications > 0 && (
                   <span className="absolute -top-1 -right-1 h-5 w-5 bg-error text-white text-xs rounded-full flex items-center justify-center">
                     {notifications > 9 ? '9+' : notifications}
@@ -163,6 +188,14 @@ export function TopNavbar({
                 )}
               </button>
             )}
+            
+            {/* User Avatar */}
+            <Avatar
+              src={userAvatar}
+              size="md"
+              editable={!!onAvatarUpload}
+              onUpload={onAvatarUpload}
+            />
             
             {/* Custom Actions */}
             {actions && (

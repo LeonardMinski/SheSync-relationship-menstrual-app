@@ -5,25 +5,32 @@
 /* Light Mode Tokens */
 :root {
   /* Backgrounds */
-  --bg: #FFFFFF;              /* page background */
+  --bg: #FAFAFA;              /* page background */
   --bg-surface: #FFFFFF;      /* card backgrounds */
-  --bg-elevated: #F9FAFB;     /* elevated surfaces */
-  --bg-muted: #F3F4F6;        /* muted backgrounds */
+  --bg-elevated: #F8F9FA;     /* elevated surfaces */
+  --bg-muted: #F1F3F4;        /* muted backgrounds */
+  --bg-secondary: #E8EAED;    /* secondary backgrounds */
+  --bg-tertiary: #DEE1E6;     /* tertiary backgrounds */
   
   /* Text Colors */
-  --text-foreground: #111827; /* primary text */
-  --text-muted: #6B7280;      /* secondary text */
-  --text-help: #9CA3AF;       /* helper text */
+  --text-foreground: #1A1A1A; /* primary text */
+  --text-muted: #5F6368;      /* secondary text */
+  --text-help: #80868B;       /* helper text */
+  --text-secondary: #3C4043;  /* secondary text */
+  --text-tertiary: #70757A;   /* tertiary text */
   
   /* Borders */
-  --border: #E5E7EB;          /* default borders */
-  --border-subtle: #F3F4F6;   /* subtle borders */
+  --border: #DADCE0;          /* default borders */
+  --border-subtle: #E8EAED;   /* subtle borders */
+  --border-secondary: #DEE1E6; /* secondary borders */
   
   /* Brand Colors - Rose to Purple Gradient */
   --cta-start: #E04382;       /* rose start */
   --cta-end: #8C6BC9;         /* purple end */
   --accent-rose: #E04382;     /* rose accent */
   --accent-purple: #8C6BC9;   /* purple accent */
+  --accent-secondary: #FF6B9D; /* secondary accent */
+  --accent-tertiary: #A855F7; /* tertiary accent */
   
   /* Status Colors */
   --success: #10B981;
@@ -75,21 +82,28 @@
   --bg-surface: #17121F;      /* card backgrounds */
   --bg-elevated: #1E1626;     /* elevated surfaces */
   --bg-muted: #2A1F35;        /* muted backgrounds */
+  --bg-secondary: #34263F;    /* secondary backgrounds */
+  --bg-tertiary: #3D2F4A;     /* tertiary backgrounds */
   
   /* Text Colors */
   --text-foreground: #F8F6FA; /* primary text */
   --text-muted: #A394B6;      /* secondary text */
   --text-help: #8B7A9E;       /* helper text */
+  --text-secondary: #C4B5D6;  /* secondary text */
+  --text-tertiary: #9F88B3;   /* tertiary text */
   
   /* Borders */
   --border: #34263F;          /* default borders */
   --border-subtle: #2A1F35;   /* subtle borders */
+  --border-secondary: #3D2F4A; /* secondary borders */
   
   /* Brand Colors - Same gradient for consistency */
   --cta-start: #E04382;       /* rose start */
   --cta-end: #8C6BC9;         /* purple end */
   --accent-rose: #E04382;     /* rose accent */
   --accent-purple: #8C6BC9;   /* purple accent */
+  --accent-secondary: #FF6B9D; /* secondary accent */
+  --accent-tertiary: #A855F7; /* tertiary accent */
   
   /* Status Colors */
   --success: #4ADE80;
