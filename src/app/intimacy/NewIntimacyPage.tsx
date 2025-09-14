@@ -75,7 +75,8 @@ export default function NewIntimacyPage() {
       setBoundaries(boundariesData || [])
 
       // Load today's session
-      const sessionData = await getTodaySession(user.id)
+      const today = getTodayDate()
+      const sessionData = await getTodaySession(user.id, today)
       setTodaySession(sessionData)
 
       // Load suggested card
@@ -98,7 +99,11 @@ export default function NewIntimacyPage() {
 
     setSaving(true)
     try {
-      // Add boundary logic here
+      const { upsertBoundary } = await import('@/features/intimacy/services')
+      await upsertBoundary(user.id, {
+        label: newBoundary.trim(),
+        status: 'maybe' // Default status
+      })
       setNewBoundary('')
       setShowBoundaryForm(false)
       await loadIntimacyData()
@@ -110,11 +115,18 @@ export default function NewIntimacyPage() {
   }
 
   const handleSaveReflection = async () => {
-    if (!user || !reflection.trim()) return
+    if (!user || !reflection.trim() || !suggestedCard) return
 
     setSaving(true)
     try {
-      // Save reflection logic here
+      const { upsertSession } = await import('@/features/intimacy/services')
+      const today = getTodayDate()
+      await upsertSession(user.id, {
+        date: today,
+        selectedCardId: suggestedCard.id,
+        share: todaySession?.shared_with_partner || false,
+        reflection: reflection.trim()
+      })
       setReflection('')
       setShowReflectionForm(false)
       await loadIntimacyData()
@@ -122,6 +134,37 @@ export default function NewIntimacyPage() {
       console.error('Error saving reflection:', error)
     } finally {
       setSaving(false)
+    }
+  }
+
+  const toggleBoundaryStatus = async (boundary: BoundaryItemRecord) => {
+    if (!user) return
+
+    const statusCycle = { 'maybe': 'yes', 'yes': 'no', 'no': 'maybe' }
+    const newStatus = statusCycle[boundary.status as keyof typeof statusCycle] || 'maybe'
+
+    try {
+      const { upsertBoundary } = await import('@/features/intimacy/services')
+      await upsertBoundary(user.id, {
+        id: boundary.id,
+        label: boundary.label,
+        status: newStatus
+      })
+      await loadIntimacyData()
+    } catch (error) {
+      console.error('Error updating boundary status:', error)
+    }
+  }
+
+  const toggleSessionSharing = async (shared: boolean) => {
+    if (!user || !todaySession) return
+
+    try {
+      const { shareSession } = await import('@/features/intimacy/services')
+      await shareSession(user.id, todaySession.date, shared)
+      await loadIntimacyData()
+    } catch (error) {
+      console.error('Error updating session sharing:', error)
     }
   }
 
@@ -257,9 +300,15 @@ export default function NewIntimacyPage() {
                     <span className="text-sm text-muted-foreground">
                       {getBoundaryStatusDisplay(boundary.status)}
                     </span>
-                    <Button variant="ghost" size="sm">
-                      <Edit3 className="h-4 w-4" />
-                    </Button>
+                    <div className="flex items-center gap-1">
+                      <Button 
+                        variant="ghost" 
+                        size="sm"
+                        onClick={() => toggleBoundaryStatus(boundary)}
+                      >
+                        <Edit3 className="h-4 w-4" />
+                      </Button>
+                    </div>
                   </div>
                 </div>
               ))}
@@ -293,7 +342,7 @@ export default function NewIntimacyPage() {
                   <span className="text-sm text-muted-foreground">Shared with partner</span>
                   <Toggle
                     checked={todaySession.shared_with_partner}
-                    onChange={() => {}} // Handle toggle
+                    onChange={(checked) => toggleSessionSharing(checked)}
                     label=""
                   />
                 </div>

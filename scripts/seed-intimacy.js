@@ -1,65 +1,65 @@
-#!/usr/bin/env node
-
 /**
- * Seed Intimacy Cards Script
- * 
- * This script seeds the intimacy_cards table with initial data.
- * Run this after setting up the database schema.
+ * Seed script for intimacy cards and boundaries
+ * Run with: node scripts/seed-intimacy.js
  */
 
-const { createClient } = require('@supabase/supabase-js');
-require('dotenv').config({ path: '.env.local' });
+const { createClient } = require('@supabase/supabase-js')
+require('dotenv').config({ path: '.env.local' })
 
-// Check if environment variables are set
-if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY) {
-  console.error('❌ Missing Supabase environment variables');
-  console.error('Please add NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY to .env.local');
-  process.exit(1);
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
+const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+
+if (!supabaseUrl || !supabaseKey) {
+  console.error('❌ Missing Supabase environment variables')
+  process.exit(1)
 }
 
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL,
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
-);
+const supabase = createClient(supabaseUrl, supabaseKey)
 
-// Seed data for intimacy cards - ~40 non-explicit cards
+// Seed data for intimacy cards
 const intimacyCards = [
   // TALK category
   {
     category: 'talk',
     difficulty: 1,
     text: 'Phones off for 10 minutes. Share one highlight and one worry from your day.',
-    phase_tags: ['menstrual', 'luteal']
+    phase_tags: ['menstrual', 'luteal'],
+    active: true
   },
   {
     category: 'talk',
     difficulty: 1,
     text: 'Ask each other: "What made you feel most loved today?"',
-    phase_tags: ['any']
+    phase_tags: ['any'],
+    active: true
   },
   {
     category: 'talk',
     difficulty: 1,
     text: 'Share three things you appreciate about your partner right now.',
-    phase_tags: ['follicular', 'ovulation']
+    phase_tags: ['follicular', 'ovulation'],
+    active: true
   },
   {
     category: 'talk',
     difficulty: 2,
     text: 'Discuss one thing you\'d like to try together this week.',
-    phase_tags: ['any']
+    phase_tags: ['any'],
+    active: true
   },
   {
     category: 'talk',
     difficulty: 2,
     text: 'Share a childhood memory that shaped who you are today.',
-    phase_tags: ['any']
+    phase_tags: ['any'],
+    active: true
   },
   {
     category: 'talk',
     difficulty: 3,
-    text: 'Talk about your love languages and how you prefer to receive affection.',
-    phase_tags: ['any']
+    text: 'Talk about your love languages and how you can better express them.',
+    phase_tags: ['any'],
+    active: true
   },
 
   // AFFECTION category
@@ -67,37 +67,43 @@ const intimacyCards = [
     category: 'affection',
     difficulty: 1,
     text: '5-minute cuddle while syncing your breathing.',
-    phase_tags: ['menstrual', 'luteal']
+    phase_tags: ['menstrual', 'luteal'],
+    active: true
   },
   {
     category: 'affection',
     difficulty: 1,
-    text: 'Hold hands and share what you\'re grateful for today.',
-    phase_tags: ['any']
+    text: 'Hold hands and look into each other\'s eyes for 2 minutes.',
+    phase_tags: ['any'],
+    active: true
   },
   {
     category: 'affection',
     difficulty: 1,
-    text: 'Give each other a 2-minute shoulder massage.',
-    phase_tags: ['any']
+    text: 'Give each other a 3-minute shoulder massage.',
+    phase_tags: ['any'],
+    active: true
   },
   {
     category: 'affection',
     difficulty: 2,
-    text: 'Dance together to your favorite song, even if it\'s just swaying.',
-    phase_tags: ['follicular', 'ovulation']
+    text: 'Dance together to your favourite song.',
+    phase_tags: ['follicular', 'ovulation'],
+    active: true
   },
   {
     category: 'affection',
     difficulty: 2,
-    text: 'Take turns giving each other a gentle face massage.',
-    phase_tags: ['any']
+    text: 'Take turns giving each other gentle forehead kisses.',
+    phase_tags: ['any'],
+    active: true
   },
   {
     category: 'affection',
     difficulty: 3,
-    text: 'Create a "love map" - draw or describe your partner\'s favorite places, foods, and memories.',
-    phase_tags: ['any']
+    text: 'Create a "love map" by tracing each other\'s hands.',
+    phase_tags: ['any'],
+    active: true
   },
 
   // QUALITY_TIME category
@@ -105,37 +111,43 @@ const intimacyCards = [
     category: 'quality_time',
     difficulty: 1,
     text: 'Tea together; swap three appreciations.',
-    phase_tags: ['any']
+    phase_tags: ['any'],
+    active: true
   },
   {
     category: 'quality_time',
     difficulty: 1,
-    text: 'Watch a sunset or sunrise together (even through a window).',
-    phase_tags: ['any']
+    text: 'Watch the sunset together and share what you\'re grateful for.',
+    phase_tags: ['any'],
+    active: true
   },
   {
     category: 'quality_time',
     difficulty: 1,
-    text: 'Cook a simple meal together, no phones allowed.',
-    phase_tags: ['any']
+    text: 'Cook a simple meal together without distractions.',
+    phase_tags: ['any'],
+    active: true
   },
   {
     category: 'quality_time',
     difficulty: 2,
-    text: 'Take a walk and share your dreams for the next year.',
-    phase_tags: ['follicular', 'ovulation']
+    text: 'Take a 20-minute walk and share your dreams.',
+    phase_tags: ['follicular', 'ovulation'],
+    active: true
   },
   {
     category: 'quality_time',
     difficulty: 2,
-    text: 'Play a board game or card game together.',
-    phase_tags: ['any']
+    text: 'Build a blanket fort and read to each other.',
+    phase_tags: ['menstrual', 'luteal'],
+    active: true
   },
   {
     category: 'quality_time',
     difficulty: 3,
-    text: 'Plan a future date or trip together, even if it\'s just dreaming.',
-    phase_tags: ['any']
+    text: 'Plan your ideal weekend together.',
+    phase_tags: ['any'],
+    active: true
   },
 
   // DESIRE_EXPLORATION category
@@ -143,226 +155,159 @@ const intimacyCards = [
     category: 'desire_exploration',
     difficulty: 1,
     text: 'Share one thing that increases your desire for connection this week.',
-    phase_tags: ['follicular', 'ovulation']
+    phase_tags: ['follicular', 'ovulation'],
+    active: true
   },
   {
     category: 'desire_exploration',
     difficulty: 1,
-    text: 'Tell each other what you find most attractive about the other person.',
-    phase_tags: ['any']
+    text: 'Tell each other what makes you feel most attractive.',
+    phase_tags: ['any'],
+    active: true
   },
   {
     category: 'desire_exploration',
     difficulty: 2,
-    text: 'Share a fantasy about a perfect day together (non-sexual).',
-    phase_tags: ['any']
+    text: 'Share a fantasy about your future together.',
+    phase_tags: ['follicular', 'ovulation'],
+    active: true
   },
   {
     category: 'desire_exploration',
     difficulty: 2,
-    text: 'Discuss what makes you feel most confident and desired.',
-    phase_tags: ['follicular', 'ovulation']
+    text: 'Discuss what intimacy means to each of you.',
+    phase_tags: ['any'],
+    active: true
   },
   {
     category: 'desire_exploration',
     difficulty: 3,
-    text: 'Share something new you\'d like to explore together (activity, place, or experience).',
-    phase_tags: ['any']
+    text: 'Share something new you\'d like to explore together.',
+    phase_tags: ['any'],
+    active: true
   },
 
   // ACTS category
   {
     category: 'acts',
     difficulty: 1,
-    text: 'Offer to handle one small task she\'s been delaying.',
-    phase_tags: ['luteal']
+    text: 'Offer to handle one small task they\'ve been delaying.',
+    phase_tags: ['luteal'],
+    active: true
   },
   {
     category: 'acts',
     difficulty: 1,
-    text: 'Bring her favorite snack or drink without being asked.',
-    phase_tags: ['any']
+    text: 'Make their favourite drink and bring it to them.',
+    phase_tags: ['any'],
+    active: true
   },
   {
     category: 'acts',
     difficulty: 1,
-    text: 'Write a short love note and leave it somewhere she\'ll find it.',
-    phase_tags: ['any']
+    text: 'Do one of their regular chores without being asked.',
+    phase_tags: ['any'],
+    active: true
   },
   {
     category: 'acts',
     difficulty: 2,
-    text: 'Plan a surprise activity she would enjoy (even if it\'s just a movie night).',
-    phase_tags: ['any']
+    text: 'Plan a surprise date for this weekend.',
+    phase_tags: ['follicular', 'ovulation'],
+    active: true
   },
   {
     category: 'acts',
     difficulty: 2,
-    text: 'Take care of a household task she usually handles.',
-    phase_tags: ['menstrual', 'luteal']
+    text: 'Write them a love note and hide it somewhere they\'ll find it.',
+    phase_tags: ['any'],
+    active: true
   },
   {
     category: 'acts',
     difficulty: 3,
-    text: 'Create a personalized playlist of songs that remind you of her.',
-    phase_tags: ['any']
-  },
-
-  // Additional cards for variety
-  {
-    category: 'talk',
-    difficulty: 1,
-    text: 'Share one thing you learned about yourself this week.',
-    phase_tags: ['any']
-  },
-  {
-    category: 'affection',
-    difficulty: 1,
-    text: 'Sit close together and share your favorite childhood memory.',
-    phase_tags: ['any']
-  },
-  {
-    category: 'quality_time',
-    difficulty: 1,
-    text: 'Look at old photos together and share the stories behind them.',
-    phase_tags: ['any']
-  },
-  {
-    category: 'desire_exploration',
-    difficulty: 1,
-    text: 'Share what makes you feel most loved and appreciated.',
-    phase_tags: ['any']
-  },
-  {
-    category: 'acts',
-    difficulty: 1,
-    text: 'Make her favorite breakfast or coffee exactly how she likes it.',
-    phase_tags: ['any']
-  },
-  {
-    category: 'talk',
-    difficulty: 2,
-    text: 'Discuss your ideal weekend together.',
-    phase_tags: ['any']
-  },
-  {
-    category: 'affection',
-    difficulty: 2,
-    text: 'Give each other a foot massage while talking about your day.',
-    phase_tags: ['any']
-  },
-  {
-    category: 'quality_time',
-    difficulty: 2,
-    text: 'Build a blanket fort and watch a movie together.',
-    phase_tags: ['any']
-  },
-  {
-    category: 'desire_exploration',
-    difficulty: 2,
-    text: 'Share what you find most attractive about your partner\'s personality.',
-    phase_tags: ['any']
-  },
-  {
-    category: 'acts',
-    difficulty: 2,
-    text: 'Surprise her with flowers or her favorite treat.',
-    phase_tags: ['any']
-  },
-  {
-    category: 'talk',
-    difficulty: 3,
-    text: 'Share your biggest dream and how your partner could support it.',
-    phase_tags: ['any']
-  },
-  {
-    category: 'affection',
-    difficulty: 3,
-    text: 'Create a "love ritual" - something special you do together regularly.',
-    phase_tags: ['any']
-  },
-  {
-    category: 'quality_time',
-    difficulty: 3,
-    text: 'Plan a "date night in" with activities you both enjoy.',
-    phase_tags: ['any']
-  },
-  {
-    category: 'desire_exploration',
-    difficulty: 3,
-    text: 'Share what you\'re most excited about in your relationship right now.',
-    phase_tags: ['any']
-  },
-  {
-    category: 'acts',
-    difficulty: 3,
-    text: 'Create a surprise care package for her with things she loves.',
-    phase_tags: ['any']
+    text: 'Create a playlist of songs that remind you of them.',
+    phase_tags: ['any'],
+    active: true
   }
-];
+]
 
 async function seedIntimacyCards() {
   try {
-    console.log('🌱 Starting intimacy cards seeding...');
-    
+    console.log('🌱 Starting intimacy cards seed...')
+
     // Check if cards already exist
-    const { count, error: countError } = await supabase
+    const { data: existingCards, error: checkError } = await supabase
       .from('intimacy_cards')
-      .select('*', { count: 'exact', head: true });
+      .select('id')
+      .limit(1)
 
-    if (countError) {
-      throw new Error(`Failed to check existing cards: ${countError.message}`);
+    if (checkError) {
+      console.error('❌ Error checking existing cards:', checkError.message)
+      return false
     }
 
-    if (count && count > 0) {
-      console.log(`✅ Found ${count} existing cards, skipping seed`);
-      return { success: true, message: `${count} cards already exist` };
+    if (existingCards && existingCards.length > 0) {
+      console.log('✅ Intimacy cards already exist, skipping seed')
+      return true
     }
 
-    // Insert the cards
-    const { data, error } = await supabase
+    // Insert all cards
+    const { error: insertError } = await supabase
       .from('intimacy_cards')
-      .insert(intimacyCards);
+      .insert(intimacyCards)
 
-    if (error) {
-      throw new Error(`Failed to insert cards: ${error.message}`);
+    if (insertError) {
+      console.error('❌ Error inserting intimacy cards:', insertError.message)
+      return false
     }
 
-    // Get final count
-    const { count: finalCount, error: finalCountError } = await supabase
-      .from('intimacy_cards')
-      .select('*', { count: 'exact', head: true });
-
-    if (finalCountError) {
-      throw new Error(`Failed to get final count: ${finalCountError.message}`);
-    }
-
-    console.log(`✅ Successfully seeded ${finalCount || 0} intimacy cards`);
-    return {
-      success: true,
-      message: `Successfully seeded ${finalCount || 0} intimacy cards`
-    };
+    console.log(`✅ Successfully seeded ${intimacyCards.length} intimacy cards`)
+    return true
   } catch (error) {
-    console.error('❌ Error seeding intimacy cards:', error.message);
-    return {
-      success: false,
-      error: error.message
-    };
+    console.error('❌ Error seeding intimacy cards:', error)
+    return false
   }
 }
 
-// Run the seed function
-seedIntimacyCards()
-  .then(result => {
-    if (result.success) {
-      console.log('🎉 Intimacy cards seeding completed successfully!');
-      process.exit(0);
-    } else {
-      console.error('💥 Intimacy cards seeding failed:', result.error);
-      process.exit(1);
+async function checkTablesExist() {
+  console.log('🔍 Checking if intimacy tables exist...')
+  
+  const tables = ['intimacy_cards', 'boundary_items', 'intimacy_sessions']
+  
+  for (const table of tables) {
+    try {
+      const { error } = await supabase
+        .from(table)
+        .select('*')
+        .limit(1)
+
+      if (error) {
+        console.log(`❌ Table '${table}' does not exist or is not accessible`)
+        console.log(`   Error: ${error.message}`)
+      } else {
+        console.log(`✅ Table '${table}' exists and is accessible`)
+      }
+    } catch (error) {
+      console.log(`❌ Error checking table '${table}':`, error.message)
     }
-  })
-  .catch(error => {
-    console.error('💥 Unexpected error:', error);
-    process.exit(1);
-  });
+  }
+}
+
+async function main() {
+  console.log('🚀 Starting intimacy seed process...\n')
+  
+  await checkTablesExist()
+  console.log('')
+  
+  const success = await seedIntimacyCards()
+  
+  if (success) {
+    console.log('\n🎉 Intimacy seed completed successfully!')
+  } else {
+    console.log('\n💥 Intimacy seed failed!')
+    process.exit(1)
+  }
+}
+
+main().catch(console.error)

@@ -146,7 +146,8 @@ export async function getTodayCard(userId: string, params: GetTodayCardParams = 
   })
 
   if (cards.length === 0) {
-    return null
+    // Return fallback card if no cards exist in database
+    return getFallbackCard(params.category, params.difficulty, params.phase)
   }
 
   // If phase is specified, prioritize cards that match the phase
@@ -165,6 +166,67 @@ export async function getTodayCard(userId: string, params: GetTodayCardParams = 
   // Fallback: return random card from all matching cards
   const randomIndex = Math.floor(Math.random() * cards.length)
   return cards[randomIndex]
+}
+
+// Fallback cards when database is empty
+function getFallbackCard(category?: string, difficulty?: number, phase?: string): IntimacyCard {
+  const fallbackCards = [
+    {
+      id: 'fallback-1',
+      category: 'talk' as const,
+      difficulty: 1,
+      text: 'Share one highlight and one worry from your day.',
+      phase_tags: ['any'],
+      active: true
+    },
+    {
+      id: 'fallback-2',
+      category: 'affection' as const,
+      difficulty: 1,
+      text: 'Give each other a 3-minute shoulder massage.',
+      phase_tags: ['any'],
+      active: true
+    },
+    {
+      id: 'fallback-3',
+      category: 'quality_time' as const,
+      difficulty: 1,
+      text: 'Cook a simple meal together without distractions.',
+      phase_tags: ['any'],
+      active: true
+    },
+    {
+      id: 'fallback-4',
+      category: 'desire_exploration' as const,
+      difficulty: 1,
+      text: 'Tell each other what makes you feel most attractive.',
+      phase_tags: ['any'],
+      active: true
+    },
+    {
+      id: 'fallback-5',
+      category: 'acts' as const,
+      difficulty: 1,
+      text: 'Make their favourite drink and bring it to them.',
+      phase_tags: ['any'],
+      active: true
+    }
+  ]
+
+  // Filter by category if specified
+  let filteredCards = fallbackCards
+  if (category) {
+    filteredCards = fallbackCards.filter(card => card.category === category)
+  }
+
+  // Filter by difficulty if specified
+  if (difficulty) {
+    filteredCards = filteredCards.filter(card => card.difficulty === difficulty)
+  }
+
+  // Return random card from filtered results
+  const randomIndex = Math.floor(Math.random() * filteredCards.length)
+  return filteredCards[randomIndex] || fallbackCards[0]
 }
 
 // =====================================================

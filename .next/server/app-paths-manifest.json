@@ -1,9 +1,1 @@
-{
-  "/api/log-cycle/route": "app/api/log-cycle/route.js",
-  "/cycle/page": "app/cycle/page.js",
-  "/fantasy/page": "app/fantasy/page.js",
-  "/favicon.ico/route": "app/favicon.ico/route.js",
-  "/intimacy/page": "app/intimacy/page.js",
-  "/page": "app/page.js",
-  "/settings/page": "app/settings/page.js"
-}
+{}

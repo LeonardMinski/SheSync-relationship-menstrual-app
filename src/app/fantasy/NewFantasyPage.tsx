@@ -28,29 +28,17 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/Button'
 import { Input, Textarea } from '@/components/ui/Input'
 import { Toggle } from '@/components/ui/Toggle'
-// Mock fantasy service - replace with real implementation
-const listEntries = async () => {
-  return []
-}
-// Mock fantasy entry type - replace with real schema
-interface FantasyEntry {
-  id: string
-  title: string
-  content: string
-  tags: string[]
-  isPrivate: boolean
-  createdAt: string
-  updatedAt: string
-}
+import { listEntries, createEntry, updateEntry, deleteEntry, seedFantasyEntries } from '@/features/fantasy/services'
+import type { FantasyEntryRecord } from '@/features/fantasy/schemas'
 
 export default function NewFantasyPage() {
   const { user, loading: authLoading } = useAuth()
   const router = useRouter()
   
-  const [entries, setEntries] = useState<FantasyEntry[]>([])
+  const [entries, setEntries] = useState<FantasyEntryRecord[]>([])
   const [loading, setLoading] = useState(true)
   const [showCreateModal, setShowCreateModal] = useState(false)
-  const [editingEntry, setEditingEntry] = useState<FantasyEntry | null>(null)
+  const [editingEntry, setEditingEntry] = useState<FantasyEntryRecord | null>(null)
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid')
   const [filter, setFilter] = useState<'all' | 'shared' | 'private'>('all')
   const [typeFilter, setTypeFilter] = useState<'all' | 'text' | 'moodboard' | 'audio'>('all')
@@ -58,11 +46,13 @@ export default function NewFantasyPage() {
   // Form state
   const [formData, setFormData] = useState({
     title: '',
-    content: '',
-    type: 'text' as 'text' | 'moodboard' | 'audio',
+    content_text: '',
+    content_url: '',
+    kind: 'text' as 'text' | 'moodboard' | 'audio',
     tags: [] as string[],
-    comfortLevel: 3,
-    shareStatus: 'hidden' as 'hidden' | 'tease' | 'reveal'
+    comfort: 3,
+    share_status: 'hidden' as 'hidden' | 'tease' | 'reveal',
+    redacted: false
   })
   const [saving, setSaving] = useState(false)
 
@@ -94,14 +84,26 @@ export default function NewFantasyPage() {
   }
 
   const handleCreateEntry = async () => {
-    if (!user || !formData.title.trim() || !formData.content.trim()) return
+    if (!user || !formData.title.trim() || !formData.content_text.trim()) return
 
     setSaving(true)
     try {
-      // Create entry logic here
-      setShowCreateModal(false)
-      resetForm()
-      await loadEntries()
+      const newEntry = await createEntry(user.id, {
+        title: formData.title,
+        content_text: formData.content_text,
+        content_url: formData.content_url,
+        kind: formData.kind,
+        tags: formData.tags,
+        comfort: formData.comfort,
+        share_status: formData.share_status,
+        redacted: formData.redacted
+      })
+      
+      if (newEntry) {
+        setShowCreateModal(false)
+        resetForm()
+        await loadEntries()
+      }
     } catch (error) {
       console.error('Error creating fantasy entry:', error)
     } finally {
@@ -110,14 +112,26 @@ export default function NewFantasyPage() {
   }
 
   const handleUpdateEntry = async () => {
-    if (!editingEntry || !formData.title.trim() || !formData.content.trim()) return
+    if (!editingEntry || !formData.title.trim() || !formData.content_text.trim()) return
 
     setSaving(true)
     try {
-      // Update entry logic here
-      setEditingEntry(null)
-      resetForm()
-      await loadEntries()
+      const updatedEntry = await updateEntry(user!.id, editingEntry.id, {
+        title: formData.title,
+        content_text: formData.content_text,
+        content_url: formData.content_url,
+        kind: formData.kind,
+        tags: formData.tags,
+        comfort: formData.comfort,
+        share_status: formData.share_status,
+        redacted: formData.redacted
+      })
+      
+      if (updatedEntry) {
+        setEditingEntry(null)
+        resetForm()
+        await loadEntries()
+      }
     } catch (error) {
       console.error('Error updating fantasy entry:', error)
     } finally {
@@ -129,8 +143,10 @@ export default function NewFantasyPage() {
     if (!confirm('Are you sure you want to delete this fantasy entry?')) return
 
     try {
-      // Delete entry logic here
-      await loadEntries()
+      const success = await deleteEntry(user!.id, entryId)
+      if (success) {
+        await loadEntries()
+      }
     } catch (error) {
       console.error('Error deleting fantasy entry:', error)
     }
@@ -139,29 +155,33 @@ export default function NewFantasyPage() {
   const resetForm = () => {
     setFormData({
       title: '',
-      content: '',
-      type: 'text',
+      content_text: '',
+      content_url: '',
+      kind: 'text',
       tags: [],
-      comfortLevel: 3,
-      shareStatus: 'hidden'
+      comfort: 3,
+      share_status: 'hidden',
+      redacted: false
     })
   }
 
-  const openEditModal = (entry: FantasyEntry) => {
+  const openEditModal = (entry: FantasyEntryRecord) => {
     setEditingEntry(entry)
     setFormData({
       title: entry.title,
-      content: entry.content,
-      type: entry.type,
+      content_text: entry.content_text || '',
+      content_url: entry.content_url || '',
+      kind: entry.kind,
       tags: entry.tags || [],
-      comfortLevel: entry.comfortLevel || 3,
-      shareStatus: entry.shareStatus || 'hidden'
+      comfort: entry.comfort || 3,
+      share_status: entry.share_status || 'hidden',
+      redacted: entry.redacted || false
     })
     setShowCreateModal(true)
   }
 
-  const getTypeIcon = (type: string) => {
-    switch (type) {
+  const getKindIcon = (kind: string) => {
+    switch (kind) {
       case 'text':
         return <FileText className="h-4 w-4" />
       case 'moodboard':
@@ -200,9 +220,9 @@ export default function NewFantasyPage() {
   }
 
   const filteredEntries = entries.filter(entry => {
-    if (filter === 'shared' && entry.shareStatus === 'hidden') return false
-    if (filter === 'private' && entry.shareStatus !== 'hidden') return false
-    if (typeFilter !== 'all' && entry.type !== typeFilter) return false
+    if (filter === 'shared' && entry.share_status === 'hidden') return false
+    if (filter === 'private' && entry.share_status !== 'hidden') return false
+    if (typeFilter !== 'all' && entry.kind !== typeFilter) return false
     return true
   })
 
@@ -351,20 +371,20 @@ export default function NewFantasyPage() {
                         {entry.title}
                       </CardTitle>
                       <CardDescription className="flex items-center gap-2 mt-1">
-                        {getTypeIcon(entry.type)}
-                        <span className="capitalize">{entry.type}</span>
+                        {getKindIcon(entry.kind)}
+                        <span className="capitalize">{entry.kind}</span>
                         <span>•</span>
-                        <span>{format(new Date(entry.createdAt), 'MMM d')}</span>
+                        <span>{format(new Date(entry.created_at), 'MMM d')}</span>
                       </CardDescription>
                     </div>
                     <div className="flex items-center gap-1">
-                      {getShareStatusIcon(entry.shareStatus)}
+                      {getShareStatusIcon(entry.share_status)}
                     </div>
                   </div>
                 </CardHeader>
                 <CardContent>
                   <p className="text-foreground text-sm line-clamp-3 mb-4">
-                    {entry.content}
+                    {entry.content_text}
                   </p>
                   
                   {entry.tags && entry.tags.length > 0 && (
@@ -388,10 +408,10 @@ export default function NewFantasyPage() {
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2">
                       <span className="text-xs text-muted-foreground">
-                        {getShareStatusText(entry.shareStatus)}
+                        {getShareStatusText(entry.share_status)}
                       </span>
                       <span className="text-xs text-muted-foreground">
-                        Comfort: {entry.comfortLevel}/5
+                        Comfort: {entry.comfort}/5
                       </span>
                     </div>
                     <div className="flex items-center gap-1">
@@ -447,11 +467,11 @@ export default function NewFantasyPage() {
                   {['text', 'moodboard', 'audio'].map((type) => (
                     <Button
                       key={type}
-                      variant={formData.type === type ? 'cta' : 'secondary'}
+                      variant={formData.kind === type ? 'cta' : 'secondary'}
                       size="sm"
-                      onClick={() => setFormData(prev => ({ ...prev, type: type as any }))}
+                      onClick={() => setFormData(prev => ({ ...prev, kind: type as any }))}
                     >
-                      {getTypeIcon(type)}
+                      {getKindIcon(type)}
                       <span className="capitalize ml-1">{type}</span>
                     </Button>
                   ))}
@@ -460,22 +480,22 @@ export default function NewFantasyPage() {
 
               <Textarea
                 label="Content"
-                value={formData.content}
-                onChange={(e) => setFormData(prev => ({ ...prev, content: e.target.value }))}
+                value={formData.content_text}
+                onChange={(e) => setFormData(prev => ({ ...prev, content_text: e.target.value }))}
                 placeholder="Describe your fantasy in detail..."
                 rows={6}
               />
 
               <div>
                 <label className="block text-sm font-medium text-foreground mb-2">
-                  Comfort Level: {formData.comfortLevel}/5
+                  Comfort Level: {formData.comfort}/5
                 </label>
                 <input
                   type="range"
                   min="1"
                   max="5"
-                  value={formData.comfortLevel}
-                  onChange={(e) => setFormData(prev => ({ ...prev, comfortLevel: Number(e.target.value) }))}
+                  value={formData.comfort}
+                  onChange={(e) => setFormData(prev => ({ ...prev, comfort: Number(e.target.value) }))}
                   className="w-full h-2 bg-border rounded-lg appearance-none cursor-pointer slider"
                 />
               </div>
@@ -492,9 +512,9 @@ export default function NewFantasyPage() {
                   ].map((option) => (
                     <Button
                       key={option.value}
-                      variant={formData.shareStatus === option.value ? 'cta' : 'secondary'}
+                      variant={formData.share_status === option.value ? 'cta' : 'secondary'}
                       size="sm"
-                      onClick={() => setFormData(prev => ({ ...prev, shareStatus: option.value as any }))}
+                      onClick={() => setFormData(prev => ({ ...prev, share_status: option.value as any }))}
                     >
                       {option.icon}
                       <span className="ml-1">{option.label}</span>
