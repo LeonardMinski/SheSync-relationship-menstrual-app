@@ -4,7 +4,7 @@ import { createServerClient } from '@supabase/ssr'
 
 // Define protected routes that require authentication
 const protectedRoutes = [
-  '/',
+  '/dashboard',
   '/cycle',
   '/coach',
   '/fantasy',
@@ -56,9 +56,9 @@ export async function middleware(request: NextRequest) {
 
       const { data: { user } } = await supabase.auth.getUser()
       
-      // If user is logged in and trying to access auth pages, redirect to home
+      // If user is logged in and trying to access auth pages, redirect to dashboard
       if (user) {
-        return NextResponse.redirect(new URL('/', request.url))
+        return NextResponse.redirect(new URL('/dashboard', request.url))
       }
       
       return response

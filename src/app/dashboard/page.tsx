@@ -11,7 +11,7 @@
  * 
  * Route: /dashboard
  */
-import NewDashboard from './_components/Dashboard/NewDashboard';
+import NewDashboard from '../dashboard/_components/Dashboard/NewDashboard';
 
 export default function DashboardPage() {
   return <NewDashboard />;

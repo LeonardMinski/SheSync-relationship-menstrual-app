@@ -1,18 +1,17 @@
 /**
- * Home Page - Main user dashboard for cycle tracking and insights
+ * Landing Page - Public marketing page for SheSync+
  * 
  * Features:
- * - Cycle phase display with tooltips
- * - Today's cycle stats (Mood, Phase, Symptoms, Logged date)
- * - Cycle logging form with mood slider and symptom selection
- * - Smart predictions based on cycle data
- * - Interactive calendar view
- * - Phase-specific insights and recommendations
+ * - Hero section with app introduction
+ * - Feature showcase (Cycle Tracking, Intimacy Cards, Fantasy Vault, AI Coach)
+ * - Partner features section
+ * - Call-to-action sections
+ * - Responsive design with dark/light mode support
  * 
  * Route: /
  */
-import NewDashboard from './dashboard/_components/Dashboard/NewDashboard';
+import LandingPage from './components/LandingPage/components/LandingPage';
 
 export default function HomePage() {
-  return <NewDashboard />;
+  return <LandingPage />;
 }

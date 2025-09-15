@@ -32,7 +32,7 @@ export default function LoginPage() {
       
       if (result.success) {
         console.log('✅ Login successful, redirecting to dashboard...')
-        router.push('/') // Redirect to dashboard after successful login
+        router.push('/dashboard') // Redirect to dashboard after successful login
       } else {
         console.error('❌ Login failed:', result.error)
         setError(result.error || 'Login failed')
@@ -57,7 +57,7 @@ export default function LoginPage() {
         <Card className="border-0 shadow-lg">
           <CardHeader className="text-center pb-6">
             <div className="w-16 h-16 mx-auto mb-4 rounded-2xl bg-gradient-to-r from-cta-start to-cta-end flex items-center justify-center">
-              <span className="text-2xl font-bold text-white">S</span>
+    
             </div>
             <CardTitle className="text-2xl font-bold text-foreground">Welcome Back</CardTitle>
             <CardDescription className="text-muted-foreground">

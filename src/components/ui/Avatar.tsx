@@ -1,7 +1,7 @@
 'use client'
 
 import React, { useState, useRef } from 'react'
-import { Camera, User } from 'lucide-react'
+import { Upload, User } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
 interface AvatarProps {
