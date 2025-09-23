@@ -23,7 +23,6 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/Button'
 import { getPhaseEmoji, getPhaseColor } from '@/lib/mockData'
 import { getHealthInsights, getNutritionSuggestion, API_FALLBACKS } from '@/lib/api-services'
-import { Footer } from '@/components/ui/Footer'
 import type { CycleData } from '@/types'
 import type { HealthInsight, NutritionSuggestion } from '@/lib/api-services'
 
@@ -558,7 +557,6 @@ export default function CyclePage() {
         </Card>
       )}
 
-      <Footer />
       <Navbar />
     </div>
   )

@@ -167,9 +167,7 @@ export function TopNavbar({
               >
                 <Bell className={`h-5 w-5 ${notifications > 0 ? 'text-cta-start fill-cta-start' : 'text-foreground'}`} />
                 {notifications > 0 && (
-                  <span className="absolute -top-1 -right-1 h-5 w-5 bg-error text-white text-xs rounded-full flex items-center justify-center">
-                    {notifications > 9 ? '9+' : notifications}
-                  </span>
+                  <span className="absolute -top-1 -right-1 h-3 w-3 bg-error rounded-full"></span>
                 )}
               </button>
             )}

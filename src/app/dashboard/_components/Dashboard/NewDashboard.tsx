@@ -20,7 +20,6 @@ import { TopNavbar } from '@/components/ui/Navbar'
 import { Navbar } from '@/components/ui/Navbar'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/Card'
 import { Button } from '@/components/ui/Button'
-import { Footer } from '@/components/ui/Footer'
 import { getPhaseEmoji, getPhaseColor } from '@/lib/mockData'
 import { getHealthInsights, getNutritionSuggestion, getHealthNews, API_FALLBACKS } from '@/lib/api-services'
 import type { CycleData } from '@/types'
@@ -346,8 +345,6 @@ export default function NewDashboard() {
         </Card>
       </div>
 
-      {/* Footer */}
-      <Footer />
 
       {/* Log Cycle Modal */}
       {showLogForm && (

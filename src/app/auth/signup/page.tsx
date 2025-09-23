@@ -7,8 +7,6 @@ import { useAuth } from '@/context/AuthContext'
 import { Button } from '@/components/ui/Button'
 import { Input } from '@/components/ui/Input'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/Card'
-import { TopNavbar } from '@/components/ui/Navbar'
-
 export default function SignupPage() {
   const [name, setName] = useState('')
   const [email, setEmail] = useState('')
@@ -54,13 +52,7 @@ export default function SignupPage() {
   }
 
   return (
-    <div className="min-h-screen bg-bg">
-      <TopNavbar 
-        title="SheSync" 
-        subtitle="Join our community"
-        showNotifications={false}
-      />
-      <div className="flex items-center justify-center p-4">
+    <div className="min-h-screen bg-bg flex items-center justify-center p-4">
         <div className="w-full max-w-md">
         <Card className="border-0 shadow-lg">
           <CardHeader className="text-center pb-6">
@@ -168,7 +160,6 @@ export default function SignupPage() {
             </form>
           </CardContent>
         </Card>
-        </div>
       </div>
     </div>
   )

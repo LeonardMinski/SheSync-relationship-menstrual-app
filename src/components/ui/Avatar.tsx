@@ -124,7 +124,7 @@ export function Avatar({
             onClick={handleClick}
             disabled={isUploading}
           >
-            <Camera className="w-3 h-3 text-white" />
+            <Upload className="w-3 h-3 text-white" />
           </button>
         </>
       )}
