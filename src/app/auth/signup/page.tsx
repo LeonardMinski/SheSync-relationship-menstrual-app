@@ -18,16 +18,28 @@ export default function SignupPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
+    if (loading) return
     setError('')
 
+    const formData = new FormData(e.currentTarget as HTMLFormElement)
+    const submittedName = String(formData.get('name') || '').trim()
+    const submittedEmail = String(formData.get('email') || '').trim().toLowerCase()
+    const submittedPassword = String(formData.get('password') || '')
+    const submittedConfirmPassword = String(formData.get('confirmPassword') || '')
+
+    setName(submittedName)
+    setEmail(submittedEmail)
+    setPassword(submittedPassword)
+    setConfirmPassword(submittedConfirmPassword)
+
     // Validate passwords match
-    if (password !== confirmPassword) {
+    if (submittedPassword !== submittedConfirmPassword) {
       setError('Passwords do not match')
       return
     }
 
     // Validate password strength
-    if (password.length < 8) {
+    if (submittedPassword.length < 8) {
       setError('Password must be at least 8 characters long')
       return
     }
@@ -35,10 +47,14 @@ export default function SignupPage() {
     setLoading(true)
 
     try {
-      const result = await signUp({ email, password, name })
+      const result = await signUp({ email: submittedEmail, password: submittedPassword, name: submittedName })
       
       if (result.success) {
-        router.push('/auth/verify-email') // Redirect to email verification page
+        if (result.requiresEmailVerification) {
+          router.replace('/auth/verify-email')
+        } else {
+          router.replace('/dashboard')
+        }
       } else {
         setError(result.error || 'Signup failed')
       }
@@ -91,6 +107,10 @@ export default function SignupPage() {
                 name="email"
                 type="email"
                 autoComplete="email"
+                inputMode="email"
+                autoCapitalize="none"
+                autoCorrect="off"
+                spellCheck={false}
                 required
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}

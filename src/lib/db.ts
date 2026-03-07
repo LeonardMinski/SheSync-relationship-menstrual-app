@@ -38,11 +38,55 @@ export interface LoginData {
   rememberMe?: boolean
 }
 
+const defaultPrivacySettings = {
+  share_with_partner: false,
+  share_cycle_phase: false,
+  share_mood: false,
+  share_fantasy_vault: false,
+  share_intimacy_deck: false,
+}
+
+const normalizeEmail = (email: string) => email.trim().toLowerCase()
+
+const withTimeout = async <T>(promise: Promise<T>, label: string, timeoutMs: number = 15000): Promise<T> => {
+  let timeoutId: ReturnType<typeof setTimeout> | undefined
+
+  const timeoutPromise = new Promise<T>((_, reject) => {
+    timeoutId = setTimeout(() => {
+      reject(new Error(`${label} timed out. Check Supabase Auth settings and try again.`))
+    }, timeoutMs)
+  })
+
+  try {
+    return await Promise.race([promise, timeoutPromise])
+  } finally {
+    if (timeoutId) {
+      clearTimeout(timeoutId)
+    }
+  }
+}
+
+const buildFallbackUser = (user: {
+  id: string
+  email?: string | null
+  user_metadata?: { name?: string | null }
+}): User => ({
+  id: user.id,
+  email: user.email || '',
+  name: user.user_metadata?.name || user.email?.split('@')[0] || 'User',
+  subscription_tier: 'free',
+  created_at: new Date().toISOString(),
+  privacy_settings: defaultPrivacySettings,
+})
+
 // Auth functions
 export const auth = {
   async getCurrentUser(): Promise<{ user: User | null; error: string | null }> {
     try {
-      const { data: { session }, error: sessionError } = await supabase.auth.getSession()
+      const { data: { session }, error: sessionError } = await withTimeout(
+        supabase.auth.getSession(),
+        'Session lookup'
+      )
       
       if (sessionError) {
         return { user: null, error: sessionError.message }
@@ -60,30 +104,15 @@ export const auth = {
         .single()
 
       if (profileError) {
-        // If user doesn't exist in our users table, create a basic profile
-        const newUser: User = {
-          id: session.user.id,
-          email: session.user.email || '',
-          name: session.user.user_metadata?.name || session.user.email?.split('@')[0] || 'User',
-          subscription_tier: 'free',
-          created_at: new Date().toISOString(),
-          privacy_settings: {
-            share_with_partner: false,
-            share_cycle_phase: false,
-            share_mood: false,
-            share_fantasy_vault: false,
-            share_intimacy_deck: false,
-          }
-        }
+        const newUser = buildFallbackUser(session.user)
 
-        // Try to insert the user profile
+        // Try to create the profile, but don't block auth if it fails.
         const { error: insertError } = await supabase
           .from('users')
-          .insert(newUser)
+          .upsert(newUser, { onConflict: 'id' })
 
         if (insertError) {
           console.error('Error creating user profile:', insertError)
-          // Return the basic user data even if we can't save it
           return { user: newUser, error: null }
         }
 
@@ -97,68 +126,84 @@ export const auth = {
     }
   },
 
-  async signUp(data: CreateUserData): Promise<{ user: User | null; error: string | null }> {
+  async signUp(data: CreateUserData): Promise<{ user: User | null; error: string | null; requiresEmailVerification: boolean }> {
     try {
       // Check if Supabase is properly configured
       const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
       if (!supabaseUrl || supabaseUrl.includes('placeholder')) {
-        return { user: null, error: 'Supabase not configured. Please check your environment variables.' }
+        return { user: null, error: 'Supabase not configured. Please check your environment variables.', requiresEmailVerification: false }
       }
 
-      const { data: authData, error: authError } = await supabase.auth.signUp({
-        email: data.email,
-        password: data.password,
-        options: {
-          data: {
-            name: data.name
+      const normalizedEmail = normalizeEmail(data.email)
+      const { data: authData, error: authError } = await withTimeout(
+        supabase.auth.signUp({
+          email: normalizedEmail,
+          password: data.password,
+          options: {
+            data: {
+              name: data.name
+            }
           }
-        }
-      })
+        }),
+        'Sign up'
+      )
 
       if (authError) {
         console.error('Supabase signup error:', authError)
-        return { user: null, error: authError.message }
+        if (authError.code === 'over_email_send_rate_limit') {
+          return {
+            user: null,
+            error: 'Email rate limit exceeded in Supabase. For development, disable email confirmation or wait before retrying.',
+            requiresEmailVerification: false,
+          }
+        }
+        if (
+          authError.code === 'user_already_exists' ||
+          authError.message.toLowerCase().includes('already registered') ||
+          authError.message.toLowerCase().includes('user already registered')
+        ) {
+          return {
+            user: null,
+            error: 'An account with this email already exists. Sign in instead or reset your password.',
+            requiresEmailVerification: false,
+          }
+        }
+        return { user: null, error: authError.message, requiresEmailVerification: false }
       }
 
       if (!authData.user) {
-        return { user: null, error: 'Signup failed' }
+        return { user: null, error: 'Signup failed', requiresEmailVerification: false }
       }
 
       // Create user profile
       const newUser: User = {
         id: authData.user.id,
-        email: data.email,
+        email: authData.user.email || normalizedEmail,
         name: data.name,
         subscription_tier: 'free',
         created_at: new Date().toISOString(),
-        privacy_settings: data.privacy_settings || {
-          share_with_partner: false,
-          share_cycle_phase: false,
-          share_mood: false,
-          share_fantasy_vault: false,
-          share_intimacy_deck: false,
-        }
+        privacy_settings: data.privacy_settings || defaultPrivacySettings
       }
 
       const { error: profileError } = await supabase
         .from('users')
-        .insert(newUser)
+        .upsert(newUser, { onConflict: 'id' })
 
       if (profileError && Object.keys(profileError).length > 0) {
         console.error('Error creating user profile:', profileError)
-        // Still return the user data even if profile creation fails
-        return { user: newUser, error: null }
+        return { user: newUser, error: null, requiresEmailVerification: !authData.session }
       }
 
-      return { user: newUser, error: null }
+      return { user: newUser, error: null, requiresEmailVerification: !authData.session }
     } catch (error) {
       console.error('Error signing up:', error)
-      return { user: null, error: error instanceof Error ? error.message : 'Unknown error' }
+      return { user: null, error: error instanceof Error ? error.message : 'Unknown error', requiresEmailVerification: false }
     }
   },
 
   async signIn(data: LoginData): Promise<{ user: User | null; error: string | null }> {
     try {
+      const normalizedEmail = normalizeEmail(data.email)
       // Set remember me flag before authentication
       if (typeof window !== 'undefined') {
         if (data.rememberMe) {
@@ -168,10 +213,13 @@ export const auth = {
         }
       }
       
-      const { data: authData, error: authError } = await supabase.auth.signInWithPassword({
-        email: data.email,
-        password: data.password
-      })
+      const { data: authData, error: authError } = await withTimeout(
+        supabase.auth.signInWithPassword({
+          email: normalizedEmail,
+          password: data.password
+        }),
+        'Sign in'
+      )
 
       if (authError) {
         return { user: null, error: authError.message }
@@ -190,7 +238,16 @@ export const auth = {
 
       if (profileError) {
         console.error('Error getting user profile:', profileError)
-        return { user: null, error: 'User profile not found' }
+        const fallbackUser = buildFallbackUser(authData.user)
+        const { error: insertError } = await supabase
+          .from('users')
+          .upsert(fallbackUser, { onConflict: 'id' })
+
+        if (insertError) {
+          console.error('Error creating missing user profile during sign in:', insertError)
+        }
+
+        return { user: fallbackUser, error: null }
       }
 
       return { user: userProfile, error: null }
@@ -211,6 +268,41 @@ export const auth = {
       return { error: error?.message || null }
     } catch (error) {
       console.error('Error signing out:', error)
+      return { error: error instanceof Error ? error.message : 'Unknown error' }
+    }
+  },
+
+  async requestPasswordReset(email: string, redirectTo?: string): Promise<{ error: string | null }> {
+    try {
+      const normalizedEmail = normalizeEmail(email)
+      const { error } = await withTimeout(
+        supabase.auth.resetPasswordForEmail(normalizedEmail, redirectTo ? { redirectTo } : undefined),
+        'Password reset request'
+      )
+
+      if (error) {
+        return { error: error.message }
+      }
+
+      return { error: null }
+    } catch (error) {
+      return { error: error instanceof Error ? error.message : 'Unknown error' }
+    }
+  },
+
+  async updatePassword(password: string): Promise<{ error: string | null }> {
+    try {
+      const { error } = await withTimeout(
+        supabase.auth.updateUser({ password }),
+        'Password update'
+      )
+
+      if (error) {
+        return { error: error.message }
+      }
+
+      return { error: null }
+    } catch (error) {
       return { error: error instanceof Error ? error.message : 'Unknown error' }
     }
   }

@@ -2,27 +2,78 @@ import { createClient } from '@supabase/supabase-js'
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
 const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+const isBrowser = typeof window !== 'undefined'
+
+type StorageLike = {
+  getItem: (key: string) => string | null
+  setItem: (key: string, value: string) => void
+  removeItem: (key: string) => void
+  clear: () => void
+  key: (index: number) => string | null
+  readonly length: number
+}
+
+const createMemoryStorage = (): StorageLike => {
+  const store = new Map<string, string>()
+  return {
+    getItem: (key: string) => store.get(key) ?? null,
+    setItem: (key: string, value: string) => {
+      store.set(key, value)
+    },
+    removeItem: (key: string) => {
+      store.delete(key)
+    },
+    clear: () => {
+      store.clear()
+    },
+    key: (index: number) => Array.from(store.keys())[index] ?? null,
+    get length() {
+      return store.size
+    }
+  }
+}
+
+const ensureServerStorageShape = () => {
+  if (isBrowser) return
+  const globalScope = globalThis as unknown as {
+    localStorage?: Partial<StorageLike>
+    sessionStorage?: Partial<StorageLike>
+  }
+
+  if (typeof globalScope.localStorage?.getItem !== 'function') {
+    globalScope.localStorage = createMemoryStorage()
+  }
+
+  if (typeof globalScope.sessionStorage?.getItem !== 'function') {
+    globalScope.sessionStorage = createMemoryStorage()
+  }
+}
+
+ensureServerStorageShape()
+
+const isSupabaseConfigured = Boolean(supabaseUrl && supabaseAnonKey)
 
 // Check if environment variables are properly loaded
-if (!supabaseUrl || !supabaseAnonKey) {
-  console.error('Missing Supabase environment variables:')
-  console.error('NEXT_PUBLIC_SUPABASE_URL:', supabaseUrl ? 'Set' : 'Missing')
-  console.error('NEXT_PUBLIC_SUPABASE_ANON_KEY:', supabaseAnonKey ? 'Set' : 'Missing')
-  
-  // In development, create a mock client that throws helpful errors
-  if (process.env.NODE_ENV === 'development') {
-    console.warn('Creating mock Supabase client for development. Please set up your .env.local file.')
-  }
-  
+if (!isSupabaseConfigured) {
   // Only throw error in production
   if (process.env.NODE_ENV === 'production') {
     throw new Error('Missing Supabase environment variables in production')
+  }
+
+  // Avoid noisy client runtime overlays in dev; warn once on the server.
+  if (!isBrowser) {
+    console.warn('Missing Supabase environment variables.')
+    console.warn('NEXT_PUBLIC_SUPABASE_URL:', supabaseUrl ? 'Set' : 'Missing')
+    console.warn('NEXT_PUBLIC_SUPABASE_ANON_KEY:', supabaseAnonKey ? 'Set' : 'Missing')
+    console.warn('Using placeholder Supabase config in development. Create .env.local to enable auth/data.')
   }
 }
 
 // Custom storage that uses localStorage for persistent sessions and sessionStorage for temporary ones
 const createCustomStorage = () => {
-  if (typeof window === 'undefined') return undefined
+  if (!isBrowser) return undefined
+  if (typeof window.localStorage?.getItem !== 'function') return undefined
+  if (typeof window.sessionStorage?.getItem !== 'function') return undefined
   
   return {
     getItem: (key: string) => {
@@ -56,8 +107,10 @@ export const supabase = createClient(
   supabaseAnonKey || 'placeholder-anon-key',
   {
     auth: {
-      persistSession: true,
-      autoRefreshToken: true,
+      // Never persist/refresh sessions on the server to avoid non-browser storage access.
+      persistSession: isBrowser,
+      autoRefreshToken: isBrowser,
+      detectSessionInUrl: isBrowser,
       storage: createCustomStorage(),
     },
   }

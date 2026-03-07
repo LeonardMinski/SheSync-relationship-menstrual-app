@@ -7,9 +7,11 @@ import { supabase } from '@/lib/supabaseClient'
 interface AuthContextType {
   user: User | null
   loading: boolean
-  signUp: (data: CreateUserData) => Promise<{ success: boolean; error?: string }>
+  signUp: (data: CreateUserData) => Promise<{ success: boolean; error?: string; requiresEmailVerification?: boolean }>
   signIn: (data: LoginData) => Promise<{ success: boolean; error?: string }>
   signOut: () => Promise<void>
+  requestPasswordReset: (email: string, redirectTo?: string) => Promise<{ success: boolean; error?: string }>
+  updatePassword: (password: string) => Promise<{ success: boolean; error?: string }>
   refreshUser: () => Promise<void>
 }
 
@@ -69,18 +71,20 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     }
   }, [])
 
-  const signUp = async (data: CreateUserData): Promise<{ success: boolean; error?: string }> => {
+  const signUp = async (data: CreateUserData): Promise<{ success: boolean; error?: string; requiresEmailVerification?: boolean }> => {
     try {
       setLoading(true)
-      const { user: newUser, error } = await auth.signUp(data)
+      const { user: newUser, error, requiresEmailVerification } = await auth.signUp(data)
 
       if (error) {
         return { success: false, error }
       }
 
       if (newUser) {
-        setUser(newUser)
-        return { success: true }
+        if (!requiresEmailVerification) {
+          setUser(newUser)
+        }
+        return { success: true, requiresEmailVerification }
       }
 
       return { success: false, error: 'Signup failed' }
@@ -141,12 +145,38 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     }
   }
 
+  const requestPasswordReset = async (email: string, redirectTo?: string): Promise<{ success: boolean; error?: string }> => {
+    try {
+      const { error } = await auth.requestPasswordReset(email, redirectTo)
+      if (error) {
+        return { success: false, error }
+      }
+      return { success: true }
+    } catch (error) {
+      return { success: false, error: error instanceof Error ? error.message : 'Unknown error' }
+    }
+  }
+
+  const updatePassword = async (password: string): Promise<{ success: boolean; error?: string }> => {
+    try {
+      const { error } = await auth.updatePassword(password)
+      if (error) {
+        return { success: false, error }
+      }
+      return { success: true }
+    } catch (error) {
+      return { success: false, error: error instanceof Error ? error.message : 'Unknown error' }
+    }
+  }
+
   const value: AuthContextType = {
     user,
     loading,
     signUp,
     signIn,
     signOut,
+    requestPasswordReset,
+    updatePassword,
     refreshUser,
   }
 

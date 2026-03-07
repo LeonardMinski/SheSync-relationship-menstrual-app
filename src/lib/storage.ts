@@ -289,10 +289,20 @@ export const audioStorage = {
 // Data persistence functions for app state
 import { User, CycleData, AICoachMessage, IntimacyCard, FantasyEntry, Notification } from '@/types'
 
+const getBrowserStorage = (): Storage | null => {
+  if (typeof window === 'undefined') return null
+  if (typeof window.localStorage?.getItem !== 'function') return null
+  if (typeof window.localStorage?.setItem !== 'function') return null
+  if (typeof window.localStorage?.removeItem !== 'function') return null
+  return window.localStorage
+}
+
 // User management
 export const getUser = (): User | null => {
   try {
-    const userData = localStorage.getItem('sheSync_user')
+    const storage = getBrowserStorage()
+    if (!storage) return null
+    const userData = storage.getItem('sheSync_user')
     if (!userData) return null
     
     const user = JSON.parse(userData)
@@ -307,7 +317,9 @@ export const getUser = (): User | null => {
 
 export const saveUser = (user: User): void => {
   try {
-    localStorage.setItem('sheSync_user', JSON.stringify(user))
+    const storage = getBrowserStorage()
+    if (!storage) return
+    storage.setItem('sheSync_user', JSON.stringify(user))
   } catch (error) {
     console.error('Error saving user:', error)
   }
@@ -315,13 +327,15 @@ export const saveUser = (user: User): void => {
 
 export const saveUserProfileImage = (userId: string, imageUrl: string): void => {
   try {
+    const storage = getBrowserStorage()
+    if (!storage) return
     const existingUser = getUser()
     if (existingUser) {
       const updatedUser = { ...existingUser, profileImageUrl: imageUrl }
       saveUser(updatedUser)
     }
     // Also save separately for quick access
-    localStorage.setItem(`sheSync_profileImage_${userId}`, imageUrl)
+    storage.setItem(`sheSync_profileImage_${userId}`, imageUrl)
   } catch (error) {
     console.error('Error saving user profile image:', error)
   }
@@ -329,13 +343,15 @@ export const saveUserProfileImage = (userId: string, imageUrl: string): void => 
 
 export const getUserProfileImage = (userId: string): string | null => {
   try {
+    const storage = getBrowserStorage()
+    if (!storage) return null
     // First try to get from user object
     const user = getUser()
     if (user && user.profileImageUrl) {
       return user.profileImageUrl
     }
     // Fallback to separate storage
-    return localStorage.getItem(`sheSync_profileImage_${userId}`)
+    return storage.getItem(`sheSync_profileImage_${userId}`)
   } catch (error) {
     console.error('Error getting user profile image:', error)
     return null
@@ -345,7 +361,9 @@ export const getUserProfileImage = (userId: string): string | null => {
 // Cycle data management
 export const getCycleData = (): CycleData[] => {
   try {
-    const cycleData = localStorage.getItem('sheSync_cycleData')
+    const storage = getBrowserStorage()
+    if (!storage) return []
+    const cycleData = storage.getItem('sheSync_cycleData')
     if (!cycleData) return []
     
     const data = JSON.parse(cycleData)
@@ -362,7 +380,9 @@ export const getCycleData = (): CycleData[] => {
 
 export const saveCycleData = (cycleData: CycleData[]): void => {
   try {
-    localStorage.setItem('sheSync_cycleData', JSON.stringify(cycleData))
+    const storage = getBrowserStorage()
+    if (!storage) return
+    storage.setItem('sheSync_cycleData', JSON.stringify(cycleData))
   } catch (error) {
     console.error('Error saving cycle data:', error)
   }
@@ -371,7 +391,9 @@ export const saveCycleData = (cycleData: CycleData[]): void => {
 // AI messages management
 export const getAIMessages = (): AICoachMessage[] => {
   try {
-    const messages = localStorage.getItem('sheSync_aiMessages')
+    const storage = getBrowserStorage()
+    if (!storage) return []
+    const messages = storage.getItem('sheSync_aiMessages')
     if (!messages) return []
     
     const data = JSON.parse(messages)
@@ -389,7 +411,9 @@ export const getAIMessages = (): AICoachMessage[] => {
 // Intimacy cards management
 export const getIntimacyCards = (): IntimacyCard[] => {
   try {
-    const cards = localStorage.getItem('sheSync_intimacyCards')
+    const storage = getBrowserStorage()
+    if (!storage) return []
+    const cards = storage.getItem('sheSync_intimacyCards')
     if (!cards) return []
     
     return JSON.parse(cards)
@@ -402,7 +426,9 @@ export const getIntimacyCards = (): IntimacyCard[] => {
 // Fantasy entries management
 export const getFantasyEntries = (): FantasyEntry[] => {
   try {
-    const entries = localStorage.getItem('sheSync_fantasyEntries')
+    const storage = getBrowserStorage()
+    if (!storage) return []
+    const entries = storage.getItem('sheSync_fantasyEntries')
     if (!entries) return []
     
     const data = JSON.parse(entries)
@@ -420,13 +446,15 @@ export const getFantasyEntries = (): FantasyEntry[] => {
 
 export const updateFantasyEntry = (entryId: string, updates: Partial<FantasyEntry>): void => {
   try {
+    const storage = getBrowserStorage()
+    if (!storage) return
     const entries = getFantasyEntries()
     const updatedEntries = entries.map(entry => 
       entry.id === entryId 
         ? { ...entry, ...updates, updatedAt: new Date() }
         : entry
     )
-    localStorage.setItem('sheSync_fantasyEntries', JSON.stringify(updatedEntries))
+    storage.setItem('sheSync_fantasyEntries', JSON.stringify(updatedEntries))
   } catch (error) {
     console.error('Error updating fantasy entry:', error)
   }
@@ -435,7 +463,9 @@ export const updateFantasyEntry = (entryId: string, updates: Partial<FantasyEntr
 // Notifications management
 export const getNotifications = (): Notification[] => {
   try {
-    const notifications = localStorage.getItem('sheSync_notifications')
+    const storage = getBrowserStorage()
+    if (!storage) return []
+    const notifications = storage.getItem('sheSync_notifications')
     if (!notifications) return []
     
     const data = JSON.parse(notifications)
@@ -453,7 +483,9 @@ export const getNotifications = (): Notification[] => {
 // Theme management
 export const getTheme = (): 'light' | 'dark' => {
   try {
-    const theme = localStorage.getItem('sheSync_theme')
+    const storage = getBrowserStorage()
+    if (!storage) return 'light'
+    const theme = storage.getItem('sheSync_theme')
     return theme === 'dark' ? 'dark' : 'light'
   } catch (error) {
     console.error('Error getting theme:', error)
@@ -521,7 +553,9 @@ export const deleteProfileImage = async (userId: string): Promise<{ error: strin
 
 export const saveTheme = (theme: 'light' | 'dark'): void => {
   try {
-    localStorage.setItem('sheSync_theme', theme)
+    const storage = getBrowserStorage()
+    if (!storage) return
+    storage.setItem('sheSync_theme', theme)
   } catch (error) {
     console.error('Error saving theme:', error)
   }

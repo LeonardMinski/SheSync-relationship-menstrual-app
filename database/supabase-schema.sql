@@ -169,6 +169,35 @@ BEGIN
 END;
 $$ language 'plpgsql';
 
+-- Keep public.users in sync with auth.users.
+CREATE OR REPLACE FUNCTION public.handle_new_auth_user()
+RETURNS TRIGGER AS $$
+BEGIN
+    INSERT INTO public.users (id, email, name, subscription_tier, privacy_settings)
+    VALUES (
+        NEW.id,
+        NEW.email,
+        COALESCE(NEW.raw_user_meta_data->>'name', SPLIT_PART(NEW.email, '@', 1), 'User'),
+        'free',
+        '{
+            "share_with_partner": false,
+            "share_cycle_phase": false,
+            "share_mood": false,
+            "share_fantasy_vault": false,
+            "share_intimacy_deck": false
+        }'::jsonb
+    )
+    ON CONFLICT (id) DO NOTHING;
+
+    RETURN NEW;
+END;
+$$ language 'plpgsql' security definer;
+
+DROP TRIGGER IF EXISTS on_auth_user_created ON auth.users;
+CREATE TRIGGER on_auth_user_created
+    AFTER INSERT ON auth.users
+    FOR EACH ROW EXECUTE FUNCTION public.handle_new_auth_user();
+
 -- Trigger for fantasy_entries updated_at
 CREATE TRIGGER update_fantasy_entries_updated_at 
     BEFORE UPDATE ON public.fantasy_entries 

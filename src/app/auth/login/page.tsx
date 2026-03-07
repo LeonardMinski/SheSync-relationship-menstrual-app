@@ -17,23 +17,26 @@ export default function LoginPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
+    if (loading) return
     setError('')
     setLoading(true)
 
+    const formData = new FormData(e.currentTarget as HTMLFormElement)
+    const submittedEmail = String(formData.get('email') || '').trim().toLowerCase()
+    const submittedPassword = String(formData.get('password') || '')
+
+    setEmail(submittedEmail)
+    setPassword(submittedPassword)
+
     try {
-      console.log('🔍 Starting login process...')
-      const result = await signIn({ email, password, rememberMe })
-      console.log('🔍 Login result:', result)
+      const result = await signIn({ email: submittedEmail, password: submittedPassword, rememberMe })
       
       if (result.success) {
-        console.log('✅ Login successful, redirecting to dashboard...')
         router.push('/dashboard') // Redirect to dashboard after successful login
       } else {
-        console.error('❌ Login failed:', result.error)
         setError(result.error || 'Login failed')
       }
     } catch (err) {
-      console.error('❌ Unexpected login error:', err)
       setError('An unexpected error occurred')
     } finally {
       setLoading(false)
@@ -65,6 +68,10 @@ export default function LoginPage() {
                 name="email"
                 type="email"
                 autoComplete="email"
+                inputMode="email"
+                autoCapitalize="none"
+                autoCorrect="off"
+                spellCheck={false}
                 required
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
