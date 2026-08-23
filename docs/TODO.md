@@ -48,7 +48,6 @@
 - [ ] **Run all tests** to ensure Partner Portal works correctly
   ```bash
   npm test
-  npm run test:coverage
   ```
 - [ ] **Test partner sharing flow** end-to-end
 - [ ] **Verify privacy settings** work as expected

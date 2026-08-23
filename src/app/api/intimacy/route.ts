@@ -1,21 +1,21 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { supabase } from '@/lib/supabase'
+import { authenticateRequest } from '@/lib/api/authentication'
 
 export async function GET(request: NextRequest) {
   try {
+    const { user, supabase } = await authenticateRequest(request)
+    if (!user || !supabase) {
+      return NextResponse.json({ error: 'Authentication required' }, { status: 401 })
+    }
+
     const { searchParams } = new URL(request.url)
-    const userId = searchParams.get('userId')
     const category = searchParams.get('category')
     const isAnswered = searchParams.get('isAnswered')
-
-    if (!userId) {
-      return NextResponse.json({ error: 'User ID is required' }, { status: 400 })
-    }
 
     let query = supabase
       .from('intimacy_cards')
       .select('*')
-      .eq('user_id', userId)
+      .eq('user_id', user.id)
 
     if (category) {
       query = query.eq('category', category)
@@ -43,11 +43,16 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
-    const { userId, cardData } = await request.json()
+    const { user, supabase } = await authenticateRequest(request)
+    if (!user || !supabase) {
+      return NextResponse.json({ error: 'Authentication required' }, { status: 401 })
+    }
 
-    if (!userId || !cardData) {
+    const { cardData } = await request.json()
+
+    if (!cardData) {
       return NextResponse.json(
-        { error: 'User ID and card data are required' },
+        { error: 'Card data is required' },
         { status: 400 }
       )
     }
@@ -55,7 +60,7 @@ export async function POST(request: NextRequest) {
     const { data, error } = await supabase
       .from('intimacy_cards')
       .insert({
-        user_id: userId,
+        user_id: user.id,
         category: cardData.category,
         question: cardData.question,
         description: cardData.description,
@@ -85,6 +90,11 @@ export async function POST(request: NextRequest) {
 
 export async function PUT(request: NextRequest) {
   try {
+    const { user, supabase } = await authenticateRequest(request)
+    if (!user || !supabase) {
+      return NextResponse.json({ error: 'Authentication required' }, { status: 401 })
+    }
+
     const { id, cardData } = await request.json()
 
     if (!id || !cardData) {
@@ -94,7 +104,7 @@ export async function PUT(request: NextRequest) {
       )
     }
 
-    const updateData: any = {}
+    const updateData: Record<string, unknown> = {}
     
     if (cardData.userAnswer !== undefined) {
       updateData.user_answer = cardData.userAnswer
@@ -113,6 +123,7 @@ export async function PUT(request: NextRequest) {
       .from('intimacy_cards')
       .update(updateData)
       .eq('id', id)
+      .eq('user_id', user.id)
       .select()
       .single()
 
@@ -135,6 +146,11 @@ export async function PUT(request: NextRequest) {
 
 export async function DELETE(request: NextRequest) {
   try {
+    const { user, supabase } = await authenticateRequest(request)
+    if (!user || !supabase) {
+      return NextResponse.json({ error: 'Authentication required' }, { status: 401 })
+    }
+
     const { searchParams } = new URL(request.url)
     const id = searchParams.get('id')
 
@@ -146,6 +162,7 @@ export async function DELETE(request: NextRequest) {
       .from('intimacy_cards')
       .delete()
       .eq('id', id)
+      .eq('user_id', user.id)
 
     if (error) {
       return NextResponse.json({ error: error.message }, { status: 400 })

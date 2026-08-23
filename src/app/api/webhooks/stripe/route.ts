@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import Stripe from 'stripe'
-import { supabase } from '@/lib/supabaseClient'
+import { createClient } from '@supabase/supabase-js'
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
   apiVersion: '2025-08-27.basil',
@@ -8,8 +8,26 @@ const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
 
 const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET!
 
+type InvoiceWithSubscription = Stripe.Invoice & {
+  subscription?: string | Stripe.Subscription | null
+}
+
+function createWebhookSupabaseClient() {
+  return createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    {
+      auth: {
+        autoRefreshToken: false,
+        persistSession: false,
+      },
+    }
+  )
+}
+
 export async function POST(request: NextRequest) {
   try {
+    const supabase = createWebhookSupabaseClient()
     const body = await request.text()
     const signature = request.headers.get('stripe-signature')!
 
@@ -21,8 +39,6 @@ export async function POST(request: NextRequest) {
       console.error('Webhook signature verification failed:', err)
       return NextResponse.json({ error: 'Invalid signature' }, { status: 400 })
     }
-
-    // supabase is already imported
 
     switch (event.type) {
       case 'checkout.session.completed': {
@@ -40,7 +56,7 @@ export async function POST(request: NextRequest) {
           subscriptionTier = session.metadata.plan
         }
 
-        const updateData: any = {
+        const updateData: Record<string, unknown> = {
           subscription_tier: subscriptionTier,
           subscription_status: 'active'
         }
@@ -66,7 +82,7 @@ export async function POST(request: NextRequest) {
       }
 
       case 'invoice.payment_succeeded': {
-        const invoice = event.data.object as any // Using any to bypass type checking for now
+        const invoice = event.data.object as InvoiceWithSubscription
         const userId = invoice.metadata?.userId
         const subscriptionId = invoice.subscription
 
@@ -91,7 +107,7 @@ export async function POST(request: NextRequest) {
       }
 
       case 'invoice.payment_failed': {
-        const invoice = event.data.object as any // Using any to bypass type checking for now
+        const invoice = event.data.object as InvoiceWithSubscription
         const userId = invoice.metadata?.userId
         const subscriptionId = invoice.subscription
 

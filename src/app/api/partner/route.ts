@@ -1,12 +1,12 @@
-import { NextRequest, NextResponse } from 'next/server'
-import { supabase } from '@/lib/supabase'
-import { authenticateRequest, createErrorResponse, createSuccessResponse } from '@/lib/api-utils'
+import { NextRequest } from 'next/server'
+import { authenticateRequest } from '@/lib/api/authentication'
+import { createErrorResponse, createSuccessResponse } from '@/lib/api/responses'
 
 export async function GET(request: NextRequest) {
   try {
-    const authenticatedRequest = await authenticateRequest(request)
-    if (!authenticatedRequest?.user) {
-      return createErrorResponse('Unauthorized', 401)
+    const { user, supabase } = await authenticateRequest(request)
+    if (!user || !supabase) {
+      return createErrorResponse('Authentication required', 401)
     }
 
     const { searchParams } = new URL(request.url)
@@ -30,7 +30,7 @@ export async function GET(request: NextRequest) {
       const { data: partnerLink, error: linkError } = await supabase
         .from('partner_links')
         .select('*')
-        .eq('user_id', authenticatedRequest.user.id)
+        .eq('user_id', user.id)
         .eq('status', 'active')
         .single()
 
@@ -58,12 +58,12 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
-    const authenticatedRequest = await authenticateRequest(request)
-    if (!authenticatedRequest?.user) {
-      return createErrorResponse('Unauthorized', 401)
+    const { user, supabase } = await authenticateRequest(request)
+    if (!user || !supabase) {
+      return createErrorResponse('Authentication required', 401)
     }
 
-    const { partnerEmail, message } = await request.json()
+    const { partnerEmail } = await request.json()
 
     if (!partnerEmail) {
       return createErrorResponse('Partner email is required', 400)
@@ -80,7 +80,7 @@ export async function POST(request: NextRequest) {
       return createErrorResponse('Partner not found with this email', 404)
     }
 
-    if (partnerUser.id === authenticatedRequest.user.id) {
+    if (partnerUser.id === user.id) {
       return createErrorResponse('Cannot invite yourself', 400)
     }
 
@@ -88,7 +88,7 @@ export async function POST(request: NextRequest) {
     const { data: existingLink } = await supabase
       .from('partner_links')
       .select('*')
-      .or(`user_id.eq.${authenticatedRequest.user.id},partner_user_id.eq.${authenticatedRequest.user.id}`)
+      .or(`user_id.eq.${user.id},partner_user_id.eq.${user.id}`)
       .or(`user_id.eq.${partnerUser.id},partner_user_id.eq.${partnerUser.id}`)
 
     if (existingLink && existingLink.length > 0) {
@@ -99,7 +99,7 @@ export async function POST(request: NextRequest) {
     const { data: partnerLink, error: linkError } = await supabase
       .from('partner_links')
       .insert({
-        user_id: authenticatedRequest.user.id,
+        user_id: user.id,
         partner_user_id: partnerUser.id,
         status: 'pending'
       })
@@ -122,16 +122,16 @@ export async function POST(request: NextRequest) {
 
 export async function DELETE(request: NextRequest) {
   try {
-    const authenticatedRequest = await authenticateRequest(request)
-    if (!authenticatedRequest?.user) {
-      return createErrorResponse('Unauthorized', 401)
+    const { user, supabase } = await authenticateRequest(request)
+    if (!user || !supabase) {
+      return createErrorResponse('Authentication required', 401)
     }
 
     // Get current user's partner link
     const { data: partnerLink, error: linkError } = await supabase
       .from('partner_links')
       .select('*')
-      .eq('user_id', authenticatedRequest.user.id)
+      .eq('user_id', user.id)
       .eq('status', 'active')
       .single()
 

@@ -1,8 +1,23 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { supabase } from '@/lib/supabase'
+import { createClient } from '@supabase/supabase-js'
+import { authenticateRequest } from '@/lib/api/authentication'
+
+function createAuthSupabaseClient() {
+  return createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    {
+      auth: {
+        autoRefreshToken: false,
+        persistSession: false,
+      },
+    }
+  )
+}
 
 export async function POST(request: NextRequest) {
   try {
+    const supabase = createAuthSupabaseClient()
     const { action, email, password, name } = await request.json()
 
     if (action === 'signup') {
@@ -88,13 +103,8 @@ export async function POST(request: NextRequest) {
 
 export async function GET(request: NextRequest) {
   try {
-    const { data: { user }, error } = await supabase.auth.getUser()
-
-    if (error) {
-      return NextResponse.json({ error: error.message }, { status: 401 })
-    }
-
-    if (!user) {
+    const { user, supabase } = await authenticateRequest(request)
+    if (!user || !supabase) {
       return NextResponse.json({ user: null })
     }
 

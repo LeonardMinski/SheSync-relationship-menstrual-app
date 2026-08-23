@@ -1,36 +1,38 @@
-import { NextRequest, NextResponse } from 'next/server'
-import { supabase } from '@/lib/supabase'
-import { authenticateRequest, createErrorResponse, createSuccessResponse, validateEmail } from '@/lib/api-utils'
+import { NextRequest } from 'next/server'
+import { authenticateRequest } from '@/lib/api/authentication'
+import { createErrorResponse, createSuccessResponse } from '@/lib/api/responses'
+import { validateEmail } from '@/utils/validation'
 
 export async function GET(request: NextRequest) {
   try {
-    const authenticatedRequest = await authenticateRequest(request)
-    if (!authenticatedRequest?.user) {
-      return createErrorResponse('Unauthorized', 401)
+    const { user, supabase } = await authenticateRequest(request)
+    if (!user || !supabase) {
+      return createErrorResponse('Authentication required', 401)
     }
 
     const { data, error } = await supabase
       .from('users')
       .select('*')
-      .eq('id', authenticatedRequest.user.id)
+      .eq('id', user.id)
       .single()
 
     if (error) {
+      console.error('[user] failed to fetch profile', error)
       return createErrorResponse('User profile not found', 404)
     }
 
     return createSuccessResponse(data)
   } catch (error) {
-    console.error('Get user profile error:', error)
+    console.error('[user] unexpected GET error', error)
     return createErrorResponse('Internal server error', 500)
   }
 }
 
 export async function PUT(request: NextRequest) {
   try {
-    const authenticatedRequest = await authenticateRequest(request)
-    if (!authenticatedRequest?.user) {
-      return createErrorResponse('Unauthorized', 401)
+    const { user, supabase } = await authenticateRequest(request)
+    if (!user || !supabase) {
+      return createErrorResponse('Authentication required', 401)
     }
 
     const updateData = await request.json()
@@ -41,13 +43,30 @@ export async function PUT(request: NextRequest) {
     }
 
     // Prepare update object with only allowed fields
-    const allowedUpdates: any = {}
+    const allowedUpdates: {
+      name?: string
+      email?: string
+      subscription_tier?: 'free' | 'premium' | 'vip' | 'lifetime'
+      privacy_settings?: {
+        share_with_partner: boolean
+        share_cycle_phase: boolean
+        share_mood: boolean
+        share_fantasy_vault: boolean
+        share_intimacy_deck: boolean
+      }
+    } = {}
     
     if (updateData.name !== undefined) {
+      if (typeof updateData.name !== 'string') {
+        return createErrorResponse('Invalid name', 400)
+      }
       allowedUpdates.name = updateData.name.trim()
     }
     
     if (updateData.email !== undefined) {
+      if (typeof updateData.email !== 'string') {
+        return createErrorResponse('Invalid email', 400)
+      }
       allowedUpdates.email = updateData.email.toLowerCase().trim()
     }
     
@@ -60,6 +79,9 @@ export async function PUT(request: NextRequest) {
     
     if (updateData.privacySettings !== undefined) {
       const privacy = updateData.privacySettings
+      if (!privacy || typeof privacy !== 'object') {
+        return createErrorResponse('Invalid privacy settings', 400)
+      }
       allowedUpdates.privacy_settings = {
         share_with_partner: !!privacy.shareWithPartner,
         share_cycle_phase: !!privacy.shareCyclePhase,
@@ -76,33 +98,34 @@ export async function PUT(request: NextRequest) {
     const { data, error } = await supabase
       .from('users')
       .update(allowedUpdates)
-      .eq('id', authenticatedRequest.user.id)
+      .eq('id', user.id)
       .select()
       .single()
 
     if (error) {
+      console.error('[user] failed to update profile', error)
       return createErrorResponse(error.message, 400)
     }
 
     return createSuccessResponse(data, 'Profile updated successfully')
   } catch (error) {
-    console.error('Update user profile error:', error)
+    console.error('[user] unexpected PUT error', error)
     return createErrorResponse('Internal server error', 500)
   }
 }
 
 export async function DELETE(request: NextRequest) {
   try {
-    const authenticatedRequest = await authenticateRequest(request)
-    if (!authenticatedRequest?.user) {
-      return createErrorResponse('Unauthorized', 401)
+    const { user, supabase } = await authenticateRequest(request)
+    if (!user || !supabase) {
+      return createErrorResponse('Authentication required', 401)
     }
 
     // Get user's partner ID before deletion
     const { data: userData } = await supabase
       .from('users')
       .select('partner_id')
-      .eq('id', authenticatedRequest.user.id)
+      .eq('id', user.id)
       .single()
 
     // Remove partnership if exists
@@ -117,45 +140,40 @@ export async function DELETE(request: NextRequest) {
     await supabase
       .from('cycle_data')
       .delete()
-      .eq('user_id', authenticatedRequest.user.id)
+      .eq('user_id', user.id)
 
     await supabase
       .from('intimacy_cards')
       .delete()
-      .eq('user_id', authenticatedRequest.user.id)
+      .eq('user_id', user.id)
 
     await supabase
       .from('fantasy_entries')
       .delete()
-      .eq('user_id', authenticatedRequest.user.id)
+      .eq('user_id', user.id)
 
     await supabase
       .from('ai_coach_messages')
       .delete()
-      .eq('user_id', authenticatedRequest.user.id)
+      .eq('user_id', user.id)
 
     // Delete user profile
     const { error } = await supabase
       .from('users')
       .delete()
-      .eq('id', authenticatedRequest.user.id)
+      .eq('id', user.id)
 
     if (error) {
+      console.error('[user] failed to delete profile', error)
       return createErrorResponse('Error deleting user profile', 500)
     }
 
-    // Delete Supabase auth user
-    const { error: authError } = await supabase.auth.admin.deleteUser(
-      authenticatedRequest.user.id
-    )
-
-    if (authError) {
-      console.error('Error deleting auth user:', authError)
-    }
+    // Auth-user deletion requires a service role client and is intentionally outside the MVP route.
+    console.warn('[user] account deletion skipped auth admin delete; service role is not available in MVP route')
 
     return createSuccessResponse(null, 'Account deleted successfully')
   } catch (error) {
-    console.error('Delete user error:', error)
+    console.error('[user] unexpected DELETE error', error)
     return createErrorResponse('Internal server error', 500)
   }
 }

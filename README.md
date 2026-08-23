@@ -129,6 +129,7 @@ SUPABASE_SERVICE_ROLE_KEY=your_supabase_service_role_key
 OPENAI_API_KEY=your_openai_api_key
 STRIPE_SECRET_KEY=your_stripe_secret_key
 NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY=your_stripe_publishable_key
+STRIPE_WEBHOOK_SECRET=your_stripe_webhook_secret
 ```
 
 ### Database Setup
@@ -150,78 +151,49 @@ NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY=your_stripe_publishable_key
 ## 📱 App Structure
 
 ```
-src/
-├── app/                           # Next.js App Router pages
-│   ├── _components/              # Shared page components
-│   │   └── LandingPage/          # Landing page component
-│   ├── page.tsx                  # Landing page (Homepage)
-│   ├── dashboard/                # Main dashboard
-│   │   ├── _components/Dashboard/ # Dashboard component
-│   │   └── page.tsx              # Dashboard route
-│   ├── ai-coach/                 # AI Coaching Interface
-│   │   ├── _components/AICoach/  # AI Coach component
-│   │   └── page.tsx              # AI Coach route
-│   ├── intimacy/                 # Intimacy Deck
-│   │   ├── _components/          # Intimacy components
-│   │   │   ├── BoundaryManager/  # Boundary management
-│   │   │   ├── TodayCardSelector/ # Card selection
-│   │   │   ├── ReflectionForm/   # Reflection input
-│   │   │   └── ShareToggle/      # Sharing controls
-│   │   └── page.tsx              # Intimacy route
-│   ├── fantasy/                  # Fantasy Vault
-│   │   ├── _components/FantasyPage/ # Fantasy component
-│   │   └── page.tsx              # Fantasy route
-│   ├── partner/intimacy/         # Partner intimacy view
-│   │   ├── _components/PartnerIntimacy/ # Partner component
-│   │   └── page.tsx              # Partner route
-│   ├── settings/                 # User Settings
-│   │   ├── _components/SettingsPage/ # Settings component
-│   │   └── page.tsx              # Settings route
-│   ├── pricing/                  # Pricing page
-│   │   ├── _components/PricingPage/ # Pricing component
-│   │   └── page.tsx              # Pricing route
-│   ├── auth/                     # Authentication pages
-│   │   ├── login/                # Login page
-│   │   ├── signup/               # Signup page
-│   │   ├── callback/             # Auth callback
-│   │   └── verify-email/         # Email verification
-│   └── api/                      # API routes
-├── features/                     # Feature-based modules
-│   ├── auth/                     # Authentication features
-│   │   ├── components/           # Auth components
-│   │   ├── hooks/                # Auth hooks
-│   │   ├── api/                  # Auth API calls
-│   │   └── tests/                # Auth tests
-│   ├── cycle/                    # Cycle tracking features
-│   │   ├── components/           # Cycle components
-│   │   ├── hooks/                # Cycle hooks
-│   │   ├── api/                  # Cycle API calls
-│   │   └── tests/                # Cycle tests
-│   ├── intimacy/                 # Intimacy features
-│   │   ├── components/           # Intimacy components
-│   │   ├── hooks/                # Intimacy hooks
-│   │   ├── api/                  # Intimacy API calls
-│   │   ├── tests/                # Intimacy tests
-│   │   └── _lib/                 # Intimacy utilities
-│   ├── ai-coach/                 # AI Coach features
-│   │   ├── components/           # AI Coach components
-│   │   ├── hooks/                # AI Coach hooks
-│   │   ├── api/                  # AI Coach API calls
-│   │   └── tests/                # AI Coach tests
-│   └── fantasy/                  # Fantasy features
-│       ├── components/           # Fantasy components
-│       ├── hooks/                # Fantasy hooks
-│       ├── api/                  # Fantasy API calls
-│       └── tests/                # Fantasy tests
-├── components/                   # Shared UI components
-├── context/                      # React Context providers
-├── lib/                          # Shared utilities and helpers
-│   ├── storage.ts                # Local storage management
-│   ├── mockData.ts               # Demo data
-│   ├── db.ts                     # Database abstraction
-│   └── supabaseClient.ts         # Supabase client
-├── types/                        # TypeScript definitions
-└── __tests__/                    # Global test setup
+app/        -> routes and API endpoints
+components/ -> UI components
+context/    -> global React state
+hooks/      -> reusable React behaviour
+lib/        -> infrastructure and low-level integrations
+schemas/    -> runtime validation
+services/   -> business and data operations
+styles/     -> design system and CSS
+test/       -> global test setup
+types/      -> shared TypeScript contracts
+utils/      -> pure reusable helpers
+```
+
+### Current Route Groups
+
+```
+src/app/
+├── (public)/                 # Landing, pricing, and auth pages
+├── (app)/                    # Authenticated app pages
+└── api/                      # Route handlers
+    ├── auth/
+    ├── checkout/
+    ├── coach/                # Streaming AI coach endpoint
+    │   └── messages/         # Saved coach message history
+    ├── cycle/                # Cycle CRUD and logging
+    ├── fantasy/
+    ├── intimacy/
+    ├── partner/
+    │   └── shared-data/      # Privacy-filtered partner data
+    ├── user/
+    └── webhooks/stripe/
+```
+
+### Service Layout
+
+```
+src/services/
+├── auth/                     # Auth service entry point
+├── cycle/insights.ts         # Cycle tips and wellness suggestions
+├── fantasy/entries.ts        # Fantasy vault entry operations
+├── intimacy/                 # Intimacy boundaries, cards, sessions, sharing
+├── partner/data.ts           # Partner portal data access
+└── privacy/settings.ts       # Privacy settings read/update operations
 ```
 
 ### 📁 Additional Folders
@@ -238,26 +210,27 @@ database/                         # Database schemas
 └── supabase-initial-schema.sql  # Initial setup schema
 
 scripts/                          # Development scripts
-├── debug-login.js               # Login debugging
-├── demo-signup-flow.js          # Signup flow demo
-├── test-db-connection.js        # Database connection test
-└── test-signup.js               # Signup testing
+├── db/                          # Database setup and seed scripts
+├── debug/                       # Local debugging helpers
+└── project/                     # Project organization scripts
+
+tests/e2e/                       # Playwright specs live here when added
 ```
 
 ### 🏗️ Architecture Principles
 
-- **Feature-Based Organization**: Each feature has its own module with components, hooks, API calls, and tests
-- **Component Co-location**: Page components are located near their routes for better maintainability
-- **Separation of Concerns**: Clear separation between routing (`page.tsx`) and component logic
-- **Database Abstraction**: All database access goes through `/lib/db.ts` for easy provider swapping
+- **Route-Focused App Directory**: `src/app/` contains pages, layouts, loading/error states, and API route handlers
+- **Shared UI Components**: Domain and generic UI live under `src/components/`, with reusable primitives in `src/components/ui/`
+- **Business Services**: Database and workflow operations live in `src/services/` using responsibility-based file names
+- **Infrastructure Boundary**: Supabase clients, API helpers, and env validation live in `src/lib/`
 - **Type Safety**: Zod schemas for validation and TypeScript for type checking
-- **Testing**: Vitest for unit tests, Playwright for e2e tests
+- **Testing**: Vitest is the active unit test suite; Playwright specs belong in `tests/e2e/` when added
 - **Accessibility**: WCAG AA compliance with proper focus management and contrast ratios
 
 ## 🎨 Key Components
 
 ### Dashboard (Cycle Tracker)
-- **Location**: `src/app/dashboard/_components/Dashboard/`
+- **Location**: `src/components/dashboard/Dashboard.tsx`
 - Daily data logging with quick entry modal
 - Visual calendar with cycle phases
 - Mood, energy, and symptom tracking
@@ -265,14 +238,14 @@ scripts/                          # Development scripts
 - Dark mode optimized with proper contrast
 
 ### AI Coach
-- **Location**: `src/app/ai-coach/_components/AICoach/`
+- **Location**: `src/components/ai-coach/AICoach.tsx`
 - Natural language chat interface
 - Context-aware responses based on cycle data
 - Suggested conversation starters
 - Real-time typing indicators
 
 ### Intimacy Deck
-- **Location**: `src/app/intimacy/_components/`
+- **Location**: `src/components/intimacy/`
 - **Components**: BoundaryManager, TodayCardSelector, ReflectionForm, ShareToggle
 - Daily intimacy card selection
 - Boundary management (yes/maybe/no)
@@ -280,27 +253,27 @@ scripts/                          # Development scripts
 - Reflection and session tracking
 
 ### Partner Intimacy View
-- **Location**: `src/app/partner/intimacy/_components/PartnerIntimacy/`
+- **Location**: `src/components/partner/PartnerIntimacy.tsx`
 - Read-only partner access to shared sessions
 - Supportive actions and responses
 - Privacy-controlled content sharing
 
 ### Fantasy Vault
-- **Location**: `src/app/fantasy/_components/FantasyPage/`
+- **Location**: `src/components/fantasy/FantasyPage.tsx`
 - Rich text entry creation and editing
 - Tag-based organization
 - Privacy controls and selective sharing
 - Mood and phase correlation
 
 ### Settings & Privacy
-- **Location**: `src/app/settings/_components/SettingsPage/`
+- **Location**: `src/components/settings/`
 - Granular privacy controls
 - Subscription management
 - Data export and deletion
 - Partner invitation and management
 
 ### Pricing
-- **Location**: `src/app/pricing/_components/PricingPage/`
+- **Location**: `src/components/pricing/PricingPage.tsx`
 - Subscription plan comparison
 - Feature breakdown by tier
 - Payment integration ready
@@ -335,26 +308,26 @@ npm run build        # Build for production
 npm run start        # Start production server
 
 # Testing
-npm run test         # Run Vitest unit tests
+npm run test         # Run the active Vitest suite
 npm run test:watch   # Run tests in watch mode
-npm run test:coverage # Run tests with coverage
 npm run test:ci      # Run tests for CI/CD
 
 # Database
+npm run setup:db      # Run database setup helper
 npm run seed:intimacy # Seed intimacy cards
 ```
 
 ### Testing Strategy
 
-- **Unit Tests**: Vitest for component and utility testing
-- **E2E Tests**: Playwright for full user journey testing
+- **Unit Tests**: Vitest for services, selectors, validation, and focused component logic
+- **E2E Tests**: Playwright specs should live under `tests/e2e/` when the suite is reintroduced
 - **Schema Validation**: Zod schemas for type safety
 - **Database Testing**: Supabase integration tests
 
 ### Development Workflow
 
 1. **Feature Development**: Create feature branches from `develop`
-2. **Component Structure**: Follow the established pattern with `_components/` folders
+2. **Component Structure**: Keep route files in `src/app/` and reusable UI in `src/components/`
 3. **Database Changes**: Update schemas in `database/` folder
 4. **Testing**: Add tests for new features
 5. **Documentation**: Update README and docs as needed

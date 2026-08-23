@@ -7,6 +7,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Architecture
+- Documented the final production folder model across `app`, `components`, `context`, `hooks`, `lib`, `schemas`, `services`, `styles`, `test`, `types`, and `utils`.
+- Consolidated duplicate API surfaces so cycle logging lives under `/api/cycle`, coach history lives under `/api/coach/messages`, and partner sharing lives under `/api/partner/shared-data`.
+- Replaced vague service and library names with responsibility-based modules such as `fantasy/entries.ts`, `intimacy/boundaries.ts`, `intimacy/cards.ts`, `intimacy/sessions.ts`, `partner/data.ts`, `privacy/settings.ts`, `lib/api/authentication.ts`, and `lib/api/responses.ts`.
+- Moved generic `ComingLater` and `LoadingSpinner` components into `components/ui/`.
+- Kept runtime demo data in `utils/mockData.ts` because it is used by the running app, and left `tests/e2e/` as the intended Playwright spec location.
+
+### Testing
+- Added focused Vitest coverage for cycle insight fallbacks, email validation, and intimacy selector behaviour.
+- Removed generated Playwright reports, test results, `.next`, and TypeScript build info from Git tracking while keeping them ignored locally.
+
+### Documentation
+- Updated README setup, environment variables, route map, folder responsibilities, script paths, and testing notes to match the current project structure.
+
 ### Added
 - **APP POLISH COMPLETION**: Final polish pass completed with:
   - **UI/UX Improvements**:

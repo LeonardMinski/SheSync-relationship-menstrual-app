@@ -7,12 +7,11 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "test": "vitest",
-    "test:watch": "vitest --watch",
-    "test:coverage": "vitest --coverage",
-    "test:ci": "vitest --run --coverage",
-    "setup:db": "node scripts/setup-database.js",
-    "seed:intimacy": "node scripts/seed-intimacy.js"
+    "test": "vitest --run",
+    "test:watch": "vitest",
+    "test:ci": "vitest --run",
+    "setup:db": "node scripts/db/setup-database.js",
+    "seed:intimacy": "node scripts/db/seed-intimacy.js"
   },
   "dependencies": {
     "@heroicons/react": "^2.2.0",
@@ -39,6 +38,7 @@
   "devDependencies": {
     "@eslint/eslintrc": "^3",
     "@tailwindcss/postcss": "^4.1.12",
+    "@testing-library/jest-dom": "^6.9.1",
     "@testing-library/react": "^16.3.0",
     "@testing-library/user-event": "^14.6.1",
     "@types/node": "^20",
@@ -48,6 +48,7 @@
     "autoprefixer": "^10.4.21",
     "eslint": "^9",
     "eslint-config-next": "15.3.5",
+    "jsdom": "^29.1.1",
     "tailwindcss": "^4.1.12",
     "typescript": "^5",
     "vitest": "^2.1.8"

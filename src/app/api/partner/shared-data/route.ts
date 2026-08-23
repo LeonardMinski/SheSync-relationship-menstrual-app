@@ -1,15 +1,48 @@
-import { NextRequest, NextResponse } from 'next/server'
-import { supabase } from '@/lib/supabase'
-import { authenticateRequest, createErrorResponse, createSuccessResponse } from '@/lib/api-utils'
+import { NextRequest } from 'next/server'
+import { authenticateRequest } from '@/lib/api/authentication'
+import { createErrorResponse, createSuccessResponse } from '@/lib/api/responses'
+
+type PrivacySettingsRow = {
+  share_with_partner?: boolean
+  share_cycle_phase?: boolean
+  share_mood?: boolean
+  share_fantasy_vault?: boolean
+  share_intimacy_deck?: boolean
+}
+
+type RecentActivity = {
+  description: string
+  date: string
+  type: 'cycle'
+}
+
+function dataReadError(message: string, error: { message?: string; code?: string; details?: string; hint?: string }) {
+  console.error(`[partner/shared-data] ${message}`, error)
+
+  if (error.code === '42501') {
+    return createErrorResponse('Partner data access denied by Supabase RLS policy', 403)
+  }
+
+  if (error.code === '42P01') {
+    return createErrorResponse('A required partner sharing table is missing. Run the Supabase database migrations.', 500)
+  }
+
+  return createErrorResponse(
+    process.env.NODE_ENV !== 'production'
+      ? `${message}: ${error.message || 'Unknown database error'}`
+      : 'Failed to load partner shared data',
+    500
+  )
+}
 
 export async function GET(request: NextRequest) {
   try {
-    const authenticatedRequest = await authenticateRequest(request)
-    if (!authenticatedRequest?.user) {
-      return createErrorResponse('Unauthorized', 401)
+    const { user, supabase } = await authenticateRequest(request)
+    if (!user || !supabase) {
+      return createErrorResponse('Authentication required', 401)
     }
 
-    const userId = authenticatedRequest.user.id
+    const userId = user.id
 
     // Get partner link
     const { data: partnerLink, error: linkError } = await supabase
@@ -20,6 +53,9 @@ export async function GET(request: NextRequest) {
       .single()
 
     if (linkError || !partnerLink) {
+      if (linkError && linkError.code !== 'PGRST116') {
+        return dataReadError('failed to fetch partner link', linkError)
+      }
       return createSuccessResponse({ sharedData: null, partnerLink: null })
     }
 
@@ -31,29 +67,32 @@ export async function GET(request: NextRequest) {
       .single()
 
     if (partnerError || !partnerInfo) {
+      if (partnerError && partnerError.code !== 'PGRST116') {
+        return dataReadError('partner profile lookup failed', partnerError)
+      }
+      console.error('[partner/shared-data] partner profile not found')
       return createErrorResponse('Partner not found', 404)
     }
 
-    const privacySettings = partnerInfo.privacy_settings as {
-      share_with_partner: boolean
-      share_cycle_phase: boolean
-      share_mood: boolean
-      share_fantasy_vault: boolean
-      share_intimacy_deck: boolean
+    const privacySettings = (partnerInfo.privacy_settings || {}) as PrivacySettingsRow
+    const canShareWithPartner = privacySettings.share_with_partner === true
+    const canShareCyclePhase = canShareWithPartner && privacySettings.share_cycle_phase === true
+    const canShareMood = canShareWithPartner && privacySettings.share_mood === true
+
+    const publicPrivacySettings = {
+      shareWithPartner: canShareWithPartner,
+      shareCyclePhase: canShareCyclePhase,
+      shareMood: canShareMood,
+      shareFantasyVault: false,
+      shareIntimacyDeck: false
     }
 
     // If partner has disabled sharing, return empty data
-    if (!privacySettings.share_with_partner) {
+    if (!canShareWithPartner) {
       return createSuccessResponse({
         sharedData: {
           partnerName: partnerInfo.name,
-          privacySettings: {
-            shareWithPartner: false,
-            shareCyclePhase: false,
-            shareMood: false,
-            shareFantasyVault: false,
-            shareIntimacyDeck: false
-          },
+          privacySettings: publicPrivacySettings,
           recentActivity: []
         },
         partnerLink
@@ -61,87 +100,44 @@ export async function GET(request: NextRequest) {
     }
 
     const today = new Date().toISOString().split('T')[0]
-    const sharedData: any = {
+    const sharedData: {
+      partnerName: string
+      privacySettings: typeof publicPrivacySettings
+      todayCycle?: {
+        phase?: string
+        mood?: number
+        energy?: number
+      }
+      recentActivity: RecentActivity[]
+    } = {
       partnerName: partnerInfo.name,
-      privacySettings: {
-        shareWithPartner: privacySettings.share_with_partner,
-        shareCyclePhase: privacySettings.share_cycle_phase,
-        shareMood: privacySettings.share_mood,
-        shareFantasyVault: privacySettings.share_fantasy_vault,
-        shareIntimacyDeck: privacySettings.share_intimacy_deck
-      },
+      privacySettings: publicPrivacySettings,
       recentActivity: []
     }
 
     // Get today's cycle data if sharing is enabled
-    if (privacySettings.share_cycle_phase || privacySettings.share_mood) {
-      const { data: cycleData } = await supabase
+    if (canShareCyclePhase || canShareMood) {
+      const { data: cycleData, error: todayCycleError } = await supabase
         .from('cycle_data')
-        .select('phase, mood, energy, libido, stress, symptoms, notes')
+        .select('phase, mood, energy')
         .eq('user_id', partnerLink.partner_user_id)
         .eq('date', today)
         .single()
+
+      if (todayCycleError && todayCycleError.code !== 'PGRST116') {
+        return dataReadError('failed to fetch today cycle data', todayCycleError)
+      }
 
       if (cycleData) {
-        sharedData.todayCycle = {
-          phase: cycleData.phase,
-          mood: cycleData.mood,
-          energy: cycleData.energy,
-          libido: cycleData.libido,
-          stress: cycleData.stress,
-          symptoms: cycleData.symptoms,
-          notes: cycleData.notes
+        sharedData.todayCycle = {}
+
+        if (canShareCyclePhase) {
+          sharedData.todayCycle.phase = cycleData.phase
         }
-      }
-    }
 
-    // Get today's intimacy session if sharing is enabled
-    if (privacySettings.share_intimacy_deck) {
-      const { data: intimacySession } = await supabase
-        .from('intimacy_sessions')
-        .select(`
-          id,
-          date,
-          shared_with_partner,
-          reflection,
-          selected_card:selected_card_id (
-            id,
-            category,
-            difficulty,
-            text,
-            phase_tags
-          )
-        `)
-        .eq('user_id', partnerLink.partner_user_id)
-        .eq('date', today)
-        .eq('shared_with_partner', true)
-        .single()
-
-      if (intimacySession) {
-        sharedData.todayIntimacy = intimacySession
-      }
-    }
-
-    // Get today's fantasy entry if sharing is enabled
-    if (privacySettings.share_fantasy_vault) {
-      const { data: fantasyEntry } = await supabase
-        .from('fantasy_entries')
-        .select('id, title, content, type, tags, created_at')
-        .eq('user_id', partnerLink.partner_user_id)
-        .eq('is_shared_with_partner', true)
-        .gte('created_at', today)
-        .order('created_at', { ascending: false })
-        .limit(1)
-        .single()
-
-      if (fantasyEntry) {
-        sharedData.todayFantasy = {
-          id: fantasyEntry.id,
-          title: fantasyEntry.title,
-          content: fantasyEntry.content,
-          type: fantasyEntry.type,
-          tags: fantasyEntry.tags,
-          createdAt: fantasyEntry.created_at
+        if (canShareMood) {
+          sharedData.todayCycle.mood = cycleData.mood
+          sharedData.todayCycle.energy = cycleData.energy
         }
       }
     }
@@ -152,8 +148,8 @@ export async function GET(request: NextRequest) {
     const sevenDaysAgoStr = sevenDaysAgo.toISOString().split('T')[0]
 
     // Recent cycle entries
-    if (privacySettings.share_cycle_phase || privacySettings.share_mood) {
-      const { data: recentCycle } = await supabase
+    if (canShareCyclePhase || canShareMood) {
+      const { data: recentCycle, error: recentCycleError } = await supabase
         .from('cycle_data')
         .select('date, phase, mood')
         .eq('user_id', partnerLink.partner_user_id)
@@ -161,10 +157,18 @@ export async function GET(request: NextRequest) {
         .order('date', { ascending: false })
         .limit(3)
 
+      if (recentCycleError) {
+        return dataReadError('failed to fetch recent cycle data', recentCycleError)
+      }
+
       if (recentCycle) {
         recentCycle.forEach(entry => {
+          const description = canShareMood
+            ? `Logged ${entry.phase} phase with mood ${entry.mood}/10`
+            : `Logged ${entry.phase} phase`
+
           sharedData.recentActivity.push({
-            description: `Logged ${entry.phase} phase with mood ${entry.mood}/10`,
+            description,
             date: entry.date,
             type: 'cycle'
           })
@@ -172,57 +176,13 @@ export async function GET(request: NextRequest) {
       }
     }
 
-    // Recent intimacy sessions
-    if (privacySettings.share_intimacy_deck) {
-      const { data: recentIntimacy } = await supabase
-        .from('intimacy_sessions')
-        .select('date, selected_card:selected_card_id (category)')
-        .eq('user_id', partnerLink.partner_user_id)
-        .eq('shared_with_partner', true)
-        .gte('date', sevenDaysAgoStr)
-        .order('date', { ascending: false })
-        .limit(3)
-
-      if (recentIntimacy) {
-        recentIntimacy.forEach(session => {
-          sharedData.recentActivity.push({
-            description: `Completed ${(session as any).selected_card?.category || 'intimacy'} connection card`,
-            date: session.date,
-            type: 'intimacy'
-          })
-        })
-      }
-    }
-
-    // Recent fantasy entries
-    if (privacySettings.share_fantasy_vault) {
-      const { data: recentFantasy } = await supabase
-        .from('fantasy_entries')
-        .select('title, created_at')
-        .eq('user_id', partnerLink.partner_user_id)
-        .eq('is_shared_with_partner', true)
-        .gte('created_at', sevenDaysAgoStr)
-        .order('created_at', { ascending: false })
-        .limit(3)
-
-      if (recentFantasy) {
-        recentFantasy.forEach(entry => {
-          sharedData.recentActivity.push({
-            description: `Shared fantasy: ${entry.title}`,
-            date: entry.created_at.split('T')[0],
-            type: 'fantasy'
-          })
-        })
-      }
-    }
-
     // Sort recent activity by date
-    sharedData.recentActivity.sort((a: any, b: any) => new Date(b.date).getTime() - new Date(a.date).getTime())
+    sharedData.recentActivity.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
 
     return createSuccessResponse({ sharedData, partnerLink })
 
   } catch (error) {
-    console.error('Get partner shared data error:', error)
+    console.error('[partner/shared-data] unexpected GET error', error)
     return createErrorResponse('Internal server error', 500)
   }
 }

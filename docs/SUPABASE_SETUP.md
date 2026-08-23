@@ -49,9 +49,9 @@ SUPABASE_SERVICE_ROLE_KEY=your_service_role_key_here
    npm run dev
    ```
 
-2. Test the `/api/log-cycle` endpoint:
+2. Test the `/api/cycle` endpoint:
    ```bash
-   curl -X POST http://localhost:3000/api/log-cycle \
+   curl -X POST http://localhost:3000/api/cycle \
      -H "Content-Type: application/json" \
      -H "Authorization: Bearer test-token" \
      -d '{
@@ -77,14 +77,14 @@ All tables have RLS enabled with policies that ensure users can only access thei
 
 ## API Endpoints
 
-### POST /api/log-cycle
+### POST /api/cycle
 Logs a new cycle entry with:
 - `phase`: menstrual, follicular, ovulation, or luteal
 - `mood`: 1-10 scale
 - `symptoms`: array of symptom strings (optional)
 
-### GET /api/log-cycle?userId={id}
-Retrieves cycle entries for a specific user.
+### GET /api/cycle
+Retrieves cycle entries for the authenticated user.
 
 ## Next Steps
 

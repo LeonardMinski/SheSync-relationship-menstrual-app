@@ -26,7 +26,7 @@
 
 .btn-primary {
   background: var(--gradient-primary);
-  color: var(--text-inverse) !important;
+  color: var(--btn-primary-text);
   padding: 0.75rem 1.5rem;
   border-radius: 0.5rem;
   font-weight: 500;
@@ -34,6 +34,10 @@
   cursor: pointer;
   transition: all 0.2s ease;
   box-shadow: var(--shadow-soft);
+}
+
+.btn-primary--dark-text {
+  color: var(--btn-primary-text-dark);
 }
 
 .btn-primary:hover {
@@ -100,7 +104,7 @@ body {
   font-family: var(--font-family);
   font-weight: 500;
   font-size: var(--font-size-base);
-  color: white;
+  color: var(--btn-primary-text);
   background: linear-gradient(90deg, var(--cta-start), var(--cta-end));
   border: none;
   cursor: pointer;
@@ -271,10 +275,18 @@ body {
   gap: var(--spacing-lg);
 }
 
-.grid-cols-1 { grid-template-columns: repeat(1, 1fr); }
-.grid-cols-2 { grid-template-columns: repeat(2, 1fr); }
-.grid-cols-3 { grid-template-columns: repeat(3, 1fr); }
-.grid-cols-4 { grid-template-columns: repeat(4, 1fr); }
+.grid-cols-1 {
+  grid-template-columns: repeat(1, 1fr);
+}
+.grid-cols-2 {
+  grid-template-columns: repeat(2, 1fr);
+}
+.grid-cols-3 {
+  grid-template-columns: repeat(3, 1fr);
+}
+.grid-cols-4 {
+  grid-template-columns: repeat(4, 1fr);
+}
 
 @media (max-width: 768px) {
   .grid-cols-2,
@@ -345,11 +357,11 @@ body {
   .card {
     border: 2px solid var(--border);
   }
-  
+
   .btn-cta {
     border: 2px solid var(--cta-start);
   }
-  
+
   .btn-secondary {
     border: 2px solid var(--border);
   }
@@ -362,7 +374,7 @@ body {
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
   }
-  
+
   .animate-spin {
     animation: none;
   }
@@ -382,9 +394,9 @@ body {
 }
 
 /* Ensure minimum touch target sizes */
-button, 
-input[type="button"], 
-input[type="submit"], 
+button,
+input[type="button"],
+input[type="submit"],
 input[type="reset"],
 a,
 [role="button"] {
@@ -401,17 +413,17 @@ a,
 :root {
   /* Light mode - ensure 4.5:1 contrast ratio */
   --text-foreground: #111827; /* High contrast black */
-  --text-muted: #6B7280; /* Meets AA standard */
-  --text-help: #9CA3AF; /* Meets AA standard */
-  --border: #E5E7EB; /* Sufficient contrast */
+  --text-muted: #6b7280; /* Meets AA standard */
+  --text-help: #9ca3af; /* Meets AA standard */
+  --border: #e5e7eb; /* Sufficient contrast */
 }
 
 .dark {
   /* Dark mode - ensure 4.5:1 contrast ratio */
-  --text-foreground: #F8F6FA; /* High contrast white */
-  --text-muted: #A394B6; /* Meets AA standard */
-  --text-help: #8B7A9E; /* Meets AA standard */
-  --border: #34263F; /* Sufficient contrast */
+  --text-foreground: #f8f6fa; /* High contrast white */
+  --text-muted: #a394b6; /* Meets AA standard */
+  --text-help: #8b7a9e; /* Meets AA standard */
+  --border: #34263f; /* Sufficient contrast */
 }
 
 /* Keyboard Navigation Improvements */
@@ -450,7 +462,12 @@ input:invalid:focus {
 }
 
 /* Ensure proper heading hierarchy */
-h1, h2, h3, h4, h5, h6 {
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
   color: var(--text-foreground);
   font-weight: 600;
 }
@@ -538,7 +555,6 @@ html[data-theme="light"] {
   backdrop-filter: none !important;
 }
 
-
 .dark .bg-gray-50,
 .dark .bg-gray-100,
 .dark .bg-gray-200,
@@ -557,7 +573,12 @@ html[data-theme="light"] {
 }
 
 /* Text hierarchy in dark mode */
-.dark h1, .dark h2, .dark h3, .dark h4, .dark h5, .dark h6 {
+.dark h1,
+.dark h2,
+.dark h3,
+.dark h4,
+.dark h5,
+.dark h6 {
   color: var(--text-primary) !important;
 }
 

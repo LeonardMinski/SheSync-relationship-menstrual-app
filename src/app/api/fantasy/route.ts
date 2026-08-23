@@ -1,21 +1,21 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { supabase } from '@/lib/supabase'
+import { authenticateRequest } from '@/lib/api/authentication'
 
 export async function GET(request: NextRequest) {
   try {
+    const { user, supabase } = await authenticateRequest(request)
+    if (!user || !supabase) {
+      return NextResponse.json({ error: 'Authentication required' }, { status: 401 })
+    }
+
     const { searchParams } = new URL(request.url)
-    const userId = searchParams.get('userId')
     const type = searchParams.get('type')
     const isShared = searchParams.get('isShared')
-
-    if (!userId) {
-      return NextResponse.json({ error: 'User ID is required' }, { status: 400 })
-    }
 
     let query = supabase
       .from('fantasy_entries')
       .select('*')
-      .eq('user_id', userId)
+      .eq('user_id', user.id)
 
     if (type) {
       query = query.eq('type', type)
@@ -43,11 +43,16 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
-    const { userId, fantasyData } = await request.json()
+    const { user, supabase } = await authenticateRequest(request)
+    if (!user || !supabase) {
+      return NextResponse.json({ error: 'Authentication required' }, { status: 401 })
+    }
 
-    if (!userId || !fantasyData) {
+    const { fantasyData } = await request.json()
+
+    if (!fantasyData) {
       return NextResponse.json(
-        { error: 'User ID and fantasy data are required' },
+        { error: 'Fantasy data is required' },
         { status: 400 }
       )
     }
@@ -55,7 +60,7 @@ export async function POST(request: NextRequest) {
     const { data, error } = await supabase
       .from('fantasy_entries')
       .insert({
-        user_id: userId,
+        user_id: user.id,
         title: fantasyData.title,
         content: fantasyData.content,
         type: fantasyData.type,
@@ -86,6 +91,11 @@ export async function POST(request: NextRequest) {
 
 export async function PUT(request: NextRequest) {
   try {
+    const { user, supabase } = await authenticateRequest(request)
+    if (!user || !supabase) {
+      return NextResponse.json({ error: 'Authentication required' }, { status: 401 })
+    }
+
     const { id, fantasyData } = await request.json()
 
     if (!id || !fantasyData) {
@@ -95,7 +105,7 @@ export async function PUT(request: NextRequest) {
       )
     }
 
-    const updateData: any = {}
+    const updateData: Record<string, unknown> = {}
     
     if (fantasyData.title !== undefined) {
       updateData.title = fantasyData.title
@@ -131,6 +141,7 @@ export async function PUT(request: NextRequest) {
       .from('fantasy_entries')
       .update(updateData)
       .eq('id', id)
+      .eq('user_id', user.id)
       .select()
       .single()
 
@@ -153,6 +164,11 @@ export async function PUT(request: NextRequest) {
 
 export async function DELETE(request: NextRequest) {
   try {
+    const { user, supabase } = await authenticateRequest(request)
+    if (!user || !supabase) {
+      return NextResponse.json({ error: 'Authentication required' }, { status: 401 })
+    }
+
     const { searchParams } = new URL(request.url)
     const id = searchParams.get('id')
 
@@ -164,6 +180,7 @@ export async function DELETE(request: NextRequest) {
       .from('fantasy_entries')
       .delete()
       .eq('id', id)
+      .eq('user_id', user.id)
 
     if (error) {
       return NextResponse.json({ error: error.message }, { status: 400 })

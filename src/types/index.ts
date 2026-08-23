@@ -1,12 +1,16 @@
 export interface User {
   id: string;
-  email: string;
+  email?: string;
   name: string;
-  subscriptionTier: 'free' | 'premium' | 'vip' | 'lifetime';
+  subscriptionTier: "free" | "premium" | "vip" | "lifetime";
   createdAt: Date;
   partnerId?: string;
   privacySettings: PrivacySettings;
   profileImageUrl?: string;
+  app_metadata?: Record<string, unknown>;
+  user_metadata?: Record<string, unknown>;
+  aud?: string;
+  created_at?: string;
 }
 
 export interface PrivacySettings {
@@ -21,21 +25,21 @@ export interface Partner {
   id: string;
   name: string;
   email: string;
-  inviteStatus: 'pending' | 'accepted' | 'declined';
-  accessLevel: 'basic' | 'full';
+  inviteStatus: "pending" | "accepted" | "declined";
+  accessLevel: "basic" | "full";
 }
 
-export type CyclePhase = 'menstrual' | 'follicular' | 'ovulation' | 'luteal';
+export type CyclePhase = "menstrual" | "follicular" | "ovulation" | "luteal";
 
 export interface CycleData {
   id: string;
   date: Date;
   phase: CyclePhase;
-  periodFlow?: 'light' | 'medium' | 'heavy';
-  mood: number; // 1-10 scale
-  energy: number; // 1-10 scale
-  libido: number; // 1-10 scale
-  stress: number; // 1-10 scale
+  periodFlow?: "light" | "medium" | "heavy";
+  mood: number;
+  energy: number;
+  libido: number;
+  stress: number;
   symptoms: string[];
   notes?: string;
   temperature?: number;
@@ -53,7 +57,7 @@ export interface AICoachMessage {
 
 export interface IntimacyCard {
   id: string;
-  category: 'emotional' | 'sensual' | 'fantasy';
+  category: "emotional" | "sensual" | "fantasy";
   question: string;
   description?: string;
   tags: string[];
@@ -67,7 +71,7 @@ export interface FantasyEntry {
   id: string;
   title: string;
   content: string;
-  type: 'text' | 'moodboard' | 'audio';
+  type: "text" | "moodboard" | "audio";
   tags: string[];
   isSharedWithPartner: boolean;
   createdAt: Date;
@@ -78,7 +82,7 @@ export interface FantasyEntry {
 
 export interface Notification {
   id: string;
-  type: 'cycle' | 'partner' | 'intimacy' | 'reminder';
+  type: "cycle" | "partner" | "intimacy" | "reminder";
   title: string;
   message: string;
   isRead: boolean;
@@ -86,24 +90,11 @@ export interface Notification {
   actionUrl?: string;
 }
 
-export interface AppState {
-  user: User | null;
-  partner: Partner | null;
-  cycleData: CycleData[];
-  aiMessages: AICoachMessage[];
-  intimacyCards: IntimacyCard[];
-  fantasyEntries: FantasyEntry[];
-  notifications: Notification[];
-  currentPhase: CyclePhase;
-  isDarkMode: boolean;
-  isLoading: boolean;
-}
-
 export interface SubscriptionPlan {
   id: string;
   name: string;
   price: number;
-  interval: 'month' | 'year' | 'lifetime';
+  interval: "month" | "year" | "lifetime";
   features: string[];
   isPopular?: boolean;
 }
@@ -112,8 +103,8 @@ export interface WishlistItem {
   id: string;
   title: string;
   description?: string;
-  category: 'experience' | 'gift' | 'activity' | 'food';
-  priority: 'low' | 'medium' | 'high';
+  category: "experience" | "gift" | "activity" | "food";
+  priority: "low" | "medium" | "high";
   isSharedWithPartner: boolean;
   createdAt: Date;
 }
@@ -127,11 +118,11 @@ export interface Recipe {
   cyclePhase: CyclePhase[];
   nutrients: string[];
   prepTime: number;
-  difficulty: 'easy' | 'medium' | 'hard';
+  difficulty: "easy" | "medium" | "hard";
   image?: string;
 }
 
-export type ThemeMode = 'light' | 'dark' | 'system';
+export type ThemeMode = "light" | "dark" | "system";
 
 export interface AppSettings {
   theme: ThemeMode;
@@ -141,5 +132,11 @@ export interface AppSettings {
     partnerNotifications: boolean;
   };
   privacy: PrivacySettings;
-  dataRetention: number; // days
+  dataRetention: number;
 }
+
+export * from "./auth";
+export * from "./app";
+export * from "./partner";
+export * from "./storage";
+export * from "./api";
