@@ -16,7 +16,7 @@ import {
 import { useApp } from "@/context/AppContext";
 import { useAuth } from "@/context/AuthContext";
 import { uploadProfileImage, deleteProfileImage } from "@/lib/supabase/storage";
-import { getUserProfileImage, saveUserProfileImage } from "@/utils/storage";
+import { getUserProfileImage, saveUserProfileImage } from "@/lib/storage";
 import { getPhaseEmoji } from "@/utils/mockData";
 
 type UserMeta = {

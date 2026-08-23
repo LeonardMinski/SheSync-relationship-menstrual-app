@@ -1,5 +1,4 @@
 import Link from "next/link";
-import { ArrowRight, Calendar, Heart, Shield, Users } from "lucide-react";
 
 export default function HomePage() {
   return (
@@ -8,7 +7,7 @@ export default function HomePage() {
         <div className="mx-auto flex max-w-6xl items-center justify-between">
           <div className="flex items-center gap-3">
             <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-rose-600">
-              <Heart className="h-5 w-5 text-white" />
+              <span className="text-sm font-bold text-white">S+</span>
             </div>
             <span className="text-xl font-semibold">SheSync+</span>
           </div>
@@ -45,7 +44,9 @@ export default function HomePage() {
               href="/auth/signup"
             >
               Start Your Journey
-              <ArrowRight className="ml-2 h-5 w-5" />
+              <span className="ml-2" aria-hidden="true">
+                -&gt;
+              </span>
             </Link>
             <Link
               className="inline-flex min-h-[48px] items-center justify-center rounded-lg border border-gray-300 px-5 font-semibold text-gray-900 dark:border-[#34263F] dark:text-white"
@@ -58,17 +59,17 @@ export default function HomePage() {
 
         <div className="mt-14 grid gap-4 md:grid-cols-3">
           <FeatureCard
-            icon={<Calendar className="h-6 w-6" />}
+            icon="C"
             title="Cycle Logging"
             description="Save phase, mood, energy, symptoms, and notes by cycle date."
           />
           <FeatureCard
-            icon={<Shield className="h-6 w-6" />}
+            icon="P"
             title="Privacy Controls"
             description="Choose whether cycle phase, mood, and energy are visible to a partner."
           />
           <FeatureCard
-            icon={<Users className="h-6 w-6" />}
+            icon="2"
             title="Partner View"
             description="A read-only partner view that respects the privacy settings from the API."
           />
@@ -83,14 +84,16 @@ function FeatureCard({
   title,
   description,
 }: {
-  icon: React.ReactNode;
+  icon: string;
   title: string;
   description: string;
 }) {
   return (
     <div className="rounded-lg border border-gray-200 p-5 dark:border-[#34263F]">
       <div className="mb-4 flex h-11 w-11 items-center justify-center rounded-lg bg-rose-50 text-rose-700 dark:bg-rose-950 dark:text-rose-200">
-        {icon}
+        <span className="text-sm font-bold" aria-hidden="true">
+          {icon}
+        </span>
       </div>
       <h2 className="text-lg font-semibold">{title}</h2>
       <p className="mt-2 text-sm leading-6 text-gray-600 dark:text-gray-300">

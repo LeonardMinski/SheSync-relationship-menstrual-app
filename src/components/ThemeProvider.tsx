@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useApp } from "@/context/AppContext";
-import { getTheme } from "@/utils/storage";
+import { getTheme } from "@/lib/storage";
 
 export default function ThemeProvider({
   children,

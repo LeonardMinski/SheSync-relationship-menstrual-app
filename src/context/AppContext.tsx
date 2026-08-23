@@ -29,7 +29,7 @@ import {
   saveCycleData,
   saveTheme,
   updateFantasyEntry as updateFantasyEntryStorage,
-} from "@/utils/storage";
+} from "@/lib/storage";
 import {
   mockUser,
   mockCycleData,
