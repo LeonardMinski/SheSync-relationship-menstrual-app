@@ -14,7 +14,7 @@ import {
   ChooseTodayCardActionSchema,
   ToggleShareActionSchema,
 } from "@/schemas/intimacy";
-import { getTodayDate } from "@/utils/intimacySelectors";
+import { getTodayDate } from "@/features/intimacy/intimacy.selectors";
 
 // =====================================================
 // BOUNDARY ACTIONS

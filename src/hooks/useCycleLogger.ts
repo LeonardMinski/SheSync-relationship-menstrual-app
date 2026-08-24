@@ -2,32 +2,7 @@
 
 import { useState, useCallback } from "react";
 import { useAuth } from "@/context/AuthContext";
-import type { CyclePhase } from "@/types";
-
-export interface CycleEntry {
-  id?: string;
-  user_id: string;
-  date: string;
-  phase: CyclePhase;
-  mood: number;
-  energy: number;
-  libido: number;
-  stress: number;
-  symptoms: string[];
-  notes?: string;
-  created_at?: string;
-}
-
-export interface LogCycleData {
-  date?: string;
-  phase: CyclePhase;
-  mood: number;
-  energy?: number;
-  libido?: number;
-  stress?: number;
-  symptoms: string[];
-  notes?: string;
-}
+import type { CycleEntry, LogCycleData } from "@/types";
 
 export const useCycleLogger = () => {
   const { user, session, loading: authLoading } = useAuth();

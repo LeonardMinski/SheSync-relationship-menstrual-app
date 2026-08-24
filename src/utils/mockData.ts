@@ -320,16 +320,6 @@ export const generateCyclePredictions = (lastPeriodDate: Date, cycleLength: numb
   return predictions;
 };
 
-export const getPhaseEmoji = (phase: CyclePhase): string => {
-  const emojis = {
-    menstrual: '🌙',
-    follicular: '🌱',
-    ovulation: '🌟',
-    luteal: '🍂'
-  };
-  return emojis[phase];
-};
-
 export const getPhaseColor = (phase: CyclePhase): string => {
   const colors = {
     menstrual: 'badge badge--menstrual',

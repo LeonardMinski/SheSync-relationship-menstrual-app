@@ -8,7 +8,7 @@ import {
   getDifficultyDisplayName,
   hasConsentRequirement,
   getConsentMessage,
-} from "@/utils/intimacySelectors";
+} from "@/features/intimacy/intimacy.selectors";
 import type { IntimacyCard } from "@/schemas/intimacy";
 
 interface TodayCardSelectorProps {

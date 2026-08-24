@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { ArrowLeft, Clock } from "lucide-react";
-import { TopNavbar, Navbar } from "@/components/layout/Navbar";
+import { TopNavbar } from "@/components/layout/TopNavbar";
 import {
   Card,
   CardContent,
@@ -41,8 +41,6 @@ export default function ComingLater({ title, description }: ComingLaterProps) {
           </CardContent>
         </Card>
       </main>
-
-      <Navbar />
     </div>
   );
 }

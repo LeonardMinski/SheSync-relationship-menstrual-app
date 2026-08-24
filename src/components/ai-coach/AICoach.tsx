@@ -109,7 +109,9 @@ const AICoach = () => {
               <div className="flex items-center space-x-2">
                 <Sparkles className="text-purple-500" size={20} />
                 <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                  Currently in {currentPhase} phase
+                  {currentPhase
+                    ? `Currently in ${currentPhase} phase`
+                    : "No cycle phase logged yet"}
                 </span>
               </div>
               {todaysData && (

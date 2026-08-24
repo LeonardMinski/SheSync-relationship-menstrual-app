@@ -25,6 +25,7 @@ test-results/
 
 # TypeScript
 *.tsbuildinfo
+*.tsbuildinfo.stale-*
 
 # IDE
 .vscode/

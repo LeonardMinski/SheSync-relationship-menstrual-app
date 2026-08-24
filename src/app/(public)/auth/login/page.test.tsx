@@ -10,6 +10,7 @@ vi.mock("@/context/AuthContext", () => ({
 }));
 
 const replace = vi.fn();
+const prefetch = vi.fn();
 const signIn = vi.fn();
 
 const setSearch = (query = "") => {
@@ -40,6 +41,7 @@ describe("LoginPage", () => {
     vi.clearAllMocks();
     vi.mocked(useRouter).mockReturnValue({
       replace,
+      prefetch,
     } as ReturnType<typeof useRouter>);
     setSearch();
     setAuth();

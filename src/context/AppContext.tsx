@@ -29,15 +29,7 @@ import {
   saveCycleData,
   saveTheme,
   updateFantasyEntry as updateFantasyEntryStorage,
-} from "@/lib/storage";
-import {
-  mockUser,
-  mockCycleData,
-  mockAIMessages,
-  mockIntimacyCards,
-  mockFantasyEntries,
-  mockNotifications,
-} from "@/utils/mockData";
+} from "@/lib/browserStorage";
 
 const initialState: AppState = {
   user: null,
@@ -47,7 +39,7 @@ const initialState: AppState = {
   intimacyCards: [],
   fantasyEntries: [],
   notifications: [],
-  currentPhase: "luteal",
+  currentPhase: null,
   isDarkMode: false,
   isLoading: true,
 };
@@ -153,7 +145,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({
           intimacyCards,
           fantasyEntries,
           notifications,
-          currentPhase: cycleData[cycleData.length - 1]?.phase || "luteal",
+          currentPhase: cycleData[cycleData.length - 1]?.phase ?? null,
           isDarkMode,
         },
       });
@@ -163,19 +155,16 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({
     dispatch({
       type: "INITIALIZE_APP",
       payload: {
-        user: mockUser,
-        cycleData: mockCycleData,
-        aiMessages: mockAIMessages,
-        intimacyCards: mockIntimacyCards,
-        fantasyEntries: mockFantasyEntries,
-        notifications: mockNotifications,
-        currentPhase: "luteal",
+        user: null,
+        cycleData: [],
+        aiMessages: [],
+        intimacyCards: [],
+        fantasyEntries: [],
+        notifications: [],
+        currentPhase: null,
         isDarkMode,
       },
     });
-
-    saveUser(mockUser);
-    saveCycleData(mockCycleData);
   }, []);
 
   const login = (user: User) => {

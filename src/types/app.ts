@@ -6,18 +6,19 @@ import type {
   IntimacyCard,
   FantasyEntry,
   Notification,
-  CyclePhase,
-} from "@/types";
+  Partner,
+} from "./index";
+import type { CyclePhase } from "./cycle";
 
 export type AppState = {
   user: User | null;
-  partner: import("@/types").Partner | null;
+  partner: Partner | null;
   cycleData: CycleData[];
   aiMessages: AICoachMessage[];
   intimacyCards: IntimacyCard[];
   fantasyEntries: FantasyEntry[];
   notifications: Notification[];
-  currentPhase: CyclePhase;
+  currentPhase: CyclePhase | null;
   isDarkMode: boolean;
   isLoading: boolean;
 };

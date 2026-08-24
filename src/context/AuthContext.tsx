@@ -4,11 +4,12 @@ import {
   createContext,
   useContext,
   useEffect,
+  useRef,
   useState,
   type ReactNode,
 } from "react";
 
-import type { Session } from "@supabase/supabase-js";
+import type { Session, User as SupabaseAuthUser } from "@supabase/supabase-js";
 
 import { supabase } from "@/lib/supabase/client";
 import { auth as dbAuth } from "@/services/auth/index";
@@ -22,6 +23,38 @@ import type {
   User,
   UserRecord,
 } from "@/types";
+
+const defaultPrivacySettings = {
+  shareWithPartner: false,
+  shareCyclePhase: false,
+  shareMood: false,
+  shareFantasyVault: false,
+  shareIntimacyDeck: false,
+};
+
+const getAuthDisplayName = (authUser: SupabaseAuthUser) => {
+  const metadataName = authUser.user_metadata?.name;
+
+  if (typeof metadataName === "string" && metadataName.trim()) {
+    return metadataName.trim();
+  }
+
+  return authUser.email?.split("@")[0] || "User";
+};
+
+const mapSessionUser = (session: Session): User => ({
+  id: session.user.id,
+  email: session.user.email ?? "",
+  name: getAuthDisplayName(session.user),
+  subscriptionTier: "free",
+  createdAt: new Date(session.user.created_at ?? Date.now()),
+  privacySettings: { ...defaultPrivacySettings },
+  profileImageUrl:
+    typeof session.user.user_metadata?.avatar_url === "string"
+      ? session.user.user_metadata.avatar_url
+      : undefined,
+  created_at: session.user.created_at ?? new Date().toISOString(),
+});
 
 const mapDbUser = (rawUser: UserRecord | null | undefined): User | null => {
   if (!rawUser) {
@@ -93,13 +126,40 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [session, setSession] = useState<Session | null>(null);
 
   const [loading, setLoading] = useState(true);
+  const profileRefreshId = useRef(0);
 
   const refreshUser = async () => {
-    try {
-      const result = await dbAuth.getCurrentUser();
+    const refreshId = profileRefreshId.current + 1;
+    profileRefreshId.current = refreshId;
 
-      setSession(result.session);
-      setUser(result.user ? mapDbUser(result.user) : null);
+    try {
+      const {
+        data: { session: currentSession },
+        error: sessionError,
+      } = await supabase.auth.getSession();
+
+      if (sessionError || !currentSession) {
+        setSession(null);
+        setUser(null);
+        return;
+      }
+
+      setSession(currentSession);
+      setUser(mapSessionUser(currentSession));
+      setLoading(false);
+
+      const result = await dbAuth.getCurrentUser(currentSession);
+
+      if (profileRefreshId.current !== refreshId) {
+        return;
+      }
+
+      setSession(result.session ?? currentSession);
+      setUser(
+        result.user
+          ? mapDbUser(result.user)
+          : mapSessionUser(result.session ?? currentSession),
+      );
 
       if (result.error) {
         console.error("Auth refresh error:", result.error);
@@ -118,15 +178,41 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
     const initialiseAuth = async () => {
       try {
-        const result = await dbAuth.getCurrentUser();
+        const {
+          data: { session: initialSession },
+          error: sessionError,
+        } = await supabase.auth.getSession();
 
         if (!mounted) {
           return;
         }
 
-        setSession(result.session);
+        if (sessionError || !initialSession) {
+          setSession(null);
+          setUser(null);
+          return;
+        }
 
-        setUser(result.user ? mapDbUser(result.user) : null);
+        setSession(initialSession);
+        setUser(mapSessionUser(initialSession));
+        setLoading(false);
+
+        const refreshId = profileRefreshId.current + 1;
+        profileRefreshId.current = refreshId;
+
+        const result = await dbAuth.getCurrentUser(initialSession);
+
+        if (!mounted || profileRefreshId.current !== refreshId) {
+          return;
+        }
+
+        setSession(result.session ?? initialSession);
+
+        setUser(
+          result.user
+            ? mapDbUser(result.user)
+            : mapSessionUser(result.session ?? initialSession),
+        );
 
         if (result.error) {
           console.error("Auth initialisation error:", result.error);
@@ -155,26 +241,34 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         return;
       }
 
+      setUser(mapSessionUser(nextSession));
+      setLoading(false);
+
       /*
        * Don't perform a substantial awaited
        * database workflow directly inside the
        * Supabase callback.
        */
 
+      const refreshId = profileRefreshId.current + 1;
+      profileRefreshId.current = refreshId;
+
       void (async () => {
         const result = await dbAuth.getCurrentUser(nextSession);
 
-        if (!mounted) {
+        if (!mounted || profileRefreshId.current !== refreshId) {
           return;
         }
 
-        setUser(result.user ? mapDbUser(result.user) : null);
+        setUser(
+          result.user
+            ? mapDbUser(result.user)
+            : mapSessionUser(result.session ?? nextSession),
+        );
 
         if (result.error) {
           console.error("Auth state refresh error:", result.error);
         }
-
-        setLoading(false);
       })();
     });
 
@@ -209,9 +303,24 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       };
     }
 
+    if (!result.session) {
+      setSession(null);
+      setUser(null);
+
+      return {
+        success: false,
+        user: null,
+        error: "We couldn't complete the sign-up process.",
+        errorCode: "UNKNOWN",
+        requiresEmailVerification: false,
+      };
+    }
+
     setSession(result.session);
 
-    const nextUser = mapDbUser(result.user);
+    const nextUser = result.user
+      ? mapDbUser(result.user)
+      : mapSessionUser(result.session);
 
     setUser(nextUser);
 
@@ -254,13 +363,14 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
     setSession(result.session);
 
-    const nextUser = mapDbUser(result.user);
+    const nextUser = result.user
+      ? mapDbUser(result.user)
+      : mapSessionUser(result.session);
 
     setUser(nextUser);
 
     if (result.error) {
       console.error("Authenticated but profile loading failed:", result.error);
-      return toAuthFailure(result.error);
     }
 
     return {

@@ -31,10 +31,16 @@ export const useCoach = (): UseCoachReturn => {
     setError(null)
 
     // Get current user and cycle data
-    const userId = state.user?.id || 'demo-user'
-    const currentPhase = state.currentPhase || 'luteal'
+    const userId = state.user?.id
+    const currentPhase = state.currentPhase
     const latestCycleData = state.cycleData[state.cycleData.length - 1]
     const mood = latestCycleData?.mood
+
+    if (!userId || !currentPhase) {
+      setError('Log cycle data before asking for cycle-specific coaching.')
+      setIsLoading(false)
+      return
+    }
 
     // Add user question to messages immediately
     const userMessage: CoachMessage = {

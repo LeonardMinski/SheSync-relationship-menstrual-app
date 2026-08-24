@@ -175,7 +175,7 @@ export default function FantasyVault() {
         tags: formData.tags,
         isSharedWithPartner: formData.isSharedWithPartner,
         mood: formData.mood,
-        phase: currentPhase,
+        phase: currentPhase ?? undefined,
         createdAt: new Date(),
         updatedAt: new Date(),
       };

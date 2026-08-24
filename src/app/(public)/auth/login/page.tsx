@@ -15,21 +15,12 @@ import {
 } from "@/components/ui/Card";
 import { Input } from "@/components/ui/Input";
 import { Toggle } from "@/components/ui/Toggle";
-import { loginSchema, type LoginFormValues } from "@/schemas/auth";
+import { loginSchema } from "@/schemas/auth";
+import {
+  getLoginFieldErrors,
+  type LoginFieldErrors,
+} from "@/features/auth/auth-form-errors.utils";
 import { getSafeAuthRedirect } from "@/utils/authRedirects";
-
-type LoginFieldErrors = Partial<Record<keyof LoginFormValues, string>>;
-
-const getFieldErrors = (error: ReturnType<typeof loginSchema.safeParse>) => {
-  if (error.success) return {};
-
-  const flattened = error.error.flatten().fieldErrors;
-
-  return {
-    email: flattened.email?.[0],
-    password: flattened.password?.[0],
-  } satisfies LoginFieldErrors;
-};
 
 export default function LoginPage() {
   const [email, setEmail] = useState("");
@@ -46,6 +37,10 @@ export default function LoginPage() {
     () => getSafeAuthRedirect(searchParams.get("next")),
     [searchParams],
   );
+
+  useEffect(() => {
+    router.prefetch(redirectPath);
+  }, [redirectPath, router]);
 
   useEffect(() => {
     if (!authLoading && session && user) {
@@ -65,7 +60,7 @@ export default function LoginPage() {
     });
 
     if (!parsed.success) {
-      const nextFieldErrors = getFieldErrors(parsed);
+      const nextFieldErrors = getLoginFieldErrors(parsed);
       setFieldErrors(nextFieldErrors);
       setError(
         nextFieldErrors.email ||

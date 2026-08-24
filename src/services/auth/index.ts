@@ -158,17 +158,7 @@ const hasNoSignUpIdentities = (user: SupabaseAuthUser) =>
 const createUserProfile = async (
   user: UserRecord,
 ): Promise<AuthServiceError | null> => {
-  const {
-    data: { user: authUser },
-  } = await supabase.auth.getUser();
-
-  console.log("RLS DEBUG", {
-    authenticatedUserId: authUser?.id,
-    profileIdBeingInserted: user.id,
-    matches: authUser?.id === user.id,
-  });
-
-  const { error } = await supabase.from("users").insert(user);
+  const { error } = await supabase.from("users").upsert(user);
 
   if (error) {
     return createAuthError("PROFILE_ERROR", error);

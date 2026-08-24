@@ -1,7 +1,6 @@
 import { Metadata } from "next";
 import PrivacySettingsForm from "@/components/settings/PrivacySettingsForm";
-import { TopNavbar } from "@/components/layout/Navbar";
-import { Navbar } from "@/components/layout/Navbar";
+import { TopNavbar } from "@/components/layout/TopNavbar";
 
 export const metadata: Metadata = {
   title: "Privacy Settings | SheSync+",
@@ -36,8 +35,6 @@ export default async function PrivacySettingsPage() {
           </p>
         </section>
       </main>
-
-      <Navbar />
     </div>
   );
 }

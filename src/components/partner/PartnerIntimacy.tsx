@@ -18,7 +18,7 @@ import {
   getCategoryDisplayName,
   formatDateShort,
   getSessionSummary,
-} from "@/utils/intimacySelectors";
+} from "@/features/intimacy/intimacy.selectors";
 import LoadingSpinner from "@/components/ui/LoadingSpinner";
 import type { IntimacySession } from "@/services/intimacy/share";
 

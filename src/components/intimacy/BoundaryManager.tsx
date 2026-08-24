@@ -6,7 +6,7 @@ import {
   updateBoundary,
   deleteBoundaryAction,
 } from "@/services/intimacy/actions";
-import { getBoundaryStatusDisplay } from "@/utils/intimacySelectors";
+import { getBoundaryStatusDisplay } from "@/features/intimacy/intimacy.selectors";
 import type { BoundaryItemRecord } from "@/schemas/intimacy";
 
 interface BoundaryManagerProps {

@@ -4,7 +4,7 @@ import {
   getBoundariesByStatus,
   getSessionSummary,
   hasReflection,
-} from "@/utils/intimacySelectors";
+} from "@/features/intimacy/intimacy.selectors";
 import type { BoundaryItemRecord, IntimacySession } from "@/schemas/intimacy";
 
 const boundaries: BoundaryItemRecord[] = [

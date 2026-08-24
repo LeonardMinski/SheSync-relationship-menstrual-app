@@ -48,7 +48,7 @@ export async function getPrivacySettings(
         "[privacy] cannot fetch settings without an authenticated session",
         { userId },
       );
-      return DEFAULT_PRIVACY_SETTINGS;
+      throw new Error("Authentication required");
     }
 
     const response = await fetch("/api/user", {
@@ -60,7 +60,7 @@ export async function getPrivacySettings(
 
     if (!response.ok) {
       console.error("[privacy] failed to fetch privacy settings", data);
-      return DEFAULT_PRIVACY_SETTINGS;
+      throw new Error(data.error || "Failed to fetch privacy settings");
     }
 
     const validatedSettings = PrivacySettingsSchema.parse(
@@ -69,7 +69,7 @@ export async function getPrivacySettings(
     return validatedSettings;
   } catch (error) {
     console.error("[privacy] failed to parse privacy settings", error);
-    return DEFAULT_PRIVACY_SETTINGS;
+    throw error;
   }
 }
 

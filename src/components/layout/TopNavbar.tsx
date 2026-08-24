@@ -1,261 +1,25 @@
 "use client";
 
 import React, { useState } from "react";
-import type { ComponentType } from "react";
-import Link from "next/link";
 import { usePathname } from "next/navigation";
-import {
-  Home,
-  CalendarDays,
-  Users,
-  Settings,
-  Bell,
-  Moon,
-  Sun,
-  ShieldCheck,
-  BarChart3,
-  Brain,
-  CreditCard,
-  HeartHandshake,
-  LockKeyhole,
-  Menu,
-  Sparkles,
-  X,
-} from "lucide-react";
+import { Bell, Menu, Moon, ShieldCheck, Sun, X } from "lucide-react";
 
 import { Avatar } from "@/components/ui/Avatar";
 import { cn } from "@/utils/cn";
 
-interface NavItem {
-  href: string;
-  label: string;
-  icon: ComponentType<{ className?: string }>;
-  status?: "soon";
-}
-
-const coreNavItems: NavItem[] = [
-  {
-    href: "/dashboard",
-    label: "Home",
-    icon: Home,
-  },
-  {
-    href: "/cycle",
-    label: "Log",
-    icon: CalendarDays,
-  },
-  {
-    href: "/partner",
-    label: "Partner",
-    icon: Users,
-  },
-  {
-    href: "/dashboard#insights",
-    label: "Insights",
-    icon: BarChart3,
-    status: "soon",
-  },
-  {
-    href: "/coach",
-    label: "Coach",
-    icon: Sparkles,
-    status: "soon",
-  },
-  {
-    href: "/ai-coach",
-    label: "AI Coach",
-    icon: Brain,
-    status: "soon",
-  },
-
-  {
-    href: "/fantasy",
-    label: "Fantasy Vault",
-    icon: LockKeyhole,
-    status: "soon",
-  },
-  {
-    href: "/intimacy",
-    label: "Intimacy",
-    icon: HeartHandshake,
-    status: "soon",
-  },
-  {
-    href: "/partner/intimacy",
-    label: "Partner Intimacy",
-    icon: Users,
-    status: "soon",
-  },
-  {
-    href: "/pricing",
-    label: "Pricing",
-    icon: CreditCard,
-    status: "soon",
-  },
-  {
-    href: "/settings",
-    label: "Settings",
-    icon: Settings,
-  },
-];
-
-const allNavItems = coreNavItems;
-
-interface NavbarProps {
-  className?: string;
-}
-
-function isItemActive(pathname: string, href: string) {
-  const itemPath = href.split("#")[0];
-  const isHashLink = href.includes("#");
-
-  return (
-    !isHashLink &&
-    (pathname === itemPath || pathname.startsWith(`${itemPath}/`))
-  );
-}
-
-export function Navbar(_props: NavbarProps) {
-  return null;
-}
-
-function FeatureLink({
-  item,
-  active,
-  onClick,
-}: {
-  item: NavItem;
-  active: boolean;
-  onClick?: () => void;
-}) {
-  const Icon = item.icon;
-
-  return (
-    <Link
-      href={item.href}
-      prefetch={item.status === "soon" ? false : undefined}
-      aria-current={active ? "page" : undefined}
-      onClick={onClick}
-      className={cn(
-        "flex min-h-12 items-center gap-3 rounded-xl px-3 text-sm font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cta-start",
-        active
-          ? "bg-cta-start text-[color:var(--cta-foreground)]"
-          : "text-muted-foreground hover:bg-bg-elevated hover:text-foreground",
-      )}
-    >
-      <Icon className="h-5 w-5 shrink-0" aria-hidden="true" />
-      <span className="min-w-0 flex-1 truncate">{item.label}</span>
-      {item.status === "soon" && (
-        <span
-          aria-label="Coming soon"
-          className={cn(
-            "rounded-full px-2 py-0.5 text-[10px] font-black uppercase tracking-[0.12em]",
-            active
-              ? "bg-bg-elevated text-[color:var(--cta-foreground)]"
-              : "bg-bg-elevated text-muted-foreground",
-          )}
-        >
-          Soon
-        </span>
-      )}
-    </Link>
-  );
-}
-
-function SidebarSection({
-  title,
-  items,
-  pathname,
-}: {
-  title?: string;
-  items: NavItem[];
-  pathname: string;
-}) {
-  return (
-    <div className="space-y-2">
-      {title && (
-        <p className="px-4 text-xs font-black uppercase tracking-[0.18em] text-muted-foreground">
-          {title}
-        </p>
-      )}
-      <div className="space-y-2">
-        {items.map((item) => (
-          <FeatureLink
-            key={item.href}
-            item={item}
-            active={isItemActive(pathname, item.href)}
-          />
-        ))}
-      </div>
-    </div>
-  );
-}
-
-export function AppSidebar({ className }: NavbarProps) {
-  const pathname = usePathname();
-
-  return (
-    <aside
-      className={cn(
-        "fixed inset-y-0 left-0 z-40 hidden w-72 border-r border-border bg-[var(--bg-surface)] px-5 py-8 text-foreground shadow-lg md:flex md:flex-col",
-        className,
-      )}
-    >
-      <Link
-        href="/dashboard"
-        className="mb-10 flex items-center gap-3 text-2xl font-bold tracking-tight text-foreground"
-      >
-        <span className="flex h-9 w-9 items-center justify-center rounded-full bg-cta-start text-[color:var(--cta-foreground)]">
-          <ShieldCheck className="h-5 w-5" aria-hidden="true" />
-        </span>
-        <span>SheSync+</span>
-      </Link>
-
-      <nav
-        aria-label="Primary navigation"
-        className="min-h-0 flex-1 space-y-6 overflow-y-auto pr-1"
-      >
-        <SidebarSection items={allNavItems} pathname={pathname} />
-      </nav>
-
-      <div className="mt-6 space-y-5">
-        <Link
-          href="/settings/privacy"
-          className="flex min-h-11 items-center justify-center rounded-full bg-cta-start px-4 text-sm font-bold text-[color:var(--cta-foreground)] shadow-[var(--shadow-glow)] transition hover:brightness-105 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cta-start"
-        >
-          Privacy Controls
-        </Link>
-
-        <div className="border-t border-border pt-5">
-          <div className="flex items-center gap-3">
-            <Avatar size="md" />
-            <div className="min-w-0">
-              <p className="truncate text-sm font-semibold text-foreground">
-                Sarah J.
-              </p>
-              <p className="truncate text-xs text-muted-foreground">
-                Premium Secure
-              </p>
-            </div>
-          </div>
-        </div>
-      </div>
-    </aside>
-  );
-}
+import { FeatureLink } from "./FeatureLink";
+import { LogoutButton } from "./LogoutButton";
+import { isItemActive, navItems } from "./navItems";
 
 interface TopNavbarProps {
   title: string;
   subtitle?: string;
   actions?: React.ReactNode;
   className?: string;
-
   showNotifications?: boolean;
   hasUnreadNotifications?: boolean;
-
   isDark?: boolean;
   onThemeToggle?: () => void;
-
   userAvatar?: string;
   onAvatarUpload?: (file: File) => void;
 }
@@ -387,7 +151,7 @@ export function TopNavbar({
           className="fixed inset-x-3 top-20 z-50 max-h-[calc(100vh-6rem)] overflow-y-auto rounded-[1.5rem] border border-border bg-[var(--bg-surface)] p-4 shadow-lg md:hidden"
         >
           <div className="space-y-2">
-            {allNavItems.map((item) => (
+            {navItems.map((item) => (
               <FeatureLink
                 key={item.href}
                 item={item}
@@ -407,6 +171,8 @@ export function TopNavbar({
               active={isItemActive(pathname, "/settings/privacy")}
               onClick={() => setIsMobileMenuOpen(false)}
             />
+
+            <LogoutButton onDone={() => setIsMobileMenuOpen(false)} />
           </div>
         </nav>
       )}

@@ -14,23 +14,12 @@ import {
   CardTitle,
 } from "@/components/ui/Card";
 import { Input } from "@/components/ui/Input";
-import { signupSchema, type SignupFormValues } from "@/schemas/auth";
+import { signupSchema } from "@/schemas/auth";
+import {
+  getSignupFieldErrors,
+  type SignupFieldErrors,
+} from "@/features/auth/auth-form-errors.utils";
 import { DEFAULT_AUTH_REDIRECT } from "@/utils/authRedirects";
-
-type SignupFieldErrors = Partial<Record<keyof SignupFormValues, string>>;
-
-const getFieldErrors = (result: ReturnType<typeof signupSchema.safeParse>) => {
-  if (result.success) return {};
-
-  const flattened = result.error.flatten().fieldErrors;
-
-  return {
-    name: flattened.name?.[0],
-    email: flattened.email?.[0],
-    password: flattened.password?.[0],
-    confirmPassword: flattened.confirmPassword?.[0],
-  } satisfies SignupFieldErrors;
-};
 
 export default function SignupPage() {
   const [name, setName] = useState("");
@@ -63,15 +52,10 @@ export default function SignupPage() {
     });
 
     if (!parsed.success) {
-      const nextFieldErrors = getFieldErrors(parsed);
+      const nextFieldErrors = getSignupFieldErrors(parsed);
       setFieldErrors(nextFieldErrors);
-      setError(
-        nextFieldErrors.confirmPassword ||
-          nextFieldErrors.password ||
-          nextFieldErrors.email ||
-          nextFieldErrors.name ||
-          "Check your account details.",
-      );
+      const hasFieldError = Object.values(nextFieldErrors).some(Boolean);
+      setError(hasFieldError ? "" : "Check your account details.");
       return;
     }
 

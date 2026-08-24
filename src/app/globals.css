@@ -1,4 +1,10 @@
-@import "tailwindcss";
+@import "tailwindcss" source(none);
+
+@source "./(public)/**/*.tsx";
+@source "./(app)/**/*.tsx";
+@source "../components/**/*.tsx";
+@source "../context/**/*.tsx";
+@source "../hooks/**/*.tsx";
 
 /* Import design tokens first */
 @import "../styles/tokens.css";
@@ -9,7 +15,7 @@
 @import "../styles/components.css";
 @import "../styles/dashboard.css";
 
-/* Legacy utility classes for backward compatibility */
+/* Legacy utility classes for shared UI components */
 .glass-effect {
   background: var(--bg-glass);
   backdrop-filter: blur(20px);
@@ -24,98 +30,39 @@
   color: transparent;
 }
 
-.btn-primary {
-  background: var(--gradient-primary);
-  color: var(--btn-primary-text);
-  padding: 0.75rem 1.5rem;
-  border-radius: 0.5rem;
-  font-weight: 500;
-  border: none;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  box-shadow: var(--shadow-soft);
-}
-
-.btn-primary--dark-text {
-  color: var(--btn-primary-text-dark);
-}
-
-.btn-primary:hover {
-  transform: translateY(-1px);
-  box-shadow: var(--shadow-strong);
-}
-
-/* Navigation utility classes */
-.nav-active {
-  color: var(--color-primary);
-}
-
-.nav-inactive {
-  color: var(--text-secondary);
-  transition: color 0.2s ease;
-}
-
-.nav-inactive:hover {
-  color: var(--color-primary);
-}
-
-/* ==========================================================================
-   SHESYNC+ DESIGN SYSTEM - REUSABLE COMPONENTS
-   ========================================================================== */
-
-/* Typography */
-body {
-  font-family: var(--font-family);
-  background:
-    linear-gradient(135deg, rgba(184, 211, 189, 0.06), transparent 38%),
-    var(--bg);
-  color: var(--text-foreground);
-  line-height: 1.6;
-}
-
-/* Card Components */
-.card {
-  background:
-    linear-gradient(135deg, color-mix(in srgb, var(--bg-surface) 94%, var(--cta-start) 6%), var(--bg-surface));
-  border: 1px solid var(--border);
-  border-radius: var(--radius-2xl);
-  padding: var(--spacing-lg);
-  box-shadow: var(--shadow);
-  transition: all 0.2s ease;
-}
-
-.card:hover {
-  box-shadow: var(--shadow-md);
-}
-
 .card-elevated {
   background:
-    linear-gradient(135deg, color-mix(in srgb, var(--bg-elevated) 90%, var(--cta-start) 10%), var(--bg-elevated));
+    linear-gradient(
+      135deg,
+      color-mix(in srgb, var(--bg-elevated) 90%, var(--cta-start) 10%),
+      var(--bg-elevated)
+    );
   border: 1px solid var(--border);
   border-radius: var(--radius-2xl);
   padding: var(--spacing-lg);
   box-shadow: var(--shadow-md);
 }
 
-/* Button Components */
 .btn-cta {
   display: inline-flex;
   align-items: center;
   justify-content: center;
   gap: var(--spacing-sm);
-  padding: var(--spacing-md) var(--spacing-lg);
-  border-radius: var(--radius-lg);
-  font-family: var(--font-family);
-  font-weight: 700;
-  font-size: var(--font-size-base);
-  color: var(--cta-foreground);
-  background: linear-gradient(90deg, var(--cta-start), var(--cta-end));
+  min-height: 44px;
   border: none;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  text-decoration: none;
-  min-height: 44px; /* WCAG AA touch target */
+  border-radius: var(--radius-lg);
+  background: linear-gradient(90deg, var(--cta-start), var(--cta-end));
+  color: var(--cta-foreground);
   box-shadow: var(--shadow-glow);
+  cursor: pointer;
+  font-family: var(--font-family);
+  font-size: var(--font-size-base);
+  font-weight: 700;
+  text-decoration: none;
+  transition:
+    filter 0.2s ease,
+    transform 0.2s ease,
+    box-shadow 0.2s ease;
 }
 
 .btn-cta:hover {
@@ -135,8 +82,8 @@ body {
 }
 
 .btn-cta:disabled {
-  opacity: 0.6;
   cursor: not-allowed;
+  opacity: 0.6;
   transform: none;
 }
 
@@ -145,18 +92,20 @@ body {
   align-items: center;
   justify-content: center;
   gap: var(--spacing-sm);
-  padding: var(--spacing-md) var(--spacing-lg);
-  border-radius: var(--radius-lg);
-  font-family: var(--font-family);
-  font-weight: 500;
-  font-size: var(--font-size-base);
-  color: var(--text-foreground);
-  background: color-mix(in srgb, var(--bg-surface) 86%, var(--bg-elevated));
-  border: 1px solid var(--border);
-  cursor: pointer;
-  transition: all 0.2s ease;
-  text-decoration: none;
   min-height: 44px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  background: color-mix(in srgb, var(--bg-surface) 86%, var(--bg-elevated));
+  color: var(--text-foreground);
+  cursor: pointer;
+  font-family: var(--font-family);
+  font-size: var(--font-size-base);
+  font-weight: 500;
+  text-decoration: none;
+  transition:
+    background 0.2s ease,
+    border-color 0.2s ease,
+    box-shadow 0.2s ease;
 }
 
 .btn-secondary:hover {
@@ -169,465 +118,36 @@ body {
   box-shadow: 0 0 0 3px color-mix(in srgb, var(--ring) 38%, transparent);
 }
 
-/* Input Components */
 .input {
+  min-height: 44px;
   width: 100%;
-  padding: var(--spacing-md);
+  border: 1px solid var(--border);
   border-radius: var(--radius-lg);
-  font-family: var(--font-family);
-  font-size: var(--font-size-base);
   background: color-mix(in srgb, var(--bg-elevated) 82%, var(--bg-surface));
   color: var(--text-foreground);
-  border: 1px solid var(--border);
-  transition: all 0.2s ease;
-  min-height: 44px;
+  font-family: var(--font-family);
+  font-size: var(--font-size-base);
+  padding: var(--spacing-md);
+  transition:
+    border-color 0.2s ease,
+    box-shadow 0.2s ease;
 }
 
 .input:focus {
   outline: none;
-  border-color: var(--cta-start);
-  box-shadow: 0 0 0 3px color-mix(in srgb, var(--ring) 30%, transparent);
+  border-color: var(--ring);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--ring) 28%, transparent);
 }
 
-.input::placeholder {
-  color: var(--text-muted);
+.nav-active {
+  color: var(--color-primary);
 }
 
-/* Toggle Components */
-.toggle {
-  position: relative;
-  display: inline-block;
-  width: 44px;
-  height: 24px;
-  min-height: 44px; /* WCAG AA touch target */
+.nav-inactive {
+  color: var(--text-secondary);
+  transition: color 0.2s ease;
 }
 
-.toggle input {
-  opacity: 0;
-  width: 0;
-  height: 0;
-}
-
-.toggle-slider {
-  position: absolute;
-  cursor: pointer;
-  top: 50%;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background-color: var(--bg-tertiary);
-  transition: 0.2s;
-  border-radius: 24px;
-  transform: translateY(-50%);
-}
-
-.toggle-slider:before {
-  position: absolute;
-  content: "";
-  height: 18px;
-  width: 18px;
-  left: 3px;
-  bottom: 3px;
-  background-color: var(--text-foreground);
-  transition: 0.2s;
-  border-radius: 50%;
-}
-
-.toggle input:checked + .toggle-slider {
-  background: linear-gradient(90deg, var(--cta-start), var(--cta-end));
-}
-
-.toggle input:checked + .toggle-slider:before {
-  transform: translateX(20px);
-  background-color: var(--cta-foreground);
-}
-
-.toggle input:focus + .toggle-slider {
-  box-shadow: 0 0 0 3px color-mix(in srgb, var(--ring) 34%, transparent);
-}
-
-/* Navigation Components */
-.nav-item {
-  display: flex;
-  align-items: center;
-  gap: var(--spacing-sm);
-  padding: var(--spacing-md);
-  border-radius: var(--radius-lg);
-  color: var(--text-muted);
-  text-decoration: none;
-  transition: all 0.2s ease;
-  min-height: 44px;
-}
-
-.nav-item:hover {
-  color: var(--text-foreground);
-  background: var(--bg-elevated);
-}
-
-.nav-item.active {
-  color: var(--cta-start);
-  background: var(--bg-elevated);
-}
-
-/* Layout Components */
-.container {
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: 0 var(--spacing-lg);
-}
-
-.grid {
-  display: grid;
-  gap: var(--spacing-lg);
-}
-
-.grid-cols-1 {
-  grid-template-columns: repeat(1, 1fr);
-}
-.grid-cols-2 {
-  grid-template-columns: repeat(2, 1fr);
-}
-.grid-cols-3 {
-  grid-template-columns: repeat(3, 1fr);
-}
-.grid-cols-4 {
-  grid-template-columns: repeat(4, 1fr);
-}
-
-@media (max-width: 768px) {
-  .grid-cols-2,
-  .grid-cols-3,
-  .grid-cols-4 {
-    grid-template-columns: 1fr;
-  }
-}
-
-/* Slider Styles */
-.slider {
-  background: var(--border);
-  outline: none;
-  -webkit-appearance: none;
-}
-
-.slider::-webkit-slider-thumb {
-  -webkit-appearance: none;
-  appearance: none;
-  width: 20px;
-  height: 20px;
-  border-radius: 50%;
-  background: linear-gradient(90deg, var(--cta-start), var(--cta-end));
-  cursor: pointer;
-  border: 2px solid white;
-  box-shadow: var(--shadow);
-}
-
-.slider::-moz-range-thumb {
-  width: 20px;
-  height: 20px;
-  border-radius: 50%;
-  background: linear-gradient(90deg, var(--cta-start), var(--cta-end));
-  cursor: pointer;
-  border: 2px solid white;
-  box-shadow: var(--shadow);
-}
-
-/* ==========================================================================
-   ACCESSIBILITY IMPROVEMENTS - WCAG AA COMPLIANCE
-   ========================================================================== */
-
-/* Focus Management */
-*:focus {
-  outline: 2px solid var(--ring);
-  outline-offset: 2px;
-}
-
-/* Skip Links */
-.skip-link {
-  position: absolute;
-  top: -40px;
-  left: 6px;
-  background: var(--cta-start);
-  color: white;
-  padding: 8px;
-  text-decoration: none;
-  border-radius: 4px;
-  z-index: 1000;
-}
-
-.skip-link:focus {
-  top: 6px;
-}
-
-/* High Contrast Mode Support */
-@media (prefers-contrast: high) {
-  .card {
-    border: 2px solid var(--border);
-  }
-
-  .btn-cta {
-    border: 2px solid var(--cta-start);
-  }
-
-  .btn-secondary {
-    border: 2px solid var(--border);
-  }
-}
-
-/* Reduced Motion Support */
-@media (prefers-reduced-motion: reduce) {
-  * {
-    animation-duration: 0.01ms !important;
-    animation-iteration-count: 1 !important;
-    transition-duration: 0.01ms !important;
-  }
-
-  .animate-spin {
-    animation: none;
-  }
-}
-
-/* Screen Reader Only Content */
-.sr-only {
-  position: absolute;
-  width: 1px;
-  height: 1px;
-  padding: 0;
-  margin: -1px;
-  overflow: hidden;
-  clip: rect(0, 0, 0, 0);
-  white-space: nowrap;
-  border: 0;
-}
-
-/* Ensure minimum touch target sizes */
-button,
-input[type="button"],
-input[type="submit"],
-input[type="reset"],
-a,
-[role="button"] {
-  min-height: 44px;
-  min-width: 44px;
-}
-
-/* Improve text contrast */
-.text-muted-foreground {
-  color: var(--text-muted);
-}
-
-/* Ensure proper color contrast ratios */
-:root {
-  /* Light mode - ensure 4.5:1 contrast ratio */
-  --text-foreground: #111827; /* High contrast black */
-  --text-muted: #6b7280; /* Meets AA standard */
-  --text-help: #9ca3af; /* Meets AA standard */
-  --border: #e5e7eb; /* Sufficient contrast */
-}
-
-.dark {
-  /* Dark mode - ensure 4.5:1 contrast ratio */
-  --text-foreground: #f8f6fa; /* High contrast white */
-  --text-muted: #a394b6; /* Meets AA standard */
-  --text-help: #8b7a9e; /* Meets AA standard */
-  --border: #34263f; /* Sufficient contrast */
-}
-
-/* Keyboard Navigation Improvements */
-.nav-item:focus,
-button:focus,
-input:focus,
-textarea:focus,
-select:focus,
-[tabindex]:focus {
-  outline: 2px solid var(--ring);
-  outline-offset: 2px;
-}
-
-/* Ensure interactive elements are keyboard accessible */
-[role="button"]:focus,
-[role="tab"]:focus,
-[role="menuitem"]:focus {
-  outline: 2px solid var(--ring);
-  outline-offset: 2px;
-}
-
-/* Improve form accessibility */
-input:invalid {
-  border-color: var(--error);
-}
-
-input:invalid:focus {
-  box-shadow: 0 0 0 3px var(--error);
-}
-
-/* Loading states for screen readers */
-.loading-text::after {
-  content: " (Loading...)";
-  position: absolute;
-  left: -9999px;
-}
-
-/* Ensure proper heading hierarchy */
-h1,
-h2,
-h3,
-h4,
-h5,
-h6 {
-  color: var(--text-foreground);
-  font-weight: 600;
-}
-
-/* Improve link accessibility */
-a:focus {
-  outline: 2px solid var(--ring);
-  outline-offset: 2px;
-  text-decoration: underline;
-}
-
-/* Ensure sufficient spacing for touch targets */
-.touch-target {
-  padding: 12px;
-  margin: 4px;
-}
-
-/* Dark mode body background - match card surfaces */
-.dark body {
-  background-color: var(--color-surface) !important;
-}
-
-/* Theme persistence */
-html {
-  color-scheme: light;
-}
-
-html.dark {
-  color-scheme: dark;
-}
-
-/* Ensure theme is applied on page load */
-html[data-theme="dark"] {
-  color-scheme: dark;
-}
-
-html[data-theme="light"] {
-  color-scheme: light;
-}
-
-.dark html {
-  background-color: var(--color-surface) !important;
-}
-
-/* Global dark mode overrides - SOLID SURFACES ONLY */
-.dark input,
-.dark textarea,
-.dark select {
-  background: var(--color-surface) !important;
-  color: var(--text-primary) !important;
-  border-color: var(--color-border) !important;
-  backdrop-filter: none !important;
-}
-
-.dark input:focus,
-.dark textarea:focus,
-.dark select:focus {
-  ring-color: var(--ring) !important;
-  border-color: var(--ring) !important;
-}
-
-.dark input::placeholder,
-.dark textarea::placeholder {
-  color: var(--text-muted) !important;
-}
-
-.dark option {
-  background: var(--color-surface) !important;
-  color: var(--text-primary) !important;
-}
-
-/* Replace ALL white/glass backgrounds with solid surfaces in dark mode */
-.dark .bg-white,
-.dark .bg-white\/10,
-.dark .bg-white\/20,
-.dark .bg-white\/30,
-.dark .bg-white\/40,
-.dark .bg-white\/50,
-.dark .bg-white\/60,
-.dark .bg-white\/70,
-.dark .bg-white\/80,
-.dark .bg-white\/90,
-.dark .bg-white\/95 {
-  background: var(--color-surface) !important;
-  backdrop-filter: none !important;
-}
-
-.dark .bg-gray-50,
-.dark .bg-gray-100,
-.dark .bg-gray-200,
-.dark .bg-slate-50,
-.dark .bg-slate-100,
-.dark .bg-slate-200,
-.dark .bg-rose-50,
-.dark .bg-purple-50 {
-  background: var(--color-surface) !important;
-  backdrop-filter: none !important;
-}
-
-/* Remove ALL backdrop blur in dark mode */
-.dark [class*="backdrop-blur"] {
-  backdrop-filter: none !important;
-}
-
-/* Text hierarchy in dark mode */
-.dark h1,
-.dark h2,
-.dark h3,
-.dark h4,
-.dark h5,
-.dark h6 {
-  color: var(--text-primary) !important;
-}
-
-.dark .text-gray-900,
-.dark .text-gray-800,
-.dark .text-gray-700,
-.dark .text-slate-900,
-.dark .text-slate-800,
-.dark .text-neutral-700 {
-  color: var(--text-primary) !important;
-}
-
-.dark .text-gray-600,
-.dark .text-gray-500,
-.dark .text-slate-600,
-.dark .text-slate-500 {
-  color: var(--text-secondary) !important;
-}
-
-.dark .text-gray-400,
-.dark .text-gray-300,
-.dark .text-slate-400,
-.dark .text-slate-300 {
-  color: var(--text-muted) !important;
-}
-
-.dark .text-white,
-.dark .text-white\/70,
-.dark .text-white\/80,
-.dark .text-white\/90 {
-  color: var(--text-primary) !important;
-}
-
-/* Borders in dark mode */
-.dark [class*="border-"] {
-  border-color: var(--color-border) !important;
-}
-
-/* Links in dark mode */
-.dark a {
-  color: var(--link) !important;
-}
-
-.dark a:hover {
-  text-decoration: underline;
+.nav-inactive:hover {
+  color: var(--color-primary);
 }

@@ -3,10 +3,10 @@
 import { useEffect } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import { AppProvider } from "@/context/AppContext";
-import { useAuth } from "@/context/AuthContext";
+import { AuthProvider, useAuth } from "@/context/AuthContext";
 import ThemeProvider from "@/components/ThemeProvider";
 import { getLoginRedirectPath } from "@/utils/authRedirects";
-import { AppSidebar } from "@/components/layout/Navbar";
+import { AppSidebar } from "@/components/layout/AppSidebar";
 
 const AuthLoadingState = ({ text }: { text: string }) => (
   <div className="min-h-screen bg-bg text-foreground">
@@ -16,7 +16,7 @@ const AuthLoadingState = ({ text }: { text: string }) => (
   </div>
 );
 
-export default function AppLayout({ children }: { children: React.ReactNode }) {
+function AuthenticatedAppLayout({ children }: { children: React.ReactNode }) {
   const { session, user, loading } = useAuth();
   const pathname = usePathname();
   const router = useRouter();
@@ -50,5 +50,13 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
         </div>
       </ThemeProvider>
     </AppProvider>
+  );
+}
+
+export default function AppLayout({ children }: { children: React.ReactNode }) {
+  return (
+    <AuthProvider>
+      <AuthenticatedAppLayout>{children}</AuthenticatedAppLayout>
+    </AuthProvider>
   );
 }

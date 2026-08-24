@@ -8,6 +8,32 @@ import type {
   User,
 } from "@/types";
 
+const cyclePhases: CyclePhase[] = [
+  "menstrual",
+  "follicular",
+  "ovulation",
+  "luteal",
+];
+
+function getCyclePhase(value: unknown): CyclePhase | null {
+  return cyclePhases.includes(value as CyclePhase)
+    ? (value as CyclePhase)
+    : null;
+}
+
+function getStoredDate(value: unknown): Date | null {
+  if (!value) {
+    return null;
+  }
+
+  const date = new Date(value as string | number | Date);
+  return Number.isNaN(date.getTime()) ? null : date;
+}
+
+function getStoredNumber(value: unknown): number | null {
+  return typeof value === "number" && Number.isFinite(value) ? value : null;
+}
+
 export const getUser = (): User | null => {
   try {
     const userData = localStorage.getItem("sheSync_user");
@@ -82,25 +108,48 @@ export const getCycleData = (): CycleData[] => {
     if (!cycleData) return [];
 
     const data = JSON.parse(cycleData) as Array<Record<string, unknown>>;
-    return data.map(
-      (entry): CycleData => ({
-        id: String(entry.id ?? ""),
-        date: new Date((entry.date as string | number | Date) ?? new Date()),
-        phase: (entry.phase as CycleData["phase"]) ?? "luteal",
-        periodFlow: (entry.periodFlow as CycleData["periodFlow"]) ?? undefined,
-        mood: Number(entry.mood ?? 0),
-        energy: Number(entry.energy ?? 0),
-        libido: Number(entry.libido ?? 0),
-        stress: Number(entry.stress ?? 0),
-        symptoms: Array.isArray(entry.symptoms)
-          ? entry.symptoms.map(String)
-          : [],
-        notes: typeof entry.notes === "string" ? entry.notes : undefined,
-        temperature:
-          typeof entry.temperature === "number" ? entry.temperature : undefined,
-        weight: typeof entry.weight === "number" ? entry.weight : undefined,
-      }),
-    );
+    return data.flatMap((entry): CycleData[] => {
+      const date = getStoredDate(entry.date);
+      const phase = getCyclePhase(entry.phase);
+      const mood = getStoredNumber(entry.mood);
+      const energy = getStoredNumber(entry.energy);
+      const libido = getStoredNumber(entry.libido);
+      const stress = getStoredNumber(entry.stress);
+
+      if (
+        !date ||
+        !phase ||
+        mood === null ||
+        energy === null ||
+        libido === null ||
+        stress === null
+      ) {
+        return [];
+      }
+
+      return [
+        {
+          id: String(entry.id ?? ""),
+          date,
+          phase,
+          periodFlow:
+            (entry.periodFlow as CycleData["periodFlow"]) ?? undefined,
+          mood,
+          energy,
+          libido,
+          stress,
+          symptoms: Array.isArray(entry.symptoms)
+            ? entry.symptoms.map(String)
+            : [],
+          notes: typeof entry.notes === "string" ? entry.notes : undefined,
+          temperature:
+            typeof entry.temperature === "number"
+              ? entry.temperature
+              : undefined,
+          weight: typeof entry.weight === "number" ? entry.weight : undefined,
+        },
+      ];
+    });
   } catch (error) {
     console.error("Error getting cycle data:", error);
     return [];
@@ -121,19 +170,26 @@ export const getAIMessages = (): AICoachMessage[] => {
     if (!messages) return [];
 
     const data = JSON.parse(messages) as Array<Record<string, unknown>>;
-    return data.map(
-      (message): AICoachMessage => ({
-        id: String(message.id ?? ""),
-        timestamp: new Date(
-          (message.timestamp as string | number | Date) ?? new Date(),
-        ),
-        question: String(message.question ?? ""),
-        response: String(message.response ?? ""),
-        phase: (message.phase as CyclePhase) ?? "luteal",
-        relevantData: ((message.relevantData as Partial<CycleData>) ??
-          {}) as Partial<CycleData>,
-      }),
-    );
+    return data.flatMap((message): AICoachMessage[] => {
+      const timestamp = getStoredDate(message.timestamp);
+      const phase = getCyclePhase(message.phase);
+
+      if (!timestamp || !phase) {
+        return [];
+      }
+
+      return [
+        {
+          id: String(message.id ?? ""),
+          timestamp,
+          question: String(message.question ?? ""),
+          response: String(message.response ?? ""),
+          phase,
+          relevantData: ((message.relevantData as Partial<CycleData>) ??
+            {}) as Partial<CycleData>,
+        },
+      ];
+    });
   } catch (error) {
     console.error("Error getting AI messages:", error);
     return [];
@@ -157,8 +213,10 @@ export const getFantasyEntries = (): FantasyEntry[] => {
     if (!entries) return [];
 
     const data = JSON.parse(entries) as Array<Record<string, unknown>>;
-    return data.map(
-      (entry): FantasyEntry => ({
+    return data.map((entry): FantasyEntry => {
+      const phase = getCyclePhase(entry.phase);
+
+      return {
         id: String(entry.id ?? ""),
         title: String(entry.title ?? ""),
         content: String(entry.content ?? ""),
@@ -172,9 +230,9 @@ export const getFantasyEntries = (): FantasyEntry[] => {
           (entry.updatedAt as string | number | Date) ?? new Date(),
         ),
         mood: typeof entry.mood === "number" ? entry.mood : undefined,
-        phase: (entry.phase as FantasyEntry["phase"]) ?? undefined,
-      }),
-    );
+        phase: phase ?? undefined,
+      };
+    });
   } catch (error) {
     console.error("Error getting fantasy entries:", error);
     return [];
