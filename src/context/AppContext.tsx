@@ -134,56 +134,48 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({
   const [state, dispatch] = useReducer(appReducer, initialState);
 
   useEffect(() => {
-    // Initialize app with stored data or mock data
-    const initializeApp = () => {
-      const storedUser = getUser();
-      const isDarkMode = getTheme() === "dark";
+    const storedUser = getUser();
+    const isDarkMode = getTheme() === "dark";
 
-      if (storedUser) {
-        // Load user's data
-        const cycleData = getCycleData();
-        const aiMessages = getAIMessages();
-        const intimacyCards = getIntimacyCards();
-        const fantasyEntries = getFantasyEntries();
-        const notifications = getNotifications();
+    if (storedUser) {
+      const cycleData = getCycleData();
+      const aiMessages = getAIMessages();
+      const intimacyCards = getIntimacyCards();
+      const fantasyEntries = getFantasyEntries();
+      const notifications = getNotifications();
 
-        dispatch({
-          type: "INITIALIZE_APP",
-          payload: {
-            user: storedUser,
-            cycleData,
-            aiMessages,
-            intimacyCards,
-            fantasyEntries,
-            notifications,
-            currentPhase: cycleData[cycleData.length - 1]?.phase || "luteal",
-            isDarkMode,
-          },
-        });
-      } else {
-        // For demo purposes, load mock data
-        dispatch({
-          type: "INITIALIZE_APP",
-          payload: {
-            user: mockUser,
-            cycleData: mockCycleData,
-            aiMessages: mockAIMessages,
-            intimacyCards: mockIntimacyCards,
-            fantasyEntries: mockFantasyEntries,
-            notifications: mockNotifications,
-            currentPhase: "luteal",
-            isDarkMode,
-          },
-        });
+      dispatch({
+        type: "INITIALIZE_APP",
+        payload: {
+          user: storedUser,
+          cycleData,
+          aiMessages,
+          intimacyCards,
+          fantasyEntries,
+          notifications,
+          currentPhase: cycleData[cycleData.length - 1]?.phase || "luteal",
+          isDarkMode,
+        },
+      });
+      return;
+    }
 
-        // Save mock user for demo
-        saveUser(mockUser);
-        saveCycleData(mockCycleData);
-      }
-    };
+    dispatch({
+      type: "INITIALIZE_APP",
+      payload: {
+        user: mockUser,
+        cycleData: mockCycleData,
+        aiMessages: mockAIMessages,
+        intimacyCards: mockIntimacyCards,
+        fantasyEntries: mockFantasyEntries,
+        notifications: mockNotifications,
+        currentPhase: "luteal",
+        isDarkMode,
+      },
+    });
 
-    // Simulate loading time
-    setTimeout(initializeApp, 1000);
+    saveUser(mockUser);
+    saveCycleData(mockCycleData);
   }, []);
 
   const login = (user: User) => {

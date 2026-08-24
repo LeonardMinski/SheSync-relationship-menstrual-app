@@ -6,6 +6,7 @@ yarn-error.log*
 
 # Next.js
 .next/
+.next.stale-*/
 out/
 build/
 dist/
@@ -28,6 +29,7 @@ test-results/
 # IDE
 .vscode/
 .idea/
+.abacusai/
 *.swp
 *.swo
 

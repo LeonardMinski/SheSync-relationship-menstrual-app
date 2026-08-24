@@ -146,6 +146,16 @@ export default function CyclePage() {
     );
   };
 
+  const openLogForm = () => {
+    setMood(selectedData?.mood ?? 5);
+    setEnergy(selectedData?.energy ?? 5);
+    setLibido(selectedData?.libido ?? 5);
+    setStress(selectedData?.stress ?? 5);
+    setSymptoms(selectedData?.symptoms ?? []);
+    setNotes(selectedData?.notes ?? "");
+    setShowLogForm(true);
+  };
+
   const symptomOptions = [
     "Cramps",
     "Bloating",
@@ -171,18 +181,37 @@ export default function CyclePage() {
   }
 
   return (
-    <div className="min-h-screen bg-bg pb-20">
+    <div className="min-h-screen bg-bg pb-10">
       <TopNavbar
-        title="Cycle Tracking"
+        title="Day 14 · Follicular Phase"
         subtitle={format(selectedDate, "EEEE, MMMM d")}
-        showNotifications={false}
-        showThemeToggle={true}
-        showMeeting={false}
+        showNotifications
       />
 
-      <div className="container mx-auto px-4 py-6 space-y-6">
+      <div className="mx-auto w-full max-w-5xl space-y-6 px-4 py-6 sm:px-6 lg:px-10">
+        <section className="rounded-[2rem] border border-border bg-bg-surface px-5 py-8 text-center shadow-md sm:px-8 md:py-10">
+          <div className="mx-auto max-w-2xl space-y-4">
+            <h1 className="text-4xl font-bold leading-tight tracking-tight text-foreground md:text-5xl">
+              How are you feeling today?
+            </h1>
+            <p className="mx-auto max-w-xl text-lg leading-relaxed text-muted-foreground">
+              Log your daily metrics to discover personal insights.
+            </p>
+          </div>
+
+          <Button
+            variant="cta"
+            size="lg"
+            onClick={openLogForm}
+            className="mx-auto mt-7 w-full max-w-xs"
+          >
+            <Plus className="h-5 w-5" />
+            {selectedData ? "Edit Log" : "Log Today"}
+          </Button>
+        </section>
+
         {cycleError && (
-          <div className="rounded-lg border border-error/20 bg-error/10 px-4 py-3 text-sm text-error">
+          <div className="rounded-2xl border border-error/20 bg-error/10 px-4 py-3 text-sm text-error">
             {cycleError}
             <button
               type="button"
@@ -196,22 +225,23 @@ export default function CyclePage() {
 
         {/* No Cycle Data CTA */}
         {cycles.length === 0 && (
-          <Card className="text-center py-8">
+          <Card className="py-8 text-center">
             <CardContent>
-              <div className="w-16 h-16 mx-auto mb-4 rounded-2xl bg-gradient-to-r from-cta-start to-cta-end flex items-center justify-center">
-                <Calendar className="h-8 w-8 text-white" />
+              <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-cta-start">
+                <Calendar className="h-8 w-8 text-[color:var(--cta-foreground)]" />
               </div>
-              <h2 className="text-2xl font-bold text-foreground mb-2">
+              <h2 className="mb-2 text-center text-2xl font-bold text-foreground">
                 Start Tracking Your Cycle
               </h2>
-              <p className="text-muted mb-6">
+              <p className="mx-auto mb-6 max-w-md text-center leading-relaxed text-muted-foreground">
                 Log your first cycle entry to begin your wellness journey.
               </p>
-              <div className="flex flex-col sm:flex-row gap-3 justify-center">
+              <div className="mx-auto flex max-w-md flex-col justify-center gap-3 sm:flex-row">
                 <Button
                   variant="cta"
                   size="lg"
-                  onClick={() => setShowLogForm(true)}
+                  onClick={openLogForm}
+                  className="flex-1"
                 >
                   <Plus className="h-5 w-5" />
                   Log Period
@@ -219,7 +249,8 @@ export default function CyclePage() {
                 <Button
                   variant="secondary"
                   size="lg"
-                  onClick={() => setShowLogForm(true)}
+                  onClick={openLogForm}
+                  className="flex-1"
                 >
                   <Droplet className="h-5 w-5" />
                   Log Symptoms
@@ -232,15 +263,15 @@ export default function CyclePage() {
         {/* Selected Date Card */}
         <Card>
           <CardHeader>
-            <CardTitle className="flex items-center gap-2">
+            <CardTitle className="flex items-center justify-center gap-2 text-center sm:justify-start sm:text-left">
               <Calendar className="h-5 w-5 text-cta-start" />
               {format(selectedDate, "MMMM d, yyyy")}
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="flex items-center justify-between">
-              <div>
-                <div className="text-2xl font-bold text-foreground">
+            <div className="grid gap-5 text-center sm:grid-cols-[minmax(0,1fr)_auto_auto] sm:items-center sm:text-left">
+              <div className="min-w-0">
+                <div className="text-2xl font-bold capitalize text-foreground">
                   {selectedData ? getPhaseEmoji(selectedData.phase) : "🌙"}{" "}
                   {selectedData?.phase || "No data"}
                 </div>
@@ -250,12 +281,19 @@ export default function CyclePage() {
                     : "No data logged for this date"}
                 </CardDescription>
               </div>
-              <div className="text-right">
+              <div className="rounded-2xl bg-bg-elevated px-5 py-3 text-center">
                 <div className="text-sm text-muted-foreground">Mood</div>
                 <div className="text-lg font-semibold text-foreground">
                   {selectedData?.mood || "—"}/10
                 </div>
               </div>
+              <Button
+                variant="secondary"
+                onClick={openLogForm}
+                className="mx-auto w-full max-w-xs sm:w-auto"
+              >
+                {selectedData ? "Edit Entry" : "Add Entry"}
+              </Button>
             </div>
           </CardContent>
         </Card>
@@ -265,8 +303,8 @@ export default function CyclePage() {
           <Card>
             <CardContent className="p-4">
               <div className="flex items-center gap-3">
-                <div className="p-2 rounded-lg bg-accent-rose/10">
-                  <Heart className="h-5 w-5 text-accent-rose" />
+                <div className="rounded-lg bg-bg-elevated p-2">
+                  <Heart className="h-5 w-5 text-[color:var(--accent-peach)]" />
                 </div>
                 <div>
                   <div className="text-sm text-muted-foreground">Energy</div>
@@ -338,7 +376,7 @@ export default function CyclePage() {
                 {selectedData.symptoms.map((symptom, index) => (
                   <span
                     key={index}
-                    className="px-3 py-1 bg-accent-rose/10 text-accent-rose rounded-full text-sm"
+                    className="rounded-full bg-bg-elevated px-3 py-1 text-sm font-semibold text-[color:var(--accent-peach)]"
                   >
                     {symptom}
                   </span>
@@ -397,7 +435,7 @@ export default function CyclePage() {
 
       {/* Log Cycle Modal */}
       {showLogForm && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4 backdrop-blur">
           <Card className="w-full max-w-md max-h-[90vh] overflow-y-auto">
             <CardHeader>
               <CardTitle>
@@ -481,7 +519,7 @@ export default function CyclePage() {
                       onClick={() => toggleSymptom(symptom)}
                       className={`px-3 py-1 rounded-full text-sm transition-colors ${
                         symptoms.includes(symptom)
-                          ? "bg-cta-start text-white"
+                          ? "bg-cta-start text-[color:var(--cta-foreground)]"
                           : "bg-bg-elevated text-foreground border border-border"
                       }`}
                     >
@@ -500,7 +538,7 @@ export default function CyclePage() {
                   value={notes}
                   onChange={(e) => setNotes(e.target.value)}
                   placeholder="How are you feeling today?"
-                  className="w-full p-3 border border-border rounded-lg bg-bg-surface text-foreground placeholder-muted-foreground focus:outline-none focus:ring-2 focus:ring-cta-start"
+                  className="w-full rounded-lg border border-border bg-bg-surface p-3 text-foreground placeholder-muted-foreground focus:outline-none focus:ring-2 focus:ring-cta-start"
                   rows={3}
                 />
               </div>
@@ -529,78 +567,80 @@ export default function CyclePage() {
 
       {/* API Insights Section */}
       {selectedData && (
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Brain className="h-5 w-5 text-cta-start" />
-              Mood & Symptoms Tips
-            </CardTitle>
-            <CardDescription>
-              Personalized recommendations based on your cycle data
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            {apiLoading ? (
-              <div className="animate-pulse space-y-3">
-                <div className="h-4 bg-bg-muted rounded"></div>
-                <div className="h-4 bg-bg-muted rounded w-3/4"></div>
-                <div className="h-4 bg-bg-muted rounded w-1/2"></div>
-              </div>
-            ) : (
-              <>
-                {/* Health Insights */}
-                {healthInsights.length > 0 ? (
-                  <div className="space-y-2">
-                    {healthInsights.map((insight, index) => (
-                      <div
-                        key={index}
-                        className="p-3 bg-bg-elevated rounded-lg"
-                      >
-                        <div className="text-sm font-medium text-foreground capitalize mb-1">
-                          {insight.type} Tip
-                        </div>
-                        <div className="text-sm text-muted">{insight.tip}</div>
-                      </div>
-                    ))}
-                  </div>
-                ) : (
-                  <div className="text-sm text-muted">
-                    {API_FALLBACKS.healthInsights}
-                  </div>
-                )}
-
-                {/* Wellness Suggestion */}
-                {nutritionSuggestion ? (
-                  <div className="p-3 bg-bg-elevated rounded-lg">
-                    <div className="text-sm font-medium text-foreground mb-1">
-                      Wellness Suggestion
-                    </div>
-                    <div className="text-sm font-medium text-foreground mb-1">
-                      {nutritionSuggestion.food}
-                    </div>
-                    <div className="text-sm text-muted mb-2">
-                      {nutritionSuggestion.reason}
-                    </div>
-                    <div className="flex flex-wrap gap-1">
-                      {nutritionSuggestion.benefits.map((benefit, index) => (
-                        <span
+        <div className="mx-auto w-full max-w-5xl px-4 sm:px-6 lg:px-10">
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Brain className="h-5 w-5 text-cta-start" />
+                Mood & Symptoms Tips
+              </CardTitle>
+              <CardDescription>
+                Personalized recommendations based on your cycle data
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              {apiLoading ? (
+                <div className="animate-pulse space-y-3">
+                  <div className="h-4 rounded bg-bg-muted"></div>
+                  <div className="h-4 w-3/4 rounded bg-bg-muted"></div>
+                  <div className="h-4 w-1/2 rounded bg-bg-muted"></div>
+                </div>
+              ) : (
+                <>
+                  {healthInsights.length > 0 ? (
+                    <div className="space-y-2">
+                      {healthInsights.map((insight, index) => (
+                        <div
                           key={index}
-                          className="text-xs bg-accent-rose/10 text-accent-rose px-2 py-1 rounded-full"
+                          className="rounded-lg bg-bg-elevated p-3"
                         >
-                          {benefit}
-                        </span>
+                          <div className="mb-1 text-sm font-medium capitalize text-foreground">
+                            {insight.type} Tip
+                          </div>
+                          <div className="text-sm text-muted-foreground">
+                            {insight.tip}
+                          </div>
+                        </div>
                       ))}
                     </div>
-                  </div>
-                ) : (
-                  <div className="text-sm text-muted">
-                    {API_FALLBACKS.nutrition}
-                  </div>
-                )}
-              </>
-            )}
-          </CardContent>
-        </Card>
+                  ) : (
+                    <div className="text-sm text-muted-foreground">
+                      {API_FALLBACKS.healthInsights}
+                    </div>
+                  )}
+
+                  {nutritionSuggestion ? (
+                    <div className="rounded-lg bg-bg-elevated p-3">
+                      <div className="mb-1 text-sm font-medium text-foreground">
+                        Wellness Suggestion
+                      </div>
+                      <div className="mb-1 text-sm font-medium text-foreground">
+                        {nutritionSuggestion.food}
+                      </div>
+                      <div className="mb-2 text-sm text-muted-foreground">
+                        {nutritionSuggestion.reason}
+                      </div>
+                      <div className="flex flex-wrap gap-1">
+                        {nutritionSuggestion.benefits.map((benefit, index) => (
+                          <span
+                            key={index}
+                            className="rounded-full bg-bg-elevated px-2 py-1 text-xs text-[color:var(--accent-peach)]"
+                          >
+                            {benefit}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="text-sm text-muted-foreground">
+                      {API_FALLBACKS.nutrition}
+                    </div>
+                  )}
+                </>
+              )}
+            </CardContent>
+          </Card>
+        </div>
       )}
 
       <Navbar />

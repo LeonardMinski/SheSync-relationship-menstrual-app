@@ -1,17 +1,54 @@
+"use client";
+
+import { useEffect } from "react";
+import { usePathname, useRouter } from "next/navigation";
 import { AppProvider } from "@/context/AppContext";
-import { AuthProvider } from "@/context/AuthContext";
+import { useAuth } from "@/context/AuthContext";
 import ThemeProvider from "@/components/ThemeProvider";
+import { getLoginRedirectPath } from "@/utils/authRedirects";
+import { AppSidebar } from "@/components/layout/Navbar";
+
+const AuthLoadingState = ({ text }: { text: string }) => (
+  <div className="min-h-screen bg-bg text-foreground">
+    <div className="flex min-h-screen items-center justify-center p-4">
+      <p className="text-sm text-muted-foreground">{text}</p>
+    </div>
+  </div>
+);
 
 export default function AppLayout({ children }: { children: React.ReactNode }) {
+  const { session, user, loading } = useAuth();
+  const pathname = usePathname();
+  const router = useRouter();
+
+  useEffect(() => {
+    if (!loading && !session) {
+      router.replace(getLoginRedirectPath(pathname));
+    }
+  }, [loading, pathname, router, session]);
+
+  if (loading) {
+    return <AuthLoadingState text="Loading..." />;
+  }
+
+  if (!session) {
+    return <AuthLoadingState text="Redirecting to sign in..." />;
+  }
+
+  if (!user) {
+    return (
+      <AuthLoadingState text="We couldn't load your profile. Please refresh or try signing in again." />
+    );
+  }
+
   return (
-    <AuthProvider>
-      <AppProvider>
-        <ThemeProvider>
-          <div className="min-h-screen bg-white text-slate-900 transition-all duration-500 dark:bg-[#17121F] dark:text-white">
-            {children}
-          </div>
-        </ThemeProvider>
-      </AppProvider>
-    </AuthProvider>
+    <AppProvider>
+      <ThemeProvider>
+        <div className="min-h-screen bg-bg text-foreground md:pl-72">
+          <AppSidebar />
+          <div className="min-h-screen">{children}</div>
+        </div>
+      </ThemeProvider>
+    </AppProvider>
   );
 }

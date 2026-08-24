@@ -6,7 +6,7 @@ export interface User {
   createdAt: Date;
   partnerId?: string;
   privacySettings: PrivacySettings;
-  profileImageUrl?: string;
+  profileImageUrl?: string | null;
   app_metadata?: Record<string, unknown>;
   user_metadata?: Record<string, unknown>;
   aud?: string;

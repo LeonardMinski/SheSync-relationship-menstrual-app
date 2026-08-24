@@ -1,4 +1,4 @@
-import ComingLater from '@/components/ui/ComingLater'
+import ComingLater from "@/components/ui/ComingLater";
 
 export default function PartnerIntimacyPage() {
   return (
@@ -6,5 +6,5 @@ export default function PartnerIntimacyPage() {
       title="Partner Intimacy"
       description="Partner intimacy history is parked for a later phase. The MVP partner view only shows privacy-approved cycle and mood data."
     />
-  )
+  );
 }

@@ -7,171 +7,308 @@ import {
   useState,
   type ReactNode,
 } from "react";
+
 import type { Session } from "@supabase/supabase-js";
+
 import { supabase } from "@/lib/supabase/client";
 import { auth as dbAuth } from "@/services/auth/index";
-import type { AuthContextType, SignInInput, SignUpInput, User } from "@/types";
 
-const mapDbUser = (
-  rawUser: Record<string, unknown> | null | undefined,
-): User | null => {
-  if (!rawUser) return null;
+import type {
+  AuthResult,
+  AuthContextType,
+  PasswordResetResult,
+  SignInInput,
+  SignUpInput,
+  User,
+  UserRecord,
+} from "@/types";
 
-  const privacySettings =
-    (rawUser.privacy_settings as Record<string, unknown> | undefined) ?? {};
+const mapDbUser = (rawUser: UserRecord | null | undefined): User | null => {
+  if (!rawUser) {
+    return null;
+  }
+
+  const privacySettings = rawUser.privacy_settings ?? {
+    share_with_partner: false,
+    share_cycle_phase: false,
+    share_mood: false,
+    share_fantasy_vault: false,
+    share_intimacy_deck: false,
+  };
 
   return {
-    id: String(rawUser.id ?? ""),
-    email: String(rawUser.email ?? ""),
-    name: String(rawUser.name ?? rawUser.email ?? "User"),
-    subscriptionTier:
-      (rawUser.subscription_tier as User["subscriptionTier"]) ?? "free",
-    createdAt: rawUser.created_at
-      ? new Date(String(rawUser.created_at))
-      : new Date(),
-    partnerId: rawUser.partner_id ? String(rawUser.partner_id) : undefined,
+    id: rawUser.id,
+    email: rawUser.email,
+
+    name: rawUser.name || rawUser.email || "User",
+
+    subscriptionTier: rawUser.subscription_tier ?? "free",
+
+    createdAt: new Date(rawUser.created_at),
+
+    partnerId: rawUser.partner_id ?? undefined,
+
     privacySettings: {
       shareWithPartner: Boolean(privacySettings.share_with_partner),
+
       shareCyclePhase: Boolean(privacySettings.share_cycle_phase),
+
       shareMood: Boolean(privacySettings.share_mood),
+
       shareFantasyVault: Boolean(privacySettings.share_fantasy_vault),
+
       shareIntimacyDeck: Boolean(privacySettings.share_intimacy_deck),
     },
-    profileImageUrl: rawUser.profileImageUrl
-      ? String(rawUser.profileImageUrl)
-      : undefined,
-    app_metadata:
-      (rawUser.app_metadata as Record<string, unknown> | undefined) ??
-      undefined,
-    user_metadata:
-      (rawUser.user_metadata as Record<string, unknown> | undefined) ??
-      undefined,
-    aud: rawUser.aud ? String(rawUser.aud) : undefined,
-    created_at: rawUser.created_at ? String(rawUser.created_at) : undefined,
+
+    profileImageUrl: rawUser.profile_image_url ?? undefined,
+
+    created_at: rawUser.created_at,
   };
 };
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
+const toAuthFailure = (
+  error: NonNullable<Awaited<ReturnType<typeof dbAuth.signIn>>["error"]>,
+): AuthResult => ({
+  success: false,
+  user: null,
+  error: error.message,
+  errorCode: error.code,
+});
+
+const toPasswordResetFailure = (
+  error: NonNullable<
+    Awaited<ReturnType<typeof dbAuth.requestPasswordReset>>["error"]
+  >,
+): PasswordResetResult => ({
+  success: false,
+  error: error.message,
+  errorCode: error.code,
+});
+
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
+
   const [session, setSession] = useState<Session | null>(null);
+
   const [loading, setLoading] = useState(true);
 
   const refreshUser = async () => {
     try {
-      const sessionResult = await supabase.auth.getSession?.();
-      const data = sessionResult?.data;
-
-      if (data?.session) {
-        setSession(data.session);
-      } else {
-        setSession(null);
-      }
-
       const result = await dbAuth.getCurrentUser();
-      setUser(mapDbUser(result.user as Record<string, unknown> | null));
+
+      setSession(result.session);
+      setUser(result.user ? mapDbUser(result.user) : null);
+
+      if (result.error) {
+        console.error("Auth refresh error:", result.error);
+      }
     } catch (error) {
       console.error("Auth refresh error:", error);
-      setUser(null);
       setSession(null);
+      setUser(null);
     } finally {
       setLoading(false);
     }
   };
 
   useEffect(() => {
-    const initialize = async () => {
-      await refreshUser();
-    };
+    let mounted = true;
 
-    void initialize();
+    const initialiseAuth = async () => {
+      try {
+        const result = await dbAuth.getCurrentUser();
 
-    const { data: listener } = supabase.auth.onAuthStateChange(
-      async (_event, nextSession) => {
-        setSession(nextSession);
-
-        if (!nextSession) {
-          setUser(null);
+        if (!mounted) {
           return;
         }
 
-        const result = await dbAuth.getCurrentUser();
-        setUser(mapDbUser(result.user as Record<string, unknown> | null));
-      },
-    );
+        setSession(result.session);
+
+        setUser(result.user ? mapDbUser(result.user) : null);
+
+        if (result.error) {
+          console.error("Auth initialisation error:", result.error);
+        }
+      } finally {
+        if (mounted) {
+          setLoading(false);
+        }
+      }
+    };
+
+    void initialiseAuth();
+
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((_event, nextSession) => {
+      if (!mounted) {
+        return;
+      }
+
+      setSession(nextSession);
+
+      if (!nextSession) {
+        setUser(null);
+        setLoading(false);
+        return;
+      }
+
+      /*
+       * Don't perform a substantial awaited
+       * database workflow directly inside the
+       * Supabase callback.
+       */
+
+      void (async () => {
+        const result = await dbAuth.getCurrentUser(nextSession);
+
+        if (!mounted) {
+          return;
+        }
+
+        setUser(result.user ? mapDbUser(result.user) : null);
+
+        if (result.error) {
+          console.error("Auth state refresh error:", result.error);
+        }
+
+        setLoading(false);
+      })();
+    });
 
     return () => {
-      listener.subscription.unsubscribe();
+      mounted = false;
+      subscription.unsubscribe();
     };
   }, []);
 
-  const signUp = async (data: SignUpInput) => {
-    try {
-      const result = await dbAuth.signUp({
-        email: data.email,
-        password: data.password,
-        name: data.name,
-      });
+  const signUp = async (data: SignUpInput): Promise<AuthResult> => {
+    const result = await dbAuth.signUp({
+      email: data.email,
+      password: data.password,
+      name: data.name,
+    });
 
-      if (result.error || !result.user) {
-        return { success: false, error: result.error || "Signup failed" };
-      }
-
-      const nextUser = mapDbUser(
-        result.user as unknown as Record<string, unknown> | null,
-      );
-      setUser(nextUser);
-
-      const { data: sessionData } = await supabase.auth.getSession();
-      setSession(sessionData.session);
-
-      return { success: true, user: nextUser, error: null };
-    } catch (error) {
-      const message = error instanceof Error ? error.message : "Signup failed";
-      return { success: false, error: message };
+    if (result.error) {
+      setSession(result.session);
+      setUser(null);
+      return toAuthFailure(result.error);
     }
+
+    if (result.requiresEmailVerification) {
+      setSession(null);
+      setUser(null);
+
+      return {
+        success: true,
+        user: null,
+        error: null,
+        requiresEmailVerification: true,
+      };
+    }
+
+    setSession(result.session);
+
+    const nextUser = mapDbUser(result.user);
+
+    setUser(nextUser);
+
+    return {
+      success: true,
+      user: nextUser,
+      error: null,
+      requiresEmailVerification: false,
+    };
   };
 
-  const signIn = async (data: SignInInput) => {
-    try {
-      const result = await dbAuth.signIn({
-        email: data.email,
-        password: data.password,
-        rememberMe: data.rememberMe,
-      });
+  const signIn = async (data: SignInInput): Promise<AuthResult> => {
+    const result = await dbAuth.signIn(data);
 
-      if (result.error || !result.user) {
-        return { success: false, error: result.error || "Login failed" };
-      }
+    /*
+     * Profile errors require special handling.
+     *
+     * A valid session means authentication
+     * succeeded even if profile loading had a
+     * problem.
+     */
 
-      const nextUser = mapDbUser(
-        result.user as unknown as Record<string, unknown> | null,
-      );
-      setUser(nextUser);
-
-      const { data: sessionData } = await supabase.auth.getSession();
-      setSession(sessionData.session);
-
-      return { success: true, user: nextUser, error: null };
-    } catch (error) {
-      const message = error instanceof Error ? error.message : "Login failed";
-      return { success: false, error: message };
+    if (result.error && !result.session) {
+      setSession(null);
+      setUser(null);
+      return toAuthFailure(result.error);
     }
+
+    if (!result.session) {
+      setSession(null);
+      setUser(null);
+
+      return {
+        success: false,
+        user: null,
+        error: "We couldn't complete the sign-in process.",
+        errorCode: "UNKNOWN",
+      };
+    }
+
+    setSession(result.session);
+
+    const nextUser = mapDbUser(result.user);
+
+    setUser(nextUser);
+
+    if (result.error) {
+      console.error("Authenticated but profile loading failed:", result.error);
+      return toAuthFailure(result.error);
+    }
+
+    return {
+      success: true,
+      user: nextUser,
+      error: null,
+    };
+  };
+
+  const requestPasswordReset = async (
+    email: string,
+  ): Promise<PasswordResetResult> => {
+    const result = await dbAuth.requestPasswordReset(email);
+
+    if (result.error) {
+      return toPasswordResetFailure(result.error);
+    }
+
+    return {
+      success: true,
+      error: null,
+    };
+  };
+
+  const updatePassword = async (
+    password: string,
+  ): Promise<PasswordResetResult> => {
+    const result = await dbAuth.updatePassword(password);
+
+    if (result.error) {
+      return toPasswordResetFailure(result.error);
+    }
+
+    return {
+      success: true,
+      error: null,
+    };
   };
 
   const signOut = async () => {
-    try {
-      const result = await dbAuth.signOut();
-      if (result?.error) {
-        console.error("Signout error:", result.error);
-      }
-    } catch (error) {
-      console.error("Signout error:", error);
-    } finally {
-      setUser(null);
-      setSession(null);
+    const result = await dbAuth.signOut();
+
+    if (result.error) {
+      console.error("Signout error:", result.error);
     }
+
+    setSession(null);
+    setUser(null);
   };
 
   return (
@@ -182,6 +319,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         loading,
         signUp,
         signIn,
+        requestPasswordReset,
+        updatePassword,
         signOut,
         refreshUser,
       }}

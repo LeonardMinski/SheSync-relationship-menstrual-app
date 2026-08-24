@@ -1,51 +1,40 @@
 "use client";
 
-import React, { useState } from "react";
+import { useState } from "react";
+import type { ComponentType } from "react";
+import Link from "next/link";
 import {
-  Settings as SettingsIcon,
-  User,
-  Shield,
-  Heart,
   Download,
-  Trash2,
+  Heart,
   Moon,
+  ShieldCheck,
   Sun,
-  UserPlus,
+  Trash2,
+  User,
+  Users,
 } from "lucide-react";
+
+import { TopNavbar, Navbar } from "@/components/layout/Navbar";
+import { Button } from "@/components/ui/Button";
+import LoadingSpinner from "@/components/ui/LoadingSpinner";
 import { useApp } from "@/context/AppContext";
 import { useAuth } from "@/context/AuthContext";
-import Navigation from "@/components/layout/Navigation";
-import LoadingSpinner from "@/components/ui/LoadingSpinner";
 
-const Settings = () => {
+export default function SettingsPage() {
   const { state, toggleTheme, logout } = useApp();
   const { user: authUser } = useAuth();
   const { isDarkMode, isLoading } = state;
-  const [activeTab, setActiveTab] = useState<"account" | "privacy" | "partner">(
-    "account",
-  );
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center min-h-screen">
+      <div className="flex min-h-screen items-center justify-center bg-bg">
         <LoadingSpinner size="lg" text="Loading settings..." />
       </div>
     );
   }
 
-  const tabs: Array<{
-    id: "account" | "privacy" | "partner";
-    name: string;
-    icon: typeof User;
-  }> = [
-    { id: "account", name: "Account", icon: User },
-    { id: "privacy", name: "Privacy", icon: Shield },
-    { id: "partner", name: "Partner", icon: Heart },
-  ];
-
   const handleExportData = () => {
-    // Export user data functionality
     const data = {
       user: authUser,
       cycleData: state.cycleData,
@@ -60,288 +49,197 @@ const Settings = () => {
       type: "application/json",
     });
     const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = `shesync-data-${new Date().toISOString().split("T")[0]}.json`;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = `shesync-data-${new Date().toISOString().split("T")[0]}.json`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
     URL.revokeObjectURL(url);
   };
 
   const handleDeleteAllData = () => {
-    // Clear all local data
     localStorage.clear();
     logout();
     setShowDeleteConfirm(false);
   };
 
   return (
-    <div className="min-h-screen pb-20">
-      <Navigation />
+    <div className="min-h-screen bg-bg pb-10">
+      <TopNavbar
+        title="Settings"
+        subtitle="Account, privacy, and preferences"
+        showNotifications
+      />
 
-      <main className="max-w-6xl mx-auto px-4 py-6">
-        {/* Header */}
-        <div className="bg-white/70 dark:bg-gray-800/70 backdrop-blur-sm rounded-2xl p-6 border border-rose-200 dark:border-gray-700 mb-6">
-          <div className="flex items-center space-x-3">
-            <div className="bg-gradient-to-r from-rose-500 to-purple-600 p-3 rounded-xl">
-              <SettingsIcon className="text-white" size={24} />
+      <main className="mx-auto w-full max-w-5xl space-y-6 px-4 py-6 sm:px-6 lg:px-10">
+        <section className="hidden md:block">
+          <h1 className="text-5xl font-bold tracking-tight text-foreground">
+            Settings
+          </h1>
+          <p className="mt-3 max-w-2xl text-xl leading-relaxed text-muted-foreground">
+            Manage your account, privacy, and preferences.
+          </p>
+        </section>
+
+        <section className="grid gap-6 lg:grid-cols-[minmax(0,0.85fr)_minmax(0,1.15fr)]">
+          <article className="rounded-[2rem] border border-border bg-bg-surface p-6 shadow-md">
+            <div className="flex items-center gap-3">
+              <User className="h-7 w-7 text-cta-start" aria-hidden="true" />
+              <h2 className="text-2xl font-bold text-foreground">Account</h2>
             </div>
-            <div>
-              <h1 className="text-2xl font-bold text-white dark:text-white">
-                Settings
-              </h1>
-              <p className="text-gray-600 dark:text-gray-300">
-                Manage your account, privacy, and preferences
-              </p>
+
+            <div className="mt-6 space-y-4">
+              <ReadOnlyField label="Name" value={authUser?.name || "Sarah J."} />
+              <ReadOnlyField
+                label="Email"
+                value={authUser?.email || "hello@example.com"}
+              />
             </div>
-          </div>
-        </div>
+          </article>
 
-        <div className="grid lg:grid-cols-4 gap-6">
-          {/* Sidebar */}
-          <div className="lg:col-span-1">
-            <div className="bg-white/70 dark:bg-gray-800/70 backdrop-blur-sm rounded-2xl p-4 border border-rose-200 dark:border-gray-700">
-              <nav className="space-y-2">
-                {tabs.map((tab) => {
-                  const Icon = tab.icon;
-                  const isActive = activeTab === tab.id;
-
-                  return (
-                    <button
-                      key={tab.id}
-                      onClick={() => setActiveTab(tab.id)}
-                      className={`w-full flex items-center space-x-3 px-4 py-3 rounded-xl text-left transition-all ${
-                        isActive
-                          ? "bg-gradient-to-r from-rose-500 to-purple-600 text-[var(--btn-primary-text)]"
-                          : "text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
-                      }`}
-                    >
-                      <Icon size={20} />
-                      <span className="font-medium">{tab.name}</span>
-                    </button>
-                  );
-                })}
-              </nav>
-            </div>
-          </div>
-
-          {/* Content */}
-          <div className="lg:col-span-3">
-            <div className="bg-white/70 dark:bg-gray-800/70 backdrop-blur-sm rounded-2xl p-6 border border-rose-200 dark:border-gray-700">
-              {/* Account Tab */}
-              {activeTab === "account" && (
-                <div className="space-y-6">
-                  <h2 className="text-xl font-bold text-white dark:text-white">
-                    Account Settings
-                  </h2>
-
-                  {/* Profile Info */}
-                  <div className="space-y-4">
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                        Name
-                      </label>
-                      <input
-                        type="text"
-                        value={authUser?.name || ""}
-                        readOnly
-                        className="w-full rounded-lg border border-[var(--border-subtle)] bg-[var(--bg-secondary)] p-3 text-[var(--text-primary)] transition-all duration-200"
-                      />
-                    </div>
-
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                        Email
-                      </label>
-                      <input
-                        type="email"
-                        value={authUser?.email || ""}
-                        readOnly
-                        className="w-full rounded-lg border border-[var(--border-subtle)] bg-[var(--bg-secondary)] p-3 text-[var(--text-primary)] transition-all duration-200"
-                      />
-                    </div>
-                  </div>
-
-                  {/* Theme Toggle */}
-                  <div className="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-700/50 rounded-lg">
-                    <div className="flex items-center space-x-3">
-                      {isDarkMode ? <Moon size={20} /> : <Sun size={20} />}
-                      <div>
-                        <div className="font-medium text-white dark:text-white">
-                          Theme
-                        </div>
-                        <div className="text-sm text-gray-600 dark:text-gray-300">
-                          {isDarkMode ? "Dark mode" : "Light mode"}
-                        </div>
-                      </div>
-                    </div>
-                    <button
-                      onClick={toggleTheme}
-                      className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
-                        isDarkMode
-                          ? "bg-purple-600"
-                          : "bg-gray-300 dark:bg-gray-600"
-                      }`}
-                    >
-                      <span
-                        className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
-                          isDarkMode ? "translate-x-6" : "translate-x-1"
-                        }`}
-                      />
-                    </button>
-                  </div>
-
-                  {/* Data Management */}
-                  <div className="space-y-4">
-                    <h3 className="text-lg font-semibold text-white dark:text-white">
-                      Data Management
-                    </h3>
-
-                    <button
-                      onClick={handleExportData}
-                      className="flex items-center space-x-2 w-full p-4 bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-300 rounded-lg hover:bg-blue-100 dark:hover:bg-blue-900/30 transition-colors"
-                    >
-                      <Download size={20} />
-                      <span>Export My Data</span>
-                    </button>
-
-                    <button
-                      onClick={() => setShowDeleteConfirm(true)}
-                      className="flex items-center space-x-2 w-full p-4 bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-300 rounded-lg hover:bg-red-100 dark:hover:bg-red-900/30 transition-colors"
-                    >
-                      <Trash2 size={20} />
-                      <span>Delete All Data</span>
-                    </button>
-                  </div>
+          <article className="rounded-[2rem] border border-border bg-bg-surface p-6 shadow-md">
+            <div className="flex items-center justify-between gap-4">
+              <div className="flex items-center gap-3">
+                {isDarkMode ? (
+                  <Moon className="h-7 w-7 text-info" aria-hidden="true" />
+                ) : (
+                  <Sun className="h-7 w-7 text-warning" aria-hidden="true" />
+                )}
+                <div>
+                  <h2 className="text-2xl font-bold text-foreground">Theme</h2>
+                  <p className="mt-1 text-sm text-muted-foreground">
+                    {isDarkMode ? "Dark sanctuary mode" : "Soft light mode"}
+                  </p>
                 </div>
-              )}
+              </div>
 
-              {/* Privacy Tab */}
-              {activeTab === "privacy" && (
-                <div className="space-y-6">
-                  <h2 className="text-xl font-bold text-white dark:text-white">
-                    Privacy Settings
-                  </h2>
-
-                  <div className="space-y-4">
-                    {Object.entries(authUser?.privacySettings || {}).map(
-                      ([key, value]) => (
-                        <div
-                          key={key}
-                          className="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-700/50 rounded-lg"
-                        >
-                          <div>
-                            <div className="font-medium text-white dark:text-white">
-                              {key
-                                .replace(/([A-Z])/g, " $1")
-                                .replace(/^./, (str) => str.toUpperCase())}
-                            </div>
-                            <div className="text-sm text-gray-600 dark:text-gray-300">
-                              {key === "shareWithPartner" &&
-                                "Allow partner to access shared data"}
-                              {key === "share_with_partner" &&
-                                "Allow partner to access shared data"}
-                              {key === "shareCyclePhase" &&
-                                "Share your current cycle phase"}
-                              {key === "share_cycle_phase" &&
-                                "Share your current cycle phase"}
-                              {key === "shareMood" &&
-                                "Share mood and energy levels"}
-                              {key === "share_mood" &&
-                                "Share mood and energy levels"}
-                              {key === "shareFantasyVault" &&
-                                "Share fantasy vault entries"}
-                              {key === "share_fantasy_vault" &&
-                                "Fantasy vault sharing is parked for a later phase"}
-                              {key === "shareIntimacyDeck" &&
-                                "Share intimacy card answers"}
-                              {key === "share_intimacy_deck" &&
-                                "Intimacy deck sharing is parked for a later phase"}
-                            </div>
-                          </div>
-                          <button
-                            className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
-                              value
-                                ? "bg-purple-600"
-                                : "bg-gray-300 dark:bg-gray-600"
-                            }`}
-                          >
-                            <span
-                              className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
-                                value ? "translate-x-6" : "translate-x-1"
-                              }`}
-                            />
-                          </button>
-                        </div>
-                      ),
-                    )}
-                  </div>
-                </div>
-              )}
-
-              {/* Partner Tab */}
-              {activeTab === "partner" && (
-                <div className="space-y-6">
-                  <h2 className="text-xl font-bold text-white dark:text-white">
-                    Partner Management
-                  </h2>
-
-                  <div className="text-center py-8">
-                    <Heart className="w-16 h-16 text-gray-400 mx-auto mb-4" />
-                    <h3 className="text-lg font-semibold text-white dark:text-white mb-2">
-                      No Partner Connected
-                    </h3>
-                    <p className="text-gray-600 dark:text-gray-300 mb-6">
-                      Invite your partner to enhance your SheSync+ experience
-                      together.
-                    </p>
-                    <button className="flex items-center space-x-2 bg-gradient-to-r from-rose-500 to-purple-600 text-[var(--btn-primary-text)] px-6 py-3 rounded-xl hover:from-rose-600 hover:to-purple-700 transition-all mx-auto">
-                      <UserPlus size={20} />
-                      <span>Invite Partner</span>
-                    </button>
-                  </div>
-                </div>
-              )}
+              <button
+                type="button"
+                onClick={toggleTheme}
+                className="relative h-8 w-14 rounded-full bg-bg-tertiary transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cta-start"
+                aria-label="Toggle theme"
+              >
+                <span
+                  className={`absolute top-1 h-6 w-6 rounded-full bg-cta-start transition ${
+                    isDarkMode ? "left-7" : "left-1"
+                  }`}
+                />
+              </button>
             </div>
+          </article>
+        </section>
+
+        <section className="grid gap-6 md:grid-cols-2">
+          <SettingsAction
+            href="/settings/privacy"
+            icon={ShieldCheck}
+            title="Privacy & Partner"
+            description="Choose exactly what your partner can see."
+          />
+          <SettingsAction
+            href="/partner"
+            icon={Users}
+            title="Partner View"
+            description="Preview the read-only partner experience."
+          />
+        </section>
+
+        <section className="rounded-[2rem] border border-border bg-bg-surface p-6 shadow-md">
+          <div className="flex items-center gap-3">
+            <Heart className="h-7 w-7 text-[color:var(--accent-peach)]" />
+            <h2 className="text-2xl font-bold text-foreground">
+              Data Management
+            </h2>
           </div>
-        </div>
+
+          <div className="mt-6 grid gap-3 sm:grid-cols-2">
+            <Button variant="secondary" onClick={handleExportData}>
+              <Download className="h-5 w-5" aria-hidden="true" />
+              Export My Data
+            </Button>
+            <Button
+              variant="secondary"
+              className="border-error/30 text-error hover:border-error"
+              onClick={() => setShowDeleteConfirm(true)}
+            >
+              <Trash2 className="h-5 w-5" aria-hidden="true" />
+              Delete All Data
+            </Button>
+          </div>
+        </section>
       </main>
 
-      {/* Delete Confirmation Modal */}
       {showDeleteConfirm && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white dark:bg-gray-800 rounded-2xl p-6 w-full max-w-md">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4 backdrop-blur">
+          <div className="w-full max-w-md rounded-[2rem] border border-border bg-bg-surface p-6 shadow-lg">
             <div className="text-center">
-              <Trash2 className="w-16 h-16 text-red-500 mx-auto mb-4" />
-              <h3 className="text-xl font-bold text-white dark:text-white mb-2">
+              <Trash2 className="mx-auto mb-4 h-14 w-14 text-error" />
+              <h3 className="mb-2 text-2xl font-bold text-foreground">
                 Delete All Data?
               </h3>
-              <p className="text-gray-600 dark:text-gray-300 mb-6">
-                This action cannot be undone. All your cycle data, entries, and
+              <p className="mb-6 text-sm leading-relaxed text-muted-foreground">
+                This action cannot be undone. All cycle data, entries, and local
                 settings will be permanently deleted.
               </p>
 
-              <div className="flex space-x-3">
-                <button
+              <div className="grid gap-3 sm:grid-cols-2">
+                <Button
+                  variant="secondary"
                   onClick={() => setShowDeleteConfirm(false)}
-                  className="flex-1 py-3 px-4 bg-gray-200 dark:bg-gray-600 text-gray-800 dark:text-gray-200 rounded-lg font-medium hover:bg-gray-300 dark:hover:bg-gray-500 transition-colors"
                 >
                   Cancel
-                </button>
-                <button
+                </Button>
+                <Button
+                  variant="secondary"
+                  className="border-error bg-error/10 text-error hover:border-error"
                   onClick={handleDeleteAllData}
-                  className="flex-1 py-3 px-4 bg-red-600 text-white rounded-lg font-medium hover:bg-red-700 transition-colors"
                 >
                   Delete Everything
-                </button>
+                </Button>
               </div>
             </div>
           </div>
         </div>
       )}
+
+      <Navbar />
     </div>
   );
-};
+}
 
-export default Settings;
+function ReadOnlyField({ label, value }: { label: string; value: string }) {
+  return (
+    <div>
+      <label className="mb-2 block text-sm font-bold text-muted-foreground">
+        {label}
+      </label>
+      <input className="input" value={value} readOnly />
+    </div>
+  );
+}
+
+function SettingsAction({
+  href,
+  icon: Icon,
+  title,
+  description,
+}: {
+  href: string;
+  icon: ComponentType<{ className?: string }>;
+  title: string;
+  description: string;
+}) {
+  return (
+    <Link
+      href={href}
+      className="rounded-[2rem] border border-border bg-bg-surface p-6 shadow-md transition hover:border-cta-start focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cta-start"
+    >
+      <Icon className="h-7 w-7 text-cta-start" aria-hidden="true" />
+      <h2 className="mt-5 text-2xl font-bold text-foreground">{title}</h2>
+      <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
+        {description}
+      </p>
+    </Link>
+  );
+}

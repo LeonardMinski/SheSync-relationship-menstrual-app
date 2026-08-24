@@ -18,7 +18,8 @@ export function Toggle({
   disabled = false,
   id
 }: ToggleProps) {
-  const toggleId = id || `toggle-${Math.random().toString(36).substr(2, 9)}`
+  const generatedId = React.useId()
+  const toggleId = id ?? `toggle-${generatedId}`
   
   return (
     <div className="space-y-2">

@@ -29,6 +29,8 @@ vi.mock("@/lib/supabase/client", () => ({
       getUser: vi.fn(),
       signUp: vi.fn(),
       signInWithPassword: vi.fn(),
+      resetPasswordForEmail: vi.fn(),
+      updateUser: vi.fn(),
       signOut: vi.fn(),
       onAuthStateChange: vi.fn(() => ({
         data: {
@@ -41,11 +43,13 @@ vi.mock("@/lib/supabase/client", () => ({
     from: vi.fn(() => ({
       select: vi.fn().mockReturnThis(),
       insert: vi.fn().mockReturnThis(),
+      upsert: vi.fn(),
       update: vi.fn().mockReturnThis(),
       delete: vi.fn().mockReturnThis(),
       eq: vi.fn().mockReturnThis(),
       neq: vi.fn().mockReturnThis(),
       single: vi.fn(),
+      maybeSingle: vi.fn(),
       order: vi.fn().mockReturnThis(),
       limit: vi.fn().mockReturnThis(),
     })),

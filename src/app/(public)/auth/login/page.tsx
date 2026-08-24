@@ -1,66 +1,132 @@
-'use client'
+"use client";
 
-import React, { useState } from 'react'
-import { useRouter } from 'next/navigation'
-import Link from 'next/link'
-import { useAuth } from '@/context/AuthContext'
-import { Button } from '@/components/ui/Button'
-import { Input } from '@/components/ui/Input'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/Card'
-import { Toggle } from '@/components/ui/Toggle'
+import React, { useEffect, useMemo, useState } from "react";
+import Link from "next/link";
+import { useRouter, useSearchParams } from "next/navigation";
+import { ArrowRight, Leaf, ShieldCheck } from "lucide-react";
+import { useAuth } from "@/context/AuthContext";
+import { Button } from "@/components/ui/Button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/Card";
+import { Input } from "@/components/ui/Input";
+import { Toggle } from "@/components/ui/Toggle";
+import { loginSchema, type LoginFormValues } from "@/schemas/auth";
+import { getSafeAuthRedirect } from "@/utils/authRedirects";
+
+type LoginFieldErrors = Partial<Record<keyof LoginFormValues, string>>;
+
+const getFieldErrors = (error: ReturnType<typeof loginSchema.safeParse>) => {
+  if (error.success) return {};
+
+  const flattened = error.error.flatten().fieldErrors;
+
+  return {
+    email: flattened.email?.[0],
+    password: flattened.password?.[0],
+  } satisfies LoginFieldErrors;
+};
+
 export default function LoginPage() {
-  const [email, setEmail] = useState('')
-  const [password, setPassword] = useState('')
-  const [error, setError] = useState('')
-  const [loading, setLoading] = useState(false)
-  const [rememberMe, setRememberMe] = useState(false)
-  
-  const { signIn } = useAuth()
-  const router = useRouter()
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [error, setError] = useState("");
+  const [fieldErrors, setFieldErrors] = useState<LoginFieldErrors>({});
+  const [loading, setLoading] = useState(false);
+  const [rememberMe, setRememberMe] = useState(false);
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setError('')
-    setLoading(true)
+  const { signIn, session, user, loading: authLoading } = useAuth();
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const redirectPath = useMemo(
+    () => getSafeAuthRedirect(searchParams.get("next")),
+    [searchParams],
+  );
+
+  useEffect(() => {
+    if (!authLoading && session && user) {
+      router.replace(redirectPath);
+    }
+  }, [authLoading, redirectPath, router, session, user]);
+
+  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    setError("");
+    setFieldErrors({});
+
+    const parsed = loginSchema.safeParse({
+      email,
+      password,
+      rememberMe,
+    });
+
+    if (!parsed.success) {
+      const nextFieldErrors = getFieldErrors(parsed);
+      setFieldErrors(nextFieldErrors);
+      setError(
+        nextFieldErrors.email ||
+          nextFieldErrors.password ||
+          "Check your sign-in details.",
+      );
+      return;
+    }
+
+    setLoading(true);
 
     try {
-      console.log('🔍 Starting login process...')
-      const result = await signIn({ email, password, rememberMe })
-      console.log('🔍 Login result:', result)
-      
+      const result = await signIn(parsed.data);
+
       if (result.success) {
-        console.log('✅ Login successful, redirecting to dashboard...')
-        router.push('/dashboard') // Redirect to dashboard after successful login
-      } else {
-        console.error('❌ Login failed:', result.error)
-        setError(result.error || 'Login failed')
+        router.replace(redirectPath);
+        return;
       }
+
+      setError(result.error);
     } catch (err) {
-      console.error('❌ Unexpected login error:', err)
-      setError('An unexpected error occurred')
+      console.error("Unexpected login error:", err);
+      setError("An unexpected error occurred.");
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
+  };
+
+  if (authLoading || (session && user)) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-bg p-4">
+        <p className="text-sm text-muted-foreground">Loading...</p>
+      </div>
+    );
   }
 
   return (
-    <div className="min-h-screen bg-bg flex items-center justify-center p-4">
-        <div className="w-full max-w-md">
-        <Card className="border-0 shadow-lg">
-          <CardHeader className="text-center pb-6">
-            <div className="w-16 h-16 mx-auto mb-4 rounded-2xl bg-gradient-to-r from-cta-start to-cta-end flex items-center justify-center">
-    
+    <div className="flex min-h-screen items-center justify-center bg-bg px-4 py-10 text-foreground">
+      <div className="pointer-events-none fixed inset-0 bg-[linear-gradient(120deg,rgba(184,211,189,0.12),transparent_42%,rgba(205,182,255,0.08))]" />
+
+      <div className="relative w-full max-w-lg">
+        <Card className="border-border bg-[var(--bg-surface)] px-4 py-8 shadow-lg sm:px-10 sm:py-12">
+          <CardHeader className="pb-8 text-center">
+            <div className="mx-auto mb-7 flex h-14 w-14 items-center justify-center rounded-full border border-border bg-bg">
+              <Leaf className="h-7 w-7 text-cta-start" aria-hidden="true" />
             </div>
-            <CardTitle className="text-2xl font-bold text-foreground">Welcome Back</CardTitle>
-            <CardDescription className="text-muted-foreground">
-              Sign in to your SheSync+ account
+            <CardTitle className="text-5xl font-black tracking-tight text-foreground">
+              SheSync+
+            </CardTitle>
+            <CardDescription className="mx-auto mt-4 max-w-xs text-lg leading-relaxed text-muted-foreground">
+              Your secure sanctuary for wellbeing.
             </CardDescription>
           </CardHeader>
-          
+
           <CardContent>
             <form className="space-y-6" onSubmit={handleSubmit}>
               {error && (
-                <div className="bg-error/10 border border-error/20 text-error px-4 py-3 rounded-lg text-sm">
+                <div
+                  className="rounded-lg border border-error/20 bg-error/10 px-4 py-3 text-sm text-error"
+                  role="alert"
+                >
                   {error}
                 </div>
               )}
@@ -72,7 +138,8 @@ export default function LoginPage() {
                   autoComplete="email"
                   required
                   value={email}
-                  onChange={(e) => setEmail(e.target.value)}
+                  error={fieldErrors.email}
+                  onChange={(event) => setEmail(event.target.value)}
                   placeholder="Enter your email"
                 />
 
@@ -82,23 +149,24 @@ export default function LoginPage() {
                   autoComplete="current-password"
                   required
                   value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  placeholder="Enter your password"
+                  error={fieldErrors.password}
+                  onChange={(event) => setPassword(event.target.value)}
+                  placeholder="••••••••"
                 />
               </div>
 
-              <div className="flex items-center justify-between">
+              <div className="flex items-center justify-between gap-4">
                 <Toggle
                   checked={rememberMe}
                   onChange={setRememberMe}
                   label="Remember me"
                 />
 
-                <Link 
-                  href="/auth/forgot-password" 
-                  className="text-sm font-medium text-cta-start hover:text-cta-end transition-colors"
+                <Link
+                  href="/auth/forgot-password"
+                  className="text-sm font-bold text-cta-start transition-colors hover:text-cta-end"
                 >
-                  Forgot password?
+                  Forgot?
                 </Link>
               </div>
 
@@ -109,18 +177,46 @@ export default function LoginPage() {
                 loading={loading}
                 className="w-full"
               >
-                {loading ? 'Signing in...' : 'Sign In'}
+                {loading ? "Signing in..." : "Sign In"}
+                <ArrowRight className="h-5 w-5" aria-hidden="true" />
               </Button>
 
-              <div className="text-center">
+              <div className="flex items-center gap-4 py-4">
+                <span className="h-px flex-1 bg-border" />
+                <span className="text-xs font-black uppercase tracking-[0.18em] text-muted-foreground">
+                  or continue with
+                </span>
+                <span className="h-px flex-1 bg-border" />
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <button
+                  type="button"
+                  className="min-h-12 rounded-lg border border-border bg-bg-elevated px-4 text-sm font-bold text-foreground hover:border-cta-start focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cta-start"
+                >
+                  Apple
+                </button>
+                <button
+                  type="button"
+                  className="min-h-12 rounded-lg border border-border bg-bg-elevated px-4 text-sm font-bold text-foreground hover:border-cta-start focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cta-start"
+                >
+                  Google
+                </button>
+              </div>
+
+              <div className="space-y-3 text-center">
                 <p className="text-sm text-muted-foreground">
-                  Don&apos;t have an account?{' '}
-                  <Link 
-                    href="/auth/signup" 
-                    className="font-medium text-cta-start hover:text-cta-end transition-colors"
+                  Don&apos;t have an account?{" "}
+                  <Link
+                    href="/auth/signup"
+                    className="font-bold text-cta-start transition-colors hover:text-cta-end"
                   >
-                    Sign up here
+                    Create an account
                   </Link>
+                </p>
+                <p className="inline-flex items-center justify-center gap-2 text-xs font-bold text-info">
+                  <ShieldCheck className="h-4 w-4" aria-hidden="true" />
+                  End-to-end encrypted
                 </p>
               </div>
             </form>
@@ -128,5 +224,5 @@ export default function LoginPage() {
         </Card>
       </div>
     </div>
-  )
+  );
 }

@@ -1,5 +1,13 @@
 export type SubscriptionTier = "free" | "premium" | "vip" | "lifetime";
 
+export type PrivacySettingsRecord = {
+  share_with_partner: boolean;
+  share_cycle_phase: boolean;
+  share_mood: boolean;
+  share_fantasy_vault: boolean;
+  share_intimacy_deck: boolean;
+};
+
 export type UserRecord = {
   id: string;
   email: string;
@@ -9,26 +17,15 @@ export type UserRecord = {
   stripe_subscription_id?: string | null;
   created_at: string;
   partner_id?: string;
-  privacy_settings: {
-    share_with_partner: boolean;
-    share_cycle_phase: boolean;
-    share_mood: boolean;
-    share_fantasy_vault: boolean;
-    share_intimacy_deck: boolean;
-  };
+  profile_image_url?: string | null;
+  privacy_settings: PrivacySettingsRecord;
 };
 
 export type CreateUserData = {
   email: string;
   password: string;
   name: string;
-  privacy_settings?: {
-    share_with_partner: boolean;
-    share_cycle_phase: boolean;
-    share_mood: boolean;
-    share_fantasy_vault: boolean;
-    share_intimacy_deck: boolean;
-  };
+  privacy_settings?: PrivacySettingsRecord;
 };
 
 export type LoginData = {
@@ -52,16 +49,56 @@ export type SignInInput = {
 import type { Session } from "@supabase/supabase-js";
 import type { User } from "@/types";
 
+export type AuthErrorCode =
+  | "INVALID_CREDENTIALS"
+  | "EMAIL_NOT_CONFIRMED"
+  | "ACCOUNT_ALREADY_EXISTS"
+  | "RATE_LIMITED"
+  | "WEAK_PASSWORD"
+  | "PROFILE_ERROR"
+  | "NETWORK_ERROR"
+  | "UNKNOWN";
+
+export type AuthResult =
+  | {
+      success: true;
+      user: User | null;
+      error: null;
+      errorCode?: never;
+      requiresEmailVerification?: boolean;
+    }
+  | {
+      success: false;
+      user?: null;
+      error: string;
+      errorCode: AuthErrorCode;
+      requiresEmailVerification?: false;
+    };
+
+export type PasswordResetResult =
+  | {
+      success: true;
+      error: null;
+      errorCode?: never;
+    }
+  | {
+      success: false;
+      error: string;
+      errorCode: AuthErrorCode;
+    };
+
 export type AuthContextType = {
   user: User | null;
   session: Session | null;
   loading: boolean;
-  signUp: (
-    data: SignUpInput,
-  ) => Promise<{ success: boolean; error?: string | null; user?: User | null }>;
-  signIn: (
-    data: SignInInput,
-  ) => Promise<{ success: boolean; error?: string | null; user?: User | null }>;
+
+  signUp: (data: SignUpInput) => Promise<AuthResult>;
+  signIn: (data: SignInInput) => Promise<AuthResult>;
+
+  requestPasswordReset: (email: string) => Promise<PasswordResetResult>;
+
+  updatePassword: (password: string) => Promise<PasswordResetResult>;
+
   signOut: () => Promise<void>;
   refreshUser: () => Promise<void>;
 };

@@ -60,20 +60,23 @@
 }
 
 /* ==========================================================================
-   VISILY INSPIRED DESIGN SYSTEM - REUSABLE COMPONENTS
+   SHESYNC+ DESIGN SYSTEM - REUSABLE COMPONENTS
    ========================================================================== */
 
 /* Typography */
 body {
   font-family: var(--font-family);
-  background-color: var(--bg);
+  background:
+    linear-gradient(135deg, rgba(184, 211, 189, 0.06), transparent 38%),
+    var(--bg);
   color: var(--text-foreground);
   line-height: 1.6;
 }
 
 /* Card Components */
 .card {
-  background: var(--bg-surface);
+  background:
+    linear-gradient(135deg, color-mix(in srgb, var(--bg-surface) 94%, var(--cta-start) 6%), var(--bg-surface));
   border: 1px solid var(--border);
   border-radius: var(--radius-2xl);
   padding: var(--spacing-lg);
@@ -86,7 +89,8 @@ body {
 }
 
 .card-elevated {
-  background: var(--bg-elevated);
+  background:
+    linear-gradient(135deg, color-mix(in srgb, var(--bg-elevated) 90%, var(--cta-start) 10%), var(--bg-elevated));
   border: 1px solid var(--border);
   border-radius: var(--radius-2xl);
   padding: var(--spacing-lg);
@@ -102,19 +106,20 @@ body {
   padding: var(--spacing-md) var(--spacing-lg);
   border-radius: var(--radius-lg);
   font-family: var(--font-family);
-  font-weight: 500;
+  font-weight: 700;
   font-size: var(--font-size-base);
-  color: var(--btn-primary-text);
+  color: var(--cta-foreground);
   background: linear-gradient(90deg, var(--cta-start), var(--cta-end));
   border: none;
   cursor: pointer;
   transition: all 0.2s ease;
   text-decoration: none;
   min-height: 44px; /* WCAG AA touch target */
+  box-shadow: var(--shadow-glow);
 }
 
 .btn-cta:hover {
-  filter: brightness(1.1);
+  filter: saturate(1.05) brightness(1.02);
   transform: translateY(-1px);
   box-shadow: var(--shadow-lg);
 }
@@ -126,7 +131,7 @@ body {
 
 .btn-cta:focus {
   outline: none;
-  box-shadow: 0 0 0 3px var(--ring);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--ring) 38%, transparent);
 }
 
 .btn-cta:disabled {
@@ -146,7 +151,7 @@ body {
   font-weight: 500;
   font-size: var(--font-size-base);
   color: var(--text-foreground);
-  background: var(--bg-surface);
+  background: color-mix(in srgb, var(--bg-surface) 86%, var(--bg-elevated));
   border: 1px solid var(--border);
   cursor: pointer;
   transition: all 0.2s ease;
@@ -161,7 +166,7 @@ body {
 
 .btn-secondary:focus {
   outline: none;
-  box-shadow: 0 0 0 3px var(--ring);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--ring) 38%, transparent);
 }
 
 /* Input Components */
@@ -171,7 +176,7 @@ body {
   border-radius: var(--radius-lg);
   font-family: var(--font-family);
   font-size: var(--font-size-base);
-  background: var(--bg-surface);
+  background: color-mix(in srgb, var(--bg-elevated) 82%, var(--bg-surface));
   color: var(--text-foreground);
   border: 1px solid var(--border);
   transition: all 0.2s ease;
@@ -181,7 +186,7 @@ body {
 .input:focus {
   outline: none;
   border-color: var(--cta-start);
-  box-shadow: 0 0 0 3px var(--ring);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--ring) 30%, transparent);
 }
 
 .input::placeholder {
@@ -210,7 +215,7 @@ body {
   left: 0;
   right: 0;
   bottom: 0;
-  background-color: var(--border);
+  background-color: var(--bg-tertiary);
   transition: 0.2s;
   border-radius: 24px;
   transform: translateY(-50%);
@@ -223,7 +228,7 @@ body {
   width: 18px;
   left: 3px;
   bottom: 3px;
-  background-color: white;
+  background-color: var(--text-foreground);
   transition: 0.2s;
   border-radius: 50%;
 }
@@ -234,10 +239,11 @@ body {
 
 .toggle input:checked + .toggle-slider:before {
   transform: translateX(20px);
+  background-color: var(--cta-foreground);
 }
 
 .toggle input:focus + .toggle-slider {
-  box-shadow: 0 0 0 3px var(--ring);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--ring) 34%, transparent);
 }
 
 /* Navigation Components */

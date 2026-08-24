@@ -1,34 +1,29 @@
-/**
- * Partner Portal - Main component for viewing shared partner data
- *
- * Features:
- * - Today at a glance with shared cycle phase and mood
- * - Respects privacy_settings and RLS
- * - Partner linking status and management
- * - Real-time updates when partner shares/unshared data
- */
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
+import type { ComponentType } from "react";
 import {
-  Heart,
-  Users,
-  Calendar,
-  MessageCircle,
   Eye,
   EyeOff,
-  Settings,
+  Heart,
+  Lock,
+  MessageCircle,
   RefreshCw,
+  ShieldCheck,
+  Smile,
+  Users,
 } from "lucide-react";
+
+import { TopNavbar, Navbar } from "@/components/layout/Navbar";
+import LoadingSpinner from "@/components/ui/LoadingSpinner";
 import { useAuth } from "@/context/AuthContext";
 import { getPartnerSharedData } from "@/services/partner/data";
+import type { PartnerLink, PartnerSharedData } from "@/types";
 import {
   formatDateShort,
-  getPhaseDisplayName,
   getMoodEmoji,
+  getPhaseDisplayName,
 } from "@/utils/partnerSelectors";
-import LoadingSpinner from "@/components/ui/LoadingSpinner";
-import type { PartnerSharedData, PartnerLink } from "@/types";
 
 export default function PartnerPortal() {
   const { user, loading } = useAuth();
@@ -68,7 +63,7 @@ export default function PartnerPortal() {
 
   if (loading || dataLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
+      <div className="flex min-h-screen items-center justify-center bg-bg">
         <LoadingSpinner />
       </div>
     );
@@ -76,12 +71,12 @@ export default function PartnerPortal() {
 
   if (!user) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
+      <div className="flex min-h-screen items-center justify-center bg-bg px-4">
         <div className="text-center">
-          <h1 className="text-2xl font-bold text-foreground mb-4">
+          <h1 className="mb-4 text-2xl font-bold text-foreground">
             Access Required
           </h1>
-          <p className="text-muted">
+          <p className="text-muted-foreground">
             Please sign in to access partner features.
           </p>
         </div>
@@ -91,253 +86,253 @@ export default function PartnerPortal() {
 
   if (!partnerLink) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div
-          className="text-center max-w-md mx-auto px-4"
-          data-testid="no-partner"
-        >
-          <div className="w-16 h-16 rounded-full bg-gray-100 dark:bg-gray-700 flex items-center justify-center mx-auto mb-6">
-            <Users size={32} className="text-gray-400" />
+      <div className="min-h-screen bg-bg pb-10">
+        <TopNavbar title="Partner" subtitle="Invite a trusted partner" />
+        <main className="mx-auto flex max-w-xl px-4 py-16">
+          <div
+            className="w-full rounded-[2rem] border border-border bg-bg-surface p-8 text-center shadow-lg"
+            data-testid="no-partner"
+          >
+            <div className="mx-auto mb-6 flex h-16 w-16 items-center justify-center rounded-full bg-bg-elevated">
+              <Users className="h-8 w-8 text-cta-start" aria-hidden="true" />
+            </div>
+            <h1 className="mb-4 text-3xl font-bold text-foreground">
+              Invite your Partner
+            </h1>
+            <p className="mx-auto mb-8 max-w-sm text-muted-foreground">
+              Sharing your cycle phases fosters deeper understanding and better
+              support. You choose what to share.
+            </p>
+            <button
+              className="btn-cta w-full"
+              data-testid="connect-partner-button"
+            >
+              <Users className="h-5 w-5" aria-hidden="true" />
+              Connect Partner
+            </button>
           </div>
-          <h1 className="text-2xl font-bold text-foreground mb-4">
-            No Partner Connected
-          </h1>
-          <p className="text-muted mb-6">
-            Connect with your partner to start sharing your journey together.
-          </p>
-          <button className="btn-primary" data-testid="connect-partner-button">
-            <Users size={16} className="mr-2" />
-            Connect Partner
-          </button>
-        </div>
+        </main>
+        <Navbar />
       </div>
     );
   }
 
+  const sharingPaused = !partnerData?.privacySettings.shareWithPartner;
+
   return (
-    <div className="min-h-screen pb-20 bg-gradient-to-br from-rose-50 via-white to-purple-50 dark:bg-[#0F0A1A]">
-      <main className="max-w-4xl mx-auto px-4 py-8">
-        {/* Header */}
-        <div className="flex items-center justify-between mb-8">
-          <div className="text-center flex-1">
-            <div className="flex items-center justify-center mb-4">
-              <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-[var(--cta-gradient)] shadow-lg">
-                <Heart className="h-6 w-6 text-white" />
-              </div>
-            </div>
-            <h1 className="text-3xl font-bold text-foreground mb-2">
-              Partner Portal
-            </h1>
-            <p className="text-muted">
-              Supporting {partnerData?.partnerName || "your partner"}&apos;s journey
-            </p>
-          </div>
+    <div className="min-h-screen bg-bg pb-10">
+      <TopNavbar
+        title="Partner View"
+        subtitle={`Supporting ${partnerData?.partnerName || "your partner"}`}
+        actions={
           <button
+            type="button"
             onClick={handleRefresh}
             disabled={refreshing}
-            className="btn-secondary p-2"
+            className="flex h-10 w-10 items-center justify-center rounded-full border border-border bg-bg-surface text-muted-foreground hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cta-start"
             data-testid="refresh-button"
+            aria-label="Refresh partner data"
           >
-            <RefreshCw size={20} className={refreshing ? "animate-spin" : ""} />
+            <RefreshCw
+              className={refreshing ? "h-5 w-5 animate-spin" : "h-5 w-5"}
+              aria-hidden="true"
+            />
           </button>
-        </div>
+        }
+      />
 
-        {/* Today at a Glance */}
-        <section className="mb-8">
-          <div className="card dark:card p-6" data-testid="today-at-glance">
-            <h2 className="text-xl font-semibold text-foreground mb-4 flex items-center">
-              <Calendar className="mr-2" size={20} />
-              Today at a Glance
-            </h2>
-
-            {partnerData ? (
-              <div className="space-y-6">
-                {/* Cycle Phase & Mood */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  {partnerData.privacySettings.shareCyclePhase &&
-                    partnerData.todayCycle && (
-                      <div
-                        className="elevated p-4 rounded-xl"
-                        data-testid="cycle-phase"
-                      >
-                        <div className="flex items-center justify-between mb-2">
-                          <h3 className="text-sm font-medium text-muted">
-                            Cycle Phase
-                          </h3>
-                          <Eye size={16} className="text-green-500" />
-                        </div>
-                        <div className="flex items-center space-x-2">
-                          <span className="text-2xl">
-                            {getMoodEmoji(partnerData.todayCycle.phase || "")}
-                          </span>
-                          <span className="text-lg font-semibold text-foreground">
-                            {getPhaseDisplayName(
-                              partnerData.todayCycle.phase || "unknown",
-                            )}
-                          </span>
-                        </div>
-                      </div>
-                    )}
-
-                  {partnerData.privacySettings.shareMood &&
-                    partnerData.todayCycle && (
-                      <div
-                        className="elevated p-4 rounded-xl"
-                        data-testid="mood"
-                      >
-                        <div className="flex items-center justify-between mb-2">
-                          <h3 className="text-sm font-medium text-muted">
-                            Today&apos;s Mood
-                          </h3>
-                          <Eye size={16} className="text-green-500" />
-                        </div>
-                        <div className="flex items-center space-x-2">
-                          <span className="text-2xl">
-                            {getMoodEmoji(partnerData.todayCycle.mood || 0)}
-                          </span>
-                          <span className="text-lg font-semibold text-foreground">
-                            {partnerData.todayCycle.mood}/10
-                          </span>
-                        </div>
-                      </div>
-                    )}
-                </div>
-
-                {/* Privacy Notice */}
-                <div
-                  className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4"
-                  data-testid="privacy-notice"
-                >
-                  <div className="flex items-start space-x-2">
-                    <Settings
-                      size={16}
-                      className="text-blue-600 dark:text-blue-400 mt-0.5"
-                    />
-                    <div>
-                      <p className="text-blue-700 dark:text-blue-300 text-sm font-medium mb-1">
-                        Privacy Settings
-                      </p>
-                      <p className="text-blue-600 dark:text-blue-400 text-xs">
-                        Only data your partner has chosen to share is visible
-                        here.
-                        {!partnerData.privacySettings.shareWithPartner &&
-                          " Your partner has disabled sharing."}
-                      </p>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            ) : (
-              <div className="text-center py-8" data-testid="no-shared-data">
-                <div className="w-16 h-16 rounded-full bg-gray-100 dark:bg-gray-700 flex items-center justify-center mx-auto mb-4">
-                  <EyeOff size={32} className="text-gray-400" />
-                </div>
-                <h3 className="text-lg font-semibold text-foreground mb-2">
-                  No Shared Data Yet
-                </h3>
-                <p className="text-muted text-sm">
-                  Your partner hasn&apos;t shared any data yet or has disabled
-                  sharing.
-                </p>
-              </div>
-            )}
+      <main className="mx-auto w-full max-w-6xl space-y-7 px-4 py-6 sm:px-6 lg:px-10">
+        <section className="text-center md:text-left">
+          <div className="inline-flex items-center gap-2 rounded-full border border-border bg-bg-surface px-4 py-2 text-xs font-black uppercase tracking-[0.16em] text-muted-foreground">
+            <Eye className="h-4 w-4 text-info" aria-hidden="true" />
+            Partner Perspective
           </div>
+          <h1 className="mt-5 text-4xl font-bold tracking-tight text-foreground md:text-5xl">
+            {partnerData?.partnerName || "Partner"}&apos;s Context
+          </h1>
+          <p className="mt-3 max-w-2xl text-lg leading-relaxed text-muted-foreground">
+            A calm, read-only view of the details they explicitly shared.
+          </p>
         </section>
 
-        {/* Recent Activity */}
-        {partnerData && partnerData.recentActivity.length > 0 && (
-          <section className="mb-8">
-            <div className="card dark:card p-6" data-testid="recent-activity">
-              <h2 className="text-xl font-semibold text-foreground mb-4">
-                Recent Activity
-              </h2>
-              <div className="space-y-3">
-                {partnerData.recentActivity.map((activity, index) => (
-                  <div
-                    key={index}
-                    className="flex items-start space-x-3 p-3 rounded-lg bg-gray-50 dark:bg-gray-800/50"
-                    data-testid="activity-item"
-                  >
-                    <div className="w-8 h-8 rounded-full bg-rose-100 dark:bg-rose-900/30 flex items-center justify-center flex-shrink-0">
-                      <Heart
-                        size={14}
-                        className="text-rose-600 dark:text-rose-400"
-                      />
+        <section
+          className="rounded-[2rem] border border-border bg-bg-surface p-6 shadow-lg"
+          data-testid="today-at-glance"
+        >
+          {partnerData && !sharingPaused ? (
+            <div className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_320px]">
+              <div className="rounded-[1.5rem] bg-bg p-6">
+                <p className="text-xs font-black uppercase tracking-[0.18em] text-muted-foreground">
+                  Current Phase
+                </p>
+                {partnerData.privacySettings.shareCyclePhase &&
+                partnerData.todayCycle ? (
+                  <div data-testid="cycle-phase">
+                    <div className="mt-5 flex items-center gap-3">
+                      <span className="text-5xl" aria-hidden="true">
+                        {getMoodEmoji(partnerData.todayCycle.phase || "")}
+                      </span>
+                      <h2 className="text-5xl font-black text-foreground">
+                        {getPhaseDisplayName(
+                          partnerData.todayCycle.phase || "unknown",
+                        )}
+                      </h2>
                     </div>
-                    <div className="flex-1">
-                      <p className="text-sm text-foreground">
-                        {activity.description}
+                    <p className="mt-5 max-w-xl text-lg text-muted-foreground">
+                      Energy might be lower today. A quiet evening could be
+                      appreciated.
+                    </p>
+                  </div>
+                ) : (
+                  <LockedPanel label="Cycle phase hidden" />
+                )}
+              </div>
+
+              <div className="grid gap-4">
+                {partnerData.privacySettings.shareMood &&
+                partnerData.todayCycle ? (
+                  <div
+                    className="rounded-[1.5rem] border border-border bg-bg p-5"
+                    data-testid="mood"
+                  >
+                    <div className="flex items-center justify-between">
+                      <p className="font-bold text-foreground">
+                        Today&apos;s Mood
                       </p>
-                      <p className="text-xs text-muted">
-                        {formatDateShort(activity.date)}
+                      <Smile className="h-5 w-5 text-cta-start" />
+                    </div>
+                    <p className="mt-4 text-3xl font-black text-foreground">
+                      {partnerData.todayCycle.mood}/10
+                    </p>
+                    <p className="mt-1 text-sm text-muted-foreground">
+                      Shared mood context
+                    </p>
+                  </div>
+                ) : (
+                  <LockedPanel label="Mood hidden" />
+                )}
+
+                <div
+                  className="rounded-[1.5rem] border border-info/25 bg-info/10 p-5"
+                  data-testid="privacy-notice"
+                >
+                  <div className="flex gap-3">
+                    <ShieldCheck className="mt-1 h-5 w-5 shrink-0 text-info" />
+                    <div>
+                      <p className="font-bold text-foreground">
+                        Privacy Settings
+                      </p>
+                      <p className="mt-1 text-sm leading-relaxed text-muted-foreground">
+                        Only data your partner has chosen to share is visible
+                        here.
                       </p>
                     </div>
                   </div>
-                ))}
+                </div>
               </div>
+            </div>
+          ) : (
+            <div className="py-10 text-center" data-testid="no-shared-data">
+              <div className="mx-auto mb-5 flex h-16 w-16 items-center justify-center rounded-full bg-bg-elevated">
+                <EyeOff className="h-8 w-8 text-muted-foreground" />
+              </div>
+              <h2 className="text-2xl font-bold text-foreground">
+                Data Paused
+              </h2>
+              <p className="mx-auto mt-2 max-w-md text-muted-foreground">
+                Your partner has disabled sharing or has not shared any data yet.
+              </p>
+            </div>
+          )}
+        </section>
+
+        {partnerData && partnerData.recentActivity.length > 0 && (
+          <section
+            className="rounded-[2rem] border border-border bg-bg-surface p-6 shadow-md"
+            data-testid="recent-activity"
+          >
+            <div className="mb-5 flex items-center gap-3">
+              <Heart className="h-6 w-6 text-[color:var(--accent-peach)]" />
+              <h2 className="text-2xl font-bold text-foreground">
+                Recent Activity
+              </h2>
+            </div>
+            <div className="grid gap-3 md:grid-cols-2">
+              {partnerData.recentActivity.map((activity, index) => (
+                <div
+                  key={`${activity.date}-${index}`}
+                  className="rounded-2xl bg-bg p-4"
+                  data-testid="activity-item"
+                >
+                  <p className="text-sm font-semibold text-foreground">
+                    {activity.description}
+                  </p>
+                  <p className="mt-2 text-xs font-semibold text-muted-foreground">
+                    {formatDateShort(activity.date)}
+                  </p>
+                </div>
+              ))}
             </div>
           </section>
         )}
 
-        {/* Supportive Actions */}
-        <section>
-          <div className="card dark:card p-6" data-testid="supportive-actions">
-            <h2 className="text-xl font-semibold text-foreground mb-4">
-              Supportive Actions
-            </h2>
-            <div className="space-y-3">
-              <div className="flex items-start space-x-3">
-                <div className="w-6 h-6 rounded-full bg-rose-100 dark:bg-rose-900/30 flex items-center justify-center flex-shrink-0 mt-0.5">
-                  <Heart
-                    size={12}
-                    className="text-rose-600 dark:text-rose-400"
-                  />
-                </div>
-                <div>
-                  <p className="text-sm text-foreground font-medium">
-                    Be present and attentive
-                  </p>
-                  <p className="text-xs text-muted">
-                    Listen actively when your partner shares their experiences.
-                  </p>
-                </div>
-              </div>
-              <div className="flex items-start space-x-3">
-                <div className="w-6 h-6 rounded-full bg-purple-100 dark:bg-purple-900/30 flex items-center justify-center flex-shrink-0 mt-0.5">
-                  <MessageCircle
-                    size={12}
-                    className="text-purple-600 dark:text-purple-400"
-                  />
-                </div>
-                <div>
-                  <p className="text-sm text-foreground font-medium">
-                    Ask thoughtful questions
-                  </p>
-                  <p className="text-xs text-muted">
-                    Show interest in their reflections and feelings.
-                  </p>
-                </div>
-              </div>
-              <div className="flex items-start space-x-3">
-                <div className="w-6 h-6 rounded-full bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center flex-shrink-0 mt-0.5">
-                  <Users
-                    size={12}
-                    className="text-blue-600 dark:text-blue-400"
-                  />
-                </div>
-                <div>
-                  <p className="text-sm text-foreground font-medium">
-                    Respect boundaries
-                  </p>
-                  <p className="text-xs text-muted">
-                    Honour their comfort levels and consent preferences.
-                  </p>
-                </div>
-              </div>
-            </div>
+        <section
+          className="rounded-[2rem] border border-border bg-bg-surface p-6 shadow-md"
+          data-testid="supportive-actions"
+        >
+          <h2 className="text-2xl font-bold text-foreground">
+            Supportive Actions
+          </h2>
+          <div className="mt-5 grid gap-3 md:grid-cols-3">
+            <SupportTile
+              icon={Heart}
+              title="Be present"
+              text="Listen when your partner shares context."
+            />
+            <SupportTile
+              icon={MessageCircle}
+              title="Ask gently"
+              text="Use the shared view as a conversation starter."
+            />
+            <SupportTile
+              icon={Users}
+              title="Respect privacy"
+              text="Treat hidden details as intentional boundaries."
+            />
           </div>
         </section>
       </main>
+
+      <Navbar />
     </div>
+  );
+}
+
+function LockedPanel({ label }: { label: string }) {
+  return (
+    <div className="rounded-[1.5rem] border border-dashed border-border bg-bg p-6 text-center">
+      <Lock className="mx-auto h-6 w-6 text-muted-foreground" />
+      <p className="mt-3 text-sm font-bold text-muted-foreground">{label}</p>
+    </div>
+  );
+}
+
+function SupportTile({
+  icon: Icon,
+  title,
+  text,
+}: {
+  icon: ComponentType<{ className?: string }>;
+  title: string;
+  text: string;
+}) {
+  return (
+    <article className="rounded-2xl bg-bg p-4">
+      <Icon className="h-6 w-6 text-cta-start" aria-hidden="true" />
+      <h3 className="mt-4 font-bold text-foreground">{title}</h3>
+      <p className="mt-1 text-sm leading-relaxed text-muted-foreground">
+        {text}
+      </p>
+    </article>
   );
 }

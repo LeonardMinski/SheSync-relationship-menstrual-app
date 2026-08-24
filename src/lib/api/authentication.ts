@@ -58,7 +58,7 @@ export async function authenticateRequest(
       .from("users")
       .select("*")
       .eq("id", user.id)
-      .single();
+      .maybeSingle();
 
     if (profileError) {
       console.error(

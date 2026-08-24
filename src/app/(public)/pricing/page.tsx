@@ -1,4 +1,4 @@
-import ComingLater from '@/components/ui/ComingLater'
+import ComingLater from "@/components/ui/ComingLater";
 
 export default function PricingPageRoute() {
   return (
@@ -6,5 +6,5 @@ export default function PricingPageRoute() {
       title="Pricing"
       description="Subscriptions and Stripe checkout are parked for a later release. The MVP remains free while the core sharing flow is validated."
     />
-  )
+  );
 }

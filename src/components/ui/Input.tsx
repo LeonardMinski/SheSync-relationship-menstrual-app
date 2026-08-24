@@ -15,7 +15,8 @@ export function Input({
   id,
   ...props
 }: InputProps) {
-  const inputId = id || `input-${Math.random().toString(36).substr(2, 9)}`
+  const generatedId = React.useId()
+  const inputId = id ?? `input-${generatedId}`
   
   return (
     <div className="space-y-2">
@@ -64,7 +65,8 @@ export function Textarea({
   id,
   ...props
 }: TextareaProps) {
-  const textareaId = id || `textarea-${Math.random().toString(36).substr(2, 9)}`
+  const generatedId = React.useId()
+  const textareaId = id ?? `textarea-${generatedId}`
   
   return (
     <div className="space-y-2">

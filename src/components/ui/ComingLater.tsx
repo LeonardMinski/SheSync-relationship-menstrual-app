@@ -18,19 +18,13 @@ interface ComingLaterProps {
 
 export default function ComingLater({ title, description }: ComingLaterProps) {
   return (
-    <div className="min-h-screen bg-bg pb-20">
-      <TopNavbar
-        title={title}
-        subtitle="Coming later"
-        showNotifications={false}
-        showThemeToggle={true}
-        showMeeting={false}
-      />
+    <div className="min-h-screen bg-bg pb-10">
+      <TopNavbar title={title} subtitle="Coming later" />
 
-      <main className="container mx-auto flex min-h-[70vh] max-w-2xl items-center px-4 py-10">
-        <Card className="w-full text-center">
+      <main className="mx-auto flex min-h-[70vh] max-w-2xl items-center px-4 py-10">
+        <Card className="w-full border-border bg-bg-surface text-center shadow-lg">
           <CardHeader>
-            <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-lg bg-bg-elevated">
+            <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-bg-elevated">
               <Clock className="h-6 w-6 text-cta-start" />
             </div>
             <CardTitle>{title} Is Parked For Now</CardTitle>

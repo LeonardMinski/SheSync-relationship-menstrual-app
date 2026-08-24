@@ -2,13 +2,6 @@ import { Metadata } from "next";
 import PrivacySettingsForm from "@/components/settings/PrivacySettingsForm";
 import { TopNavbar } from "@/components/layout/Navbar";
 import { Navbar } from "@/components/layout/Navbar";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/Card";
 
 export const metadata: Metadata = {
   title: "Privacy Settings | SheSync+",
@@ -17,48 +10,32 @@ export const metadata: Metadata = {
 
 export default async function PrivacySettingsPage() {
   return (
-    <div className="min-h-screen bg-bg pb-20">
+    <div className="min-h-screen bg-bg pb-10">
       <TopNavbar
-        title="Privacy Settings"
-        subtitle="Control your data sharing preferences"
-        showNotifications={false}
-        showThemeToggle={true}
+        title="Privacy & Partner"
+        subtitle="Control what you share and who you share it with."
+        showNotifications
       />
 
-      <div className="container mx-auto px-4 py-6 space-y-6">
-        {/* Privacy Settings Form */}
+      <main className="mx-auto w-full max-w-7xl space-y-8 px-4 py-6 sm:px-6 lg:px-10">
+        <section className="hidden md:block">
+          <h1 className="text-5xl font-bold tracking-tight text-foreground">
+            Privacy & Partner
+          </h1>
+          <p className="mt-3 max-w-2xl text-xl leading-relaxed text-muted-foreground">
+            Control what you share and maintain your digital sanctuary.
+          </p>
+        </section>
+
         <PrivacySettingsForm />
 
-        {/* Privacy Information */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Privacy Information</CardTitle>
-            <CardDescription>
-              Understanding your privacy controls
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-3">
-            <p className="text-sm text-foreground">
-              Your privacy is important to us. These settings control how your
-              data is shared with your partner and other users.
-            </p>
-            <div className="space-y-2">
-              <p className="text-sm text-foreground">
-                <strong>Partner Sharing:</strong> When enabled, your partner can
-                see the selected data types.
-              </p>
-              <p className="text-sm text-foreground">
-                <strong>Data Sharing:</strong> Controls which specific data
-                types are shared when partner sharing is enabled.
-              </p>
-              <p className="text-sm text-foreground">
-                You can change these settings at any time. Changes take effect
-                immediately.
-              </p>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
+        <section className="rounded-[2rem] border border-border bg-bg-surface p-6 text-center shadow-md">
+          <p className="mx-auto max-w-2xl text-sm leading-relaxed text-muted-foreground">
+            Partner view only uses the data you explicitly enable here. Private
+            notes and locked categories remain hidden.
+          </p>
+        </section>
+      </main>
 
       <Navbar />
     </div>

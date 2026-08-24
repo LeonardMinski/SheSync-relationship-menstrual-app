@@ -1,161 +1,68 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import { useEffect } from "react";
+import type { ComponentType } from "react";
 import { useRouter } from "next/navigation";
 import { format } from "date-fns";
-import { Calendar, Heart, Brain, Plus, Shield, Users } from "lucide-react";
+import {
+  Activity,
+  BarChart3,
+  BatteryCharging,
+  Heart,
+  Moon,
+  PenLine,
+  Plus,
+  ShieldCheck,
+  Smile,
+} from "lucide-react";
+
+import { TopNavbar, Navbar } from "@/components/layout/Navbar";
+import { Button } from "@/components/ui/Button";
 import { useAuth } from "@/context/AuthContext";
 import { useCycleLogger } from "@/hooks/useCycleLogger";
-import { TopNavbar } from "@/components/layout/Navbar";
-import { Navbar } from "@/components/layout/Navbar";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/Card";
-import { Button } from "@/components/ui/Button";
-import { getPhaseEmoji } from "@/utils/mockData";
-import {
-  getHealthInsights,
-  getNutritionSuggestion,
-  getHealthNews,
-  API_FALLBACKS,
-} from "@/services/cycle/insights";
-import type {
-  HealthInsight,
-  NutritionSuggestion,
-  HealthNews,
-} from "@/services/cycle/insights";
+import { cn } from "@/utils/cn";
 
-export default function NewDashboard() {
+type CycleLog = {
+  date: string;
+  phase?: string | null;
+  mood?: number | null;
+  energy?: number | null;
+  stress?: number | null;
+  symptoms?: string[] | null;
+};
+
+const fallbackPhase = "follicular";
+
+export default function Dashboard() {
+  const router = useRouter();
   const { user, loading: authLoading } = useAuth();
   const {
     cycles,
     fetchCycles,
-    logCycle,
     loading: cycleLoading,
     error: cycleError,
     clearError,
   } = useCycleLogger();
-  const router = useRouter();
-
-  const [showLogForm, setShowLogForm] = useState(false);
-  const [mood, setMood] = useState(5);
-  const [energy, setEnergy] = useState(5);
-  const [libido, setLibido] = useState(5);
-  const [stress, setStress] = useState(5);
-  const [symptoms, setSymptoms] = useState<string[]>([]);
-  const [notes, setNotes] = useState("");
-  const [logging, setLogging] = useState(false);
-  const [healthInsights, setHealthInsights] = useState<HealthInsight[]>([]);
-  const [nutritionSuggestion, setNutritionSuggestion] =
-    useState<NutritionSuggestion | null>(null);
-  const [healthNews, setHealthNews] = useState<HealthNews[]>([]);
-  const [apiLoading, setApiLoading] = useState(true);
-
-  // Get today's cycle data
-  const todaysData = cycles.find(
-    (cycle) => cycle.date === format(new Date(), "yyyy-MM-dd"),
-  );
 
   useEffect(() => {
     if (user && !authLoading) {
-      fetchCycles();
+      void fetchCycles();
     }
   }, [user, authLoading, fetchCycles]);
 
-  // Load API insights
-  useEffect(() => {
-    const loadInsights = async () => {
-      if (!todaysData) return;
-
-      setApiLoading(true);
-      try {
-        const [insights, nutrition, news] = await Promise.all([
-          getHealthInsights(todaysData.phase, todaysData.symptoms),
-          getNutritionSuggestion(todaysData.phase, todaysData.mood),
-          getHealthNews(),
-        ]);
-
-        setHealthInsights(insights);
-        setNutritionSuggestion(nutrition);
-        setHealthNews(news.slice(0, 1)); // Show only latest news
-      } catch (error) {
-        console.error("Error loading insights:", error);
-      } finally {
-        setApiLoading(false);
-      }
-    };
-
-    loadInsights();
-  }, [todaysData]);
-
-  // Redirect if not authenticated
   useEffect(() => {
     if (!authLoading && !user) {
-      router.push("/auth/login");
+      router.replace("/auth/login");
     }
-  }, [user, authLoading, router]);
-
-  const handleLogCycle = async () => {
-    if (!user) return;
-
-    setLogging(true);
-    try {
-      const success = await logCycle({
-        date: format(new Date(), "yyyy-MM-dd"),
-        phase: todaysData?.phase || "follicular",
-        mood,
-        energy,
-        libido,
-        stress,
-        symptoms,
-        notes,
-      });
-
-      if (success) {
-        setShowLogForm(false);
-        // Reset form
-        setMood(5);
-        setEnergy(5);
-        setLibido(5);
-        setStress(5);
-        setSymptoms([]);
-        setNotes("");
-      }
-    } catch (error) {
-      console.error("[dashboard] failed to log cycle", error);
-    } finally {
-      setLogging(false);
-    }
-  };
-
-  const toggleSymptom = (symptom: string) => {
-    setSymptoms((prev) =>
-      prev.includes(symptom)
-        ? prev.filter((s) => s !== symptom)
-        : [...prev, symptom],
-    );
-  };
-
-  const symptomOptions = [
-    "Cramps",
-    "Bloating",
-    "Headache",
-    "Fatigue",
-    "Mood swings",
-    "Breast tenderness",
-    "Acne",
-    "Food cravings",
-    "Insomnia",
-  ];
+  }, [authLoading, user, router]);
 
   if (authLoading || cycleLoading) {
     return (
-      <div className="min-h-screen bg-bg flex items-center justify-center">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-cta-start"></div>
+      <div className="flex min-h-screen items-center justify-center bg-bg">
+        <div
+          className="h-9 w-9 animate-spin rounded-full border-2 border-border border-t-cta-start"
+          aria-label="Loading dashboard"
+        />
       </div>
     );
   }
@@ -164,369 +71,402 @@ export default function NewDashboard() {
     return null;
   }
 
+  const today = format(new Date(), "yyyy-MM-dd");
+  const todaysData = cycles.find((cycle) => cycle.date === today);
+  const latestLog = todaysData ?? getLatestCycle(cycles);
+  const phase = latestLog?.phase ?? fallbackPhase;
+  const dayNumber = estimateCycleDay(latestLog?.date);
+  const phaseLabel = toPhaseLabel(phase);
+
   return (
-    <div className="min-h-screen bg-bg pb-20">
+    <div className="min-h-screen bg-bg pb-10">
       <TopNavbar
-        title="Shesync+"
+        title={`Day ${dayNumber} · ${phaseLabel}`}
         subtitle={format(new Date(), "EEEE, MMMM d")}
-        showNotifications={false}
-        showThemeToggle={true}
-        showMeeting={false}
+        showNotifications
       />
 
-      <div className="container mx-auto px-4 py-6 space-y-6">
+      <main className="mx-auto w-full max-w-7xl space-y-7 px-4 py-6 sm:px-6 lg:px-10">
+        <section className="hidden md:block">
+          <h1 className="text-5xl font-bold tracking-tight text-foreground">
+            Your Cycle Dashboard
+          </h1>
+          <p className="mt-2 text-xl font-semibold text-muted-foreground">
+            {format(new Date(), "EEEE, MMMM d")} · Feeling Rested
+          </p>
+        </section>
+
         {cycleError && (
-          <div className="rounded-lg border border-error/20 bg-error/10 px-4 py-3 text-sm text-error">
-            {cycleError}
+          <div
+            role="alert"
+            className="flex items-start justify-between gap-4 rounded-2xl border border-error/25 bg-error/10 px-4 py-3 text-sm text-error"
+          >
+            <span>{cycleError}</span>
             <button
               type="button"
               onClick={clearError}
-              className="ml-2 underline"
+              className="shrink-0 font-semibold underline underline-offset-4"
             >
               Dismiss
             </button>
           </div>
         )}
 
-        {/* No Cycle Data CTA */}
-        {cycles.length === 0 && (
-          <Card className="text-center py-8">
-            <CardContent>
-              <div className="w-16 h-16 mx-auto mb-4 rounded-2xl bg-gradient-to-r from-cta-start to-cta-end flex items-center justify-center">
-                <Calendar className="h-8 w-8 text-white" />
-              </div>
-              <h2 className="text-2xl font-bold text-foreground mb-2">
-                Start Tracking Your Cycle
-              </h2>
-              <p className="text-muted mb-6">
-                Log your first cycle entry to unlock personalized insights and
-                recommendations.
-              </p>
-              <Button
-                variant="cta"
-                size="lg"
-                onClick={() => router.push("/cycle")}
-              >
-                <Plus className="h-5 w-5" />
-                Log your cycle
-              </Button>
-            </CardContent>
-          </Card>
-        )}
+        <section className="grid gap-6 lg:grid-cols-[minmax(0,1.25fr)_minmax(360px,0.75fr)]">
+          <CycleHero
+            dayNumber={dayNumber}
+            phaseLabel={phaseLabel}
+            hasLog={Boolean(todaysData)}
+            onLog={() => router.push("/cycle")}
+          />
+          <DailySnapshot todaysData={todaysData} latestLog={latestLog} />
+        </section>
 
-        {/* Cycle Summary Card */}
-        {cycles.length > 0 && (
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Heart className="h-5 w-5 text-cta-start" />
-                Welcome back, {user?.name || "User"}!
-              </CardTitle>
-              <CardDescription>
-                Here&apos;s your wellness overview for today
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="flex items-center justify-between">
-                <div>
-                  <div className="text-2xl font-bold text-foreground">
-                    {todaysData ? getPhaseEmoji(todaysData.phase) : "🌙"}{" "}
-                    {todaysData?.phase || "Unknown"}
-                  </div>
-                  <CardDescription>
-                    {todaysData
-                      ? `Day logged today`
-                      : "Ready to track your cycle"}
-                  </CardDescription>
-                </div>
-                <div className="text-right">
-                  <div className="text-sm text-muted-foreground">
-                    Today&apos;s Mood
-                  </div>
-                  <div className="text-lg font-semibold text-foreground">
-                    {todaysData?.mood || "—"}/10
-                  </div>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        )}
-
-        {/* Wellbeing Insights Section */}
-        {cycles.length > 0 && (
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Brain className="h-5 w-5 text-cta-start" />
-                Today&apos;s Insights
-              </CardTitle>
-              <CardDescription>
-                Personalized recommendations based on your cycle data
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              {apiLoading ? (
-                <div className="animate-pulse space-y-3">
-                  <div className="h-4 bg-bg-muted rounded"></div>
-                  <div className="h-4 bg-bg-muted rounded w-3/4"></div>
-                  <div className="h-4 bg-bg-muted rounded w-1/2"></div>
-                </div>
-              ) : (
-                <>
-                  {/* Health Insights */}
-                  {healthInsights.length > 0 ? (
-                    <div className="space-y-2">
-                      {healthInsights.slice(0, 2).map((insight, index) => (
-                        <div
-                          key={index}
-                          className="p-3 bg-bg-elevated rounded-lg"
-                        >
-                          <div className="text-sm font-medium text-foreground capitalize mb-1">
-                            {insight.type} Tip
-                          </div>
-                          <div className="text-sm text-muted">
-                            {insight.tip}
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  ) : (
-                    <div className="text-sm text-muted">
-                      {API_FALLBACKS.healthInsights}
-                    </div>
-                  )}
-
-                  {/* Nutrition Suggestion */}
-                  {nutritionSuggestion ? (
-                    <div className="p-3 bg-bg-elevated rounded-lg">
-                      <div className="text-sm font-medium text-foreground mb-1">
-                        Nutrition Suggestion
-                      </div>
-                      <div className="text-sm font-medium text-foreground mb-1">
-                        {nutritionSuggestion.food}
-                      </div>
-                      <div className="text-sm text-muted mb-2">
-                        {nutritionSuggestion.reason}
-                      </div>
-                      <div className="flex flex-wrap gap-1">
-                        {nutritionSuggestion.benefits.map((benefit, index) => (
-                          <span
-                            key={index}
-                            className="text-xs bg-accent-rose/10 text-accent-rose px-2 py-1 rounded-full"
-                          >
-                            {benefit}
-                          </span>
-                        ))}
-                      </div>
-                    </div>
-                  ) : (
-                    <div className="text-sm text-muted">
-                      {API_FALLBACKS.nutrition}
-                    </div>
-                  )}
-
-                  {/* Health News */}
-                  {healthNews.length > 0 ? (
-                    <div className="p-3 bg-bg-elevated rounded-lg">
-                      <div className="text-sm font-medium text-foreground mb-1">
-                        Latest Health News
-                      </div>
-                      <a
-                        href={healthNews[0].url}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="text-sm text-cta-start hover:text-cta-end transition-colors"
-                      >
-                        {healthNews[0].title}
-                      </a>
-                    </div>
-                  ) : (
-                    <div className="text-sm text-muted">
-                      {API_FALLBACKS.news}
-                    </div>
-                  )}
-                </>
-              )}
-            </CardContent>
-          </Card>
-        )}
-
-        {/* Quick Actions */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Quick Actions</CardTitle>
-            <CardDescription>Core MVP tasks</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
-              <Button
-                variant="secondary"
-                className="h-auto p-4 flex-col gap-2"
-                onClick={() => router.push("/cycle")}
-              >
-                <Calendar className="h-6 w-6" />
-                <span>Log Cycle</span>
-              </Button>
-
-              <Button
-                variant="secondary"
-                className="h-auto p-4 flex-col gap-2"
-                onClick={() => router.push("/settings/privacy")}
-              >
-                <Shield className="h-6 w-6" />
-                <span>Privacy Settings</span>
-              </Button>
-
-              <Button
-                variant="secondary"
-                className="h-auto p-4 flex-col gap-2"
-                onClick={() => router.push("/partner")}
-              >
-                <Users className="h-6 w-6" />
-                <span>Partner View</span>
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* Log Cycle Modal */}
-      {showLogForm && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
-          <Card className="w-full max-w-md max-h-[90vh] overflow-y-auto">
-            <CardHeader>
-              <CardTitle>
-                {todaysData ? "Update Today's Entry" : "Log Cycle Entry"}
-              </CardTitle>
-              <CardDescription>
-                Track your mood, energy, and symptoms for today
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-6">
-              {/* Mood Slider */}
-              <div>
-                <label className="block text-sm font-medium text-foreground mb-2">
-                  Mood: {mood}/10
-                </label>
-                <input
-                  type="range"
-                  min="1"
-                  max="10"
-                  value={mood}
-                  onChange={(e) => setMood(Number(e.target.value))}
-                  className="w-full h-2 bg-border rounded-lg appearance-none cursor-pointer slider"
-                />
-              </div>
-
-              {/* Energy Slider */}
-              <div>
-                <label className="block text-sm font-medium text-foreground mb-2">
-                  Energy: {energy}/10
-                </label>
-                <input
-                  type="range"
-                  min="1"
-                  max="10"
-                  value={energy}
-                  onChange={(e) => setEnergy(Number(e.target.value))}
-                  className="w-full h-2 bg-border rounded-lg appearance-none cursor-pointer slider"
-                />
-              </div>
-
-              {/* Libido Slider */}
-              <div>
-                <label className="block text-sm font-medium text-foreground mb-2">
-                  Libido: {libido}/10
-                </label>
-                <input
-                  type="range"
-                  min="1"
-                  max="10"
-                  value={libido}
-                  onChange={(e) => setLibido(Number(e.target.value))}
-                  className="w-full h-2 bg-border rounded-lg appearance-none cursor-pointer slider"
-                />
-              </div>
-
-              {/* Stress Slider */}
-              <div>
-                <label className="block text-sm font-medium text-foreground mb-2">
-                  Stress: {stress}/10
-                </label>
-                <input
-                  type="range"
-                  min="1"
-                  max="10"
-                  value={stress}
-                  onChange={(e) => setStress(Number(e.target.value))}
-                  className="w-full h-2 bg-border rounded-lg appearance-none cursor-pointer slider"
-                />
-              </div>
-
-              {/* Symptoms */}
-              <div>
-                <label className="block text-sm font-medium text-foreground mb-2">
-                  Symptoms
-                </label>
-                <div className="flex flex-wrap gap-2">
-                  {symptomOptions.map((symptom) => (
-                    <button
-                      key={symptom}
-                      type="button"
-                      onClick={() => toggleSymptom(symptom)}
-                      className={`px-3 py-1 rounded-full text-sm transition-colors ${
-                        symptoms.includes(symptom)
-                          ? "bg-cta-start text-white"
-                          : "bg-bg-elevated text-foreground border border-border"
-                      }`}
-                    >
-                      {symptom}
-                    </button>
-                  ))}
-                </div>
-              </div>
-
-              {/* Notes */}
-              <div>
-                <label className="block text-sm font-medium text-foreground mb-2">
-                  Notes (optional)
-                </label>
-                <textarea
-                  value={notes}
-                  onChange={(e) => setNotes(e.target.value)}
-                  placeholder="How are you feeling today?"
-                  className="w-full p-3 border border-border rounded-lg bg-bg-surface text-foreground placeholder-muted-foreground focus:outline-none focus:ring-2 focus:ring-cta-start"
-                  rows={3}
-                />
-              </div>
-
-              <div className="flex gap-3">
-                <Button
-                  variant="secondary"
-                  onClick={() => setShowLogForm(false)}
-                  className="flex-1"
-                >
-                  Cancel
-                </Button>
-                <Button
-                  variant="cta"
-                  onClick={handleLogCycle}
-                  loading={logging}
-                  className="flex-1"
-                >
-                  {logging
-                    ? "Saving..."
-                    : todaysData
-                      ? "Update Entry"
-                      : "Save Entry"}
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-      )}
+        <section
+          id="insights"
+          className="grid gap-6"
+        >
+          <InsightCard />
+          <PartnerCard onManage={() => router.push("/settings/privacy")} />
+          <ComingSoonTile
+            label="Insights"
+            description="Deep pattern summaries are parked until the MVP loop is reliable."
+            icon={BarChart3}
+          />
+          <ComingSoonTile
+            label="AI Coach"
+            description="Personalized guidance will return after the core journey is stable."
+            icon={Moon}
+          />
+        </section>
+      </main>
 
       <Navbar />
     </div>
   );
+}
+
+function CycleHero({
+  dayNumber,
+  phaseLabel,
+  hasLog,
+  onLog,
+}: {
+  dayNumber: number;
+  phaseLabel: string;
+  hasLog: boolean;
+  onLog: () => void;
+}) {
+  return (
+    <section className="overflow-hidden rounded-[2rem] border border-border bg-bg-surface px-5 py-8 text-center shadow-lg sm:px-8 md:py-10">
+      <div className="mx-auto flex max-w-3xl flex-col items-center">
+        <div className="inline-flex items-center gap-2 rounded-full border border-border bg-bg-elevated px-4 py-2 text-xs font-bold uppercase tracking-[0.16em] text-muted-foreground">
+          <ShieldCheck className="h-4 w-4 text-info" aria-hidden="true" />
+          Privacy first
+        </div>
+
+        <h2 className="mt-6 text-4xl font-black leading-tight tracking-tight text-foreground sm:text-5xl">
+          {phaseLabel}
+        </h2>
+
+        <div className="mt-8 flex aspect-square w-full max-w-[280px] items-center justify-center rounded-full border-[10px] border-cta-start/80 bg-bg sm:max-w-[320px]">
+          <div className="text-center">
+            <p className="text-xs font-black uppercase tracking-[0.28em] text-muted-foreground">
+              Day
+            </p>
+            <p className="mt-1 text-7xl font-black leading-none text-foreground sm:text-8xl">
+              {dayNumber}
+            </p>
+          </div>
+        </div>
+
+        <div className="mt-8 max-w-2xl">
+          <p className="text-lg leading-relaxed text-muted-foreground sm:text-xl">
+            Estrogen is rising. You might feel a gentle increase in energy,
+            focus, and sociability today.
+          </p>
+        </div>
+
+        <Button className="mt-9 w-full max-w-xs" onClick={onLog}>
+          <PenLine className="h-5 w-5" aria-hidden="true" />
+          {hasLog ? "Update Log" : "Log Today"}
+        </Button>
+      </div>
+    </section>
+  );
+}
+
+function DailySnapshot({
+  todaysData,
+  latestLog,
+}: {
+  todaysData?: CycleLog;
+  latestLog?: CycleLog;
+}) {
+  const log = todaysData ?? latestLog;
+
+  return (
+    <section className="rounded-[2rem] border border-border bg-bg-surface p-6 shadow-md">
+      <div className="mb-6 flex items-center justify-between">
+        <h2 className="text-2xl font-bold text-foreground">Daily Snapshot</h2>
+        <PenLine className="h-5 w-5 text-muted-foreground" aria-hidden="true" />
+      </div>
+
+      <div className="grid gap-3">
+        <MetricTile
+          label="Mood"
+          value={scoreToMood(log?.mood)}
+          icon={Smile}
+          accent="text-cta-start"
+        />
+        <MetricTile
+          label="Energy"
+          value={scoreToEnergy(log?.energy)}
+          icon={BatteryCharging}
+          accent="text-info"
+        />
+        <MetricTile
+          label="Stress"
+          value={scoreToStress(log?.stress)}
+          icon={Activity}
+          accent="text-[color:var(--accent-lilac)]"
+        />
+      </div>
+
+      <div className="mt-4 rounded-2xl border border-dashed border-border bg-bg p-4">
+        <p className="text-xs font-black uppercase tracking-[0.18em] text-muted-foreground">
+          Symptoms
+        </p>
+        <div className="mt-3 flex flex-wrap gap-2">
+          {log?.symptoms?.length ? (
+            log.symptoms.slice(0, 3).map((symptom) => (
+              <span
+                key={symptom}
+                className="rounded-full bg-bg-elevated px-3 py-1 text-sm font-semibold text-foreground"
+              >
+                {symptom}
+              </span>
+            ))
+          ) : (
+            <span className="inline-flex items-center gap-2 text-sm font-semibold text-muted-foreground">
+              <Plus className="h-4 w-4" aria-hidden="true" />
+              Log Symptoms
+            </span>
+          )}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function MetricTile({
+  label,
+  value,
+  icon: Icon,
+  accent,
+}: {
+  label: string;
+  value: string;
+  icon: ComponentType<{ className?: string }>;
+  accent: string;
+}) {
+  return (
+    <div className="rounded-2xl bg-bg p-4">
+      <div className="flex items-start justify-between gap-4">
+        <div>
+          <p className="text-xs font-black uppercase tracking-[0.16em] text-muted-foreground">
+            {label}
+          </p>
+          <p className="mt-2 text-2xl font-bold text-foreground">{value}</p>
+          <p className="mt-1 text-sm text-muted-foreground">
+            {label === "Mood" ? "Logged today" : "Latest signal"}
+          </p>
+        </div>
+        <Icon className={cn("h-5 w-5 shrink-0", accent)} aria-hidden="true" />
+      </div>
+    </div>
+  );
+}
+
+function InsightCard() {
+  return (
+    <article className="flex min-w-0 flex-col rounded-[2rem] border border-border bg-bg-surface p-5 shadow-md">
+      <div className="flex items-center gap-3">
+        <BarChart3 className="h-6 w-6 shrink-0 text-info" aria-hidden="true" />
+        <h2 className="min-w-0 truncate text-xl font-bold text-foreground">
+          AI Insight
+        </h2>
+      </div>
+      <p className="mt-5 text-sm leading-relaxed text-muted-foreground">
+        Your energy levels typically peak during this late follicular phase.
+        Focused work and movement may feel easier today.
+      </p>
+      <p className="mt-6 text-sm font-bold text-info">Read analysis</p>
+    </article>
+  );
+}
+
+function PartnerCard({ onManage }: { onManage: () => void }) {
+  const partnerName = "Alexandria Montgomery-Santos";
+
+  return (
+    <article className="flex min-w-0 flex-col rounded-[2rem] border border-border border-l-[6px] border-l-[color:var(--accent-peach)] bg-bg-surface p-5 shadow-md">
+      <div className="flex min-w-0 items-start justify-between gap-4">
+        <div className="flex min-w-0 items-center gap-3">
+          <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-bg-elevated">
+            <Heart
+              className="h-5 w-5 text-[color:var(--accent-peach)]"
+              aria-hidden="true"
+            />
+          </span>
+          <div className="min-w-0">
+            <h2 className="truncate text-xl font-bold text-foreground">
+              Partner View
+            </h2>
+            <p className="mt-1 truncate text-sm font-semibold text-muted-foreground">
+              Sharing summary
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <div className="mt-5 grid gap-2">
+        <StatusPill label="Shared" value="Cycle phase, mood logs" tone="sage" />
+        <StatusPill label="Private" value="Symptoms, notes" tone="muted" />
+      </div>
+
+      <p className="mt-4 text-sm leading-relaxed text-muted-foreground">
+        Selected context is visible. Private categories stay hidden.
+      </p>
+
+      <div className="mt-5">
+        <div className="rounded-2xl border border-border bg-bg p-3">
+          <div className="flex min-w-0 flex-col items-center gap-3 text-center">
+            <span className="flex h-12 w-12 items-center justify-center overflow-hidden rounded-full bg-bg-elevated text-sm font-black text-foreground ring-1 ring-border">
+              {partnerName.charAt(0)}
+            </span>
+            <div className="min-w-0 max-w-full">
+              <p
+                className="break-words text-base font-bold leading-snug text-foreground"
+                title={partnerName}
+              >
+                {partnerName}
+              </p>
+              <p className="mt-0.5 text-sm text-muted-foreground">
+                Connected partner
+              </p>
+            </div>
+          </div>
+
+          <button
+            type="button"
+            onClick={onManage}
+            className="mt-3 min-h-11 w-full rounded-full border border-border bg-bg-surface px-4 text-sm font-bold text-foreground transition hover:border-cta-start hover:bg-bg-elevated focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cta-start"
+          >
+            Manage Sharing
+          </button>
+        </div>
+      </div>
+    </article>
+  );
+}
+
+function StatusPill({
+  label,
+  value,
+  tone,
+}: {
+  label: string;
+  value: string;
+  tone: "sage" | "muted";
+}) {
+  return (
+    <div className="min-w-0 rounded-2xl bg-bg p-3">
+      <p className="text-[11px] font-black uppercase tracking-[0.14em] text-muted-foreground">
+        {label}
+      </p>
+      <p
+        className={
+          tone === "sage"
+            ? "mt-1 truncate text-sm font-bold text-cta-start"
+            : "mt-1 truncate text-sm font-bold text-muted-foreground"
+        }
+        title={value}
+      >
+        {value}
+      </p>
+    </div>
+  );
+}
+
+function ComingSoonTile({
+  label,
+  description,
+  icon: Icon,
+}: {
+  label: string;
+  description: string;
+  icon: ComponentType<{ className?: string }>;
+}) {
+  return (
+    <article className="flex min-w-0 flex-col rounded-[2rem] border border-border bg-bg-surface p-5 opacity-75 shadow-md">
+      <span className="rounded-md bg-bg-elevated px-2.5 py-1 text-[11px] font-black uppercase tracking-[0.14em] text-muted-foreground">
+        Coming Soon
+      </span>
+      <div className="mt-5 flex items-center gap-3">
+        <Icon className="h-5 w-5 text-muted-foreground" aria-hidden="true" />
+        <h3 className="text-lg font-bold text-foreground">{label}</h3>
+      </div>
+      <p className="mt-3 text-sm leading-relaxed text-muted-foreground">
+        {description}
+      </p>
+    </article>
+  );
+}
+
+function getLatestCycle(cycles: CycleLog[]) {
+  return [...cycles].sort(
+    (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime(),
+  )[0];
+}
+
+function estimateCycleDay(date?: string) {
+  if (!date) {
+    return 14;
+  }
+
+  const loggedAt = new Date(`${date}T00:00:00`);
+  const elapsed = Math.max(0, Date.now() - loggedAt.getTime());
+  return Math.min(28, Math.max(1, 14 + Math.floor(elapsed / 86400000)));
+}
+
+function toPhaseLabel(phase: string) {
+  return `${phase.charAt(0).toUpperCase()}${phase.slice(1)} Phase`;
+}
+
+function scoreToMood(score?: number | null) {
+  if (typeof score !== "number") {
+    return "Calm";
+  }
+  if (score >= 8) return "Energetic";
+  if (score >= 5) return "Calm";
+  return "Tender";
+}
+
+function scoreToEnergy(score?: number | null) {
+  if (typeof score !== "number") {
+    return "Good";
+  }
+  if (score >= 8) return "High";
+  if (score >= 5) return "Good";
+  return "Low";
+}
+
+function scoreToStress(score?: number | null) {
+  if (typeof score !== "number") {
+    return "Mild";
+  }
+  if (score >= 8) return "Peak";
+  if (score >= 5) return "Mild";
+  return "Calm";
 }
