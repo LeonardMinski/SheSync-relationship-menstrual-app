@@ -1,134 +1,106 @@
-"use client";
+'use client'
 
-import React, { useState } from "react";
-import Link from "next/link";
-import { useAuth } from "@/context/AuthContext";
-import { Button } from "@/components/ui/Button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/Card";
-import { Input } from "@/components/ui/Input";
-import { passwordResetRequestSchema } from "@/schemas/auth";
+import React, { useState } from 'react'
+import Link from 'next/link'
+import { useAuth } from '@/context/AuthContext'
 
 export default function ForgotPasswordPage() {
-  const [email, setEmail] = useState("");
-  const [error, setError] = useState("");
-  const [emailError, setEmailError] = useState("");
-  const [submitted, setSubmitted] = useState(false);
-  const [loading, setLoading] = useState(false);
-  const { requestPasswordReset } = useAuth();
+  const { requestPasswordReset } = useAuth()
+  const [email, setEmail] = useState('')
+  const [error, setError] = useState('')
+  const [success, setSuccess] = useState('')
+  const [loading, setLoading] = useState(false)
 
-  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-    setError("");
-    setEmailError("");
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault()
+    if (loading) return
 
-    const parsed = passwordResetRequestSchema.safeParse({ email });
+    setError('')
+    setSuccess('')
+    setLoading(true)
 
-    if (!parsed.success) {
-      const nextError =
-        parsed.error.flatten().fieldErrors.email?.[0] ||
-        "Enter a valid email address.";
-      setEmailError(nextError);
-      setError(nextError);
-      return;
-    }
+    const formData = new FormData(e.currentTarget)
+    const submittedEmail = String(formData.get('email') || '').trim().toLowerCase()
+    setEmail(submittedEmail)
 
-    setLoading(true);
+    const redirectTo =
+      typeof window !== 'undefined' ? `${window.location.origin}/auth/reset-password` : undefined
 
     try {
-      const result = await requestPasswordReset(parsed.data.email);
-
+      const result = await requestPasswordReset(submittedEmail, redirectTo)
       if (!result.success) {
-        setError(result.error || "Unable to send password reset email.");
-        return;
+        setError(result.error || 'Unable to send reset email')
+        return
       }
 
-      setSubmitted(true);
+      setSuccess('If an account exists for this email, a reset link has been sent.')
     } finally {
-      setLoading(false);
+      setLoading(false)
     }
-  };
+  }
 
   return (
-    <div className="min-h-screen bg-bg flex items-center justify-center p-4">
-      <div className="w-full max-w-md">
-        <Card className="border-0 shadow-lg">
-          <CardHeader className="text-center pb-6">
-            <div className="w-16 h-16 mx-auto mb-4 rounded-2xl bg-gradient-to-r from-cta-start to-cta-end" />
-            <CardTitle className="text-2xl font-bold text-foreground">
-              Reset Password
-            </CardTitle>
-            <CardDescription className="text-muted-foreground">
-              Enter your email and we will send you a reset link.
-            </CardDescription>
-          </CardHeader>
+    <div className="min-h-screen flex items-center justify-center" style={{ backgroundColor: 'var(--bg-primary)' }}>
+      <div className="max-w-md w-full space-y-8 p-8">
+        <div className="text-center">
+          <h1 className="text-3xl font-bold mb-2" style={{ color: 'var(--text-primary)' }}>Reset your password</h1>
+          <p style={{ color: 'var(--text-secondary)' }}>Enter your email and we&apos;ll send a reset link.</p>
+        </div>
 
-          <CardContent>
-            {submitted ? (
-              <div className="space-y-6 text-center" role="status">
-                <p className="text-sm text-muted-foreground">
-                  If an account exists for that email, a password reset link
-                  will arrive shortly.
-                </p>
+        <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
+          {error && (
+            <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-md">
+              {error}
+            </div>
+          )}
 
-                <Link
-                  href="/auth/login"
-                  className="btn-cta inline-flex min-h-[44px] items-center justify-center px-4 py-3 text-base font-medium"
-                >
-                  Back to Sign In
-                </Link>
-              </div>
-            ) : (
-              <form className="space-y-6" onSubmit={handleSubmit}>
-                {error && (
-                  <div
-                    className="bg-error/10 border border-error/20 text-error px-4 py-3 rounded-lg text-sm"
-                    role="alert"
-                  >
-                    {error}
-                  </div>
-                )}
+          {success && (
+            <div className="bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded-md">
+              {success}
+            </div>
+          )}
 
-                <Input
-                  label="Email Address"
-                  type="email"
-                  autoComplete="email"
-                  required
-                  value={email}
-                  error={emailError}
-                  onChange={(event) => setEmail(event.target.value)}
-                  placeholder="Enter your email"
-                />
+          <div>
+            <label htmlFor="email" className="block text-sm font-medium mb-1" style={{ color: 'var(--text-primary)' }}>
+              Email Address
+            </label>
+            <input
+              id="email"
+              name="email"
+              type="email"
+              autoComplete="email"
+              inputMode="email"
+              autoCapitalize="none"
+              autoCorrect="off"
+              spellCheck={false}
+              required
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              className="w-full px-3 py-2 rounded-md shadow-sm focus:outline-none focus:ring-2 transition-all duration-200"
+              style={{
+                backgroundColor: 'var(--bg-secondary)',
+                color: 'var(--text-primary)',
+                border: '1px solid var(--border-subtle)'
+              }}
+              placeholder="Enter your email"
+            />
+          </div>
 
-                <Button
-                  type="submit"
-                  variant="cta"
-                  size="lg"
-                  loading={loading}
-                  className="w-full"
-                >
-                  {loading ? "Sending..." : "Send Reset Link"}
-                </Button>
+          <button
+            type="submit"
+            disabled={loading}
+            className="btn-primary group relative w-full flex justify-center py-2 px-4 text-sm font-medium rounded-md disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            {loading ? 'Sending reset link...' : 'Send reset link'}
+          </button>
 
-                <p className="text-center text-sm text-muted-foreground">
-                  Remembered your password?{" "}
-                  <Link
-                    href="/auth/login"
-                    className="font-medium text-cta-start transition-colors hover:text-cta-end"
-                  >
-                    Sign in
-                  </Link>
-                </p>
-              </form>
-            )}
-          </CardContent>
-        </Card>
+          <div className="text-center">
+            <Link href="/auth/login" className="font-medium text-rose-600 hover:text-rose-500">
+              Back to sign in
+            </Link>
+          </div>
+        </form>
       </div>
     </div>
-  );
+  )
 }

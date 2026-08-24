@@ -382,8 +382,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   const requestPasswordReset = async (
     email: string,
+    redirectTo?: string,
   ): Promise<PasswordResetResult> => {
-    const result = await dbAuth.requestPasswordReset(email);
+    const result = await dbAuth.requestPasswordReset(email, redirectTo);
 
     if (result.error) {
       return toPasswordResetFailure(result.error);

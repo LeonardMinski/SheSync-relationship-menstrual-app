@@ -95,7 +95,10 @@ export type AuthContextType = {
   signUp: (data: SignUpInput) => Promise<AuthResult>;
   signIn: (data: SignInInput) => Promise<AuthResult>;
 
-  requestPasswordReset: (email: string) => Promise<PasswordResetResult>;
+  requestPasswordReset: (
+    email: string,
+    redirectTo?: string,
+  ) => Promise<PasswordResetResult>;
 
   updatePassword: (password: string) => Promise<PasswordResetResult>;
 

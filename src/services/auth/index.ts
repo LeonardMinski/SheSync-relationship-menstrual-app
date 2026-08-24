@@ -401,13 +401,15 @@ export const auth = {
 
   async requestPasswordReset(
     email: string,
+    redirectTo?: string,
   ): Promise<{ error: AuthServiceError | null }> {
     try {
       const { error } = await supabase.auth.resetPasswordForEmail(email, {
         redirectTo:
-          typeof window !== "undefined"
+          redirectTo ??
+          (typeof window !== "undefined"
             ? `${window.location.origin}/auth/reset-password`
-            : undefined,
+            : undefined),
       });
 
       if (!error) {

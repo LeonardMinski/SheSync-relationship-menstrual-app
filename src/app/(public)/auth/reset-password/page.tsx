@@ -1,188 +1,157 @@
-"use client";
+'use client'
 
-import React, { useState } from "react";
-import Link from "next/link";
-import { useAuth } from "@/context/AuthContext";
-import { Button } from "@/components/ui/Button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/Card";
-import { Input } from "@/components/ui/Input";
-import { passwordUpdateSchema, type PasswordUpdateValues } from "@/schemas/auth";
-
-type PasswordUpdateFieldErrors = Partial<
-  Record<keyof PasswordUpdateValues, string>
->;
-
-const getPasswordResetError = (message: string | null | undefined) => {
-  if (!message) return "Unable to update your password.";
-
-  if (message.toLowerCase().includes("auth session")) {
-    return "This reset link has expired. Request a new password reset email.";
-  }
-
-  return message;
-};
+import React, { useEffect, useState } from 'react'
+import Link from 'next/link'
+import { useRouter } from 'next/navigation'
+import { useAuth } from '@/context/AuthContext'
+import { supabase } from '@/lib/supabase/client'
 
 export default function ResetPasswordPage() {
-  const [password, setPassword] = useState("");
-  const [confirmPassword, setConfirmPassword] = useState("");
-  const [error, setError] = useState("");
-  const [fieldErrors, setFieldErrors] = useState<PasswordUpdateFieldErrors>(
-    {},
-  );
-  const [complete, setComplete] = useState(false);
-  const [loading, setLoading] = useState(false);
-  const { updatePassword } = useAuth();
+  const { updatePassword } = useAuth()
+  const router = useRouter()
+  const [password, setPassword] = useState('')
+  const [confirmPassword, setConfirmPassword] = useState('')
+  const [error, setError] = useState('')
+  const [success, setSuccess] = useState('')
+  const [loading, setLoading] = useState(false)
+  const [sessionReady, setSessionReady] = useState(false)
 
-  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-    setError("");
-    setFieldErrors({});
+  useEffect(() => {
+    let isMounted = true
 
-    const parsed = passwordUpdateSchema.safeParse({
-      password,
-      confirmPassword,
-    });
+    const checkRecoverySession = async () => {
+      const { data } = await supabase.auth.getSession()
+      if (!isMounted) return
 
-    if (!parsed.success) {
-      const flattened = parsed.error.flatten().fieldErrors;
-      const nextFieldErrors = {
-        password: flattened.password?.[0],
-        confirmPassword: flattened.confirmPassword?.[0],
-      } satisfies PasswordUpdateFieldErrors;
-
-      setFieldErrors(nextFieldErrors);
-      setError(
-        nextFieldErrors.confirmPassword ||
-          nextFieldErrors.password ||
-          "Check your new password.",
-      );
-      return;
+      if (data.session) {
+        setSessionReady(true)
+      } else {
+        setError('This reset link is invalid or expired. Request a new one.')
+      }
     }
 
-    setLoading(true);
+    checkRecoverySession()
+
+    return () => {
+      isMounted = false
+    }
+  }, [])
+
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault()
+    if (loading) return
+
+    setError('')
+    setSuccess('')
+
+    if (password !== confirmPassword) {
+      setError('Passwords do not match')
+      return
+    }
+
+    if (password.length < 8) {
+      setError('Password must be at least 8 characters long')
+      return
+    }
+
+    setLoading(true)
 
     try {
-      const result = await updatePassword(parsed.data.password);
-
+      const result = await updatePassword(password)
       if (!result.success) {
-        setError(getPasswordResetError(result.error));
-        return;
+        setError(result.error || 'Unable to update password')
+        return
       }
 
-      setComplete(true);
-      setPassword("");
-      setConfirmPassword("");
+      setSuccess('Password updated. Redirecting to sign in...')
+      setTimeout(() => {
+        router.replace('/auth/login')
+      }, 1200)
     } finally {
-      setLoading(false);
+      setLoading(false)
     }
-  };
+  }
 
   return (
-    <div className="min-h-screen bg-bg flex items-center justify-center p-4">
-      <div className="w-full max-w-md">
-        <Card className="border-0 shadow-lg">
-          <CardHeader className="text-center pb-6">
-            <div className="w-16 h-16 mx-auto mb-4 rounded-2xl bg-gradient-to-r from-cta-start to-cta-end" />
-            <CardTitle className="text-2xl font-bold text-foreground">
-              Create New Password
-            </CardTitle>
-            <CardDescription className="text-muted-foreground">
-              Choose a new password for your SheSync+ account.
-            </CardDescription>
-          </CardHeader>
+    <div className="min-h-screen flex items-center justify-center" style={{ backgroundColor: 'var(--bg-primary)' }}>
+      <div className="max-w-md w-full space-y-8 p-8">
+        <div className="text-center">
+          <h1 className="text-3xl font-bold mb-2" style={{ color: 'var(--text-primary)' }}>Choose a new password</h1>
+          <p style={{ color: 'var(--text-secondary)' }}>Set a new password for your account.</p>
+        </div>
 
-          <CardContent>
-            {complete ? (
-              <div className="space-y-6 text-center" role="status">
-                <p className="text-sm text-muted-foreground">
-                  Your password has been updated.
-                </p>
+        <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
+          {error && (
+            <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-md">
+              {error}
+            </div>
+          )}
 
-                <div className="flex flex-col gap-3">
-                  <Link
-                    href="/dashboard"
-                    className="btn-cta inline-flex min-h-[44px] items-center justify-center px-4 py-3 text-base font-medium"
-                  >
-                    Continue to Dashboard
-                  </Link>
+          {success && (
+            <div className="bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded-md">
+              {success}
+            </div>
+          )}
 
-                  <Link
-                    href="/auth/login"
-                    className="btn-secondary inline-flex min-h-[44px] items-center justify-center px-4 py-3 text-base font-medium"
-                  >
-                    Back to Sign In
-                  </Link>
-                </div>
-              </div>
-            ) : (
-              <form className="space-y-6" onSubmit={handleSubmit}>
-                {error && (
-                  <div
-                    className="bg-error/10 border border-error/20 text-error px-4 py-3 rounded-lg text-sm"
-                    role="alert"
-                  >
-                    {error}
-                  </div>
-                )}
+          <div>
+            <label htmlFor="password" className="block text-sm font-medium mb-1" style={{ color: 'var(--text-primary)' }}>
+              New Password
+            </label>
+            <input
+              id="password"
+              name="password"
+              type="password"
+              autoComplete="new-password"
+              required
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              className="w-full px-3 py-2 rounded-md shadow-sm focus:outline-none focus:ring-2 transition-all duration-200"
+              style={{
+                backgroundColor: 'var(--bg-secondary)',
+                color: 'var(--text-primary)',
+                border: '1px solid var(--border-subtle)'
+              }}
+              placeholder="New password"
+            />
+          </div>
 
-                <div className="space-y-4">
-                  <Input
-                    label="New Password"
-                    type="password"
-                    autoComplete="new-password"
-                    required
-                    minLength={8}
-                    value={password}
-                    error={fieldErrors.password}
-                    onChange={(event) => setPassword(event.target.value)}
-                    placeholder="Enter a new password"
-                  />
+          <div>
+            <label htmlFor="confirmPassword" className="block text-sm font-medium mb-1" style={{ color: 'var(--text-primary)' }}>
+              Confirm New Password
+            </label>
+            <input
+              id="confirmPassword"
+              name="confirmPassword"
+              type="password"
+              autoComplete="new-password"
+              required
+              value={confirmPassword}
+              onChange={(e) => setConfirmPassword(e.target.value)}
+              className="w-full px-3 py-2 rounded-md shadow-sm focus:outline-none focus:ring-2 transition-all duration-200"
+              style={{
+                backgroundColor: 'var(--bg-secondary)',
+                color: 'var(--text-primary)',
+                border: '1px solid var(--border-subtle)'
+              }}
+              placeholder="Confirm new password"
+            />
+          </div>
 
-                  <Input
-                    label="Confirm New Password"
-                    type="password"
-                    autoComplete="new-password"
-                    required
-                    minLength={8}
-                    value={confirmPassword}
-                    error={fieldErrors.confirmPassword}
-                    onChange={(event) =>
-                      setConfirmPassword(event.target.value)
-                    }
-                    placeholder="Confirm your new password"
-                  />
-                </div>
+          <button
+            type="submit"
+            disabled={loading || !sessionReady}
+            className="btn-primary group relative w-full flex justify-center py-2 px-4 text-sm font-medium rounded-md disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            {loading ? 'Updating password...' : 'Update password'}
+          </button>
 
-                <Button
-                  type="submit"
-                  variant="cta"
-                  size="lg"
-                  loading={loading}
-                  className="w-full"
-                >
-                  {loading ? "Updating..." : "Update Password"}
-                </Button>
-
-                <p className="text-center text-sm text-muted-foreground">
-                  Need a new link?{" "}
-                  <Link
-                    href="/auth/forgot-password"
-                    className="font-medium text-cta-start transition-colors hover:text-cta-end"
-                  >
-                    Request another email
-                  </Link>
-                </p>
-              </form>
-            )}
-          </CardContent>
-        </Card>
+          <div className="text-center">
+            <Link href="/auth/login" className="font-medium text-rose-600 hover:text-rose-500">
+              Back to sign in
+            </Link>
+          </div>
+        </form>
       </div>
     </div>
-  );
+  )
 }

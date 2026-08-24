@@ -10,8 +10,10 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
+    "precommit:check": "sh scripts/pre-commit-check.sh",
     "test": "vitest --run",
     "test:watch": "vitest",
+    "test:coverage": "vitest --coverage",
     "test:ci": "vitest --run",
     "setup:db": "node scripts/db/setup-database.js",
     "seed:intimacy": "node scripts/db/seed-intimacy.js"
