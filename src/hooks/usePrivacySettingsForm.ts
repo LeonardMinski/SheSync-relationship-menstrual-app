@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 
 import { useAuth } from "@/context/AuthContext";
 import type { PrivacySettings } from "@/schemas/privacy";
@@ -19,6 +19,7 @@ export const defaultPrivacySettings: PrivacySettings = {
 
 export function usePrivacySettingsForm(initialSettings?: PrivacySettings) {
   const { user } = useAuth();
+  const successTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [settings, setSettings] = useState<PrivacySettings>(
     initialSettings ?? defaultPrivacySettings,
   );
@@ -28,7 +29,14 @@ export function usePrivacySettingsForm(initialSettings?: PrivacySettings) {
   const [success, setSuccess] = useState<string | null>(null);
 
   const clearSuccessSoon = () => {
-    setTimeout(() => setSuccess(null), 2500);
+    if (successTimeoutRef.current) {
+      clearTimeout(successTimeoutRef.current);
+    }
+
+    successTimeoutRef.current = setTimeout(() => {
+      setSuccess(null);
+      successTimeoutRef.current = null;
+    }, 2500);
   };
 
   const loadSettings = useCallback(async () => {
@@ -52,6 +60,14 @@ export function usePrivacySettingsForm(initialSettings?: PrivacySettings) {
       void loadSettings();
     }
   }, [user?.id, initialSettings, loadSettings]);
+
+  useEffect(() => {
+    return () => {
+      if (successTimeoutRef.current) {
+        clearTimeout(successTimeoutRef.current);
+      }
+    };
+  }, []);
 
   const updateSetting = async (key: keyof PrivacySettings, value: boolean) => {
     if (!user?.id) return;

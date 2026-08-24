@@ -5,6 +5,7 @@ import {
   findCycleForDate,
   getPhaseMarker,
   getRecentCycleEntries,
+  toCycleDateKey,
   toCycleLogFormState,
   toCycleLogPayload,
 } from "./cycle.utils";
@@ -27,6 +28,10 @@ const cycles: CycleEntry[] = [
 ];
 
 describe("cycle utils", () => {
+  it("normalises dates to stable cycle date keys", () => {
+    expect(toCycleDateKey("2026-08-24T13:00:00.000Z")).toBe("2026-08-24");
+  });
+
   it("finds a cycle entry by calendar date", () => {
     expect(findCycleForDate(cycles, new Date("2026-08-24T13:00:00"))).toEqual(
       cycles[0],
@@ -64,7 +69,10 @@ describe("cycle utils", () => {
   });
 
   it("keeps missing phase presentation unknown", () => {
+    expect(getPhaseMarker("menstrual")).toBe("M");
     expect(getPhaseMarker("follicular")).toBe("F");
+    expect(getPhaseMarker("ovulation")).toBe("O");
+    expect(getPhaseMarker("luteal")).toBe("L");
     expect(getPhaseMarker(null)).toBeNull();
   });
 
@@ -75,5 +83,29 @@ describe("cycle utils", () => {
         formState: defaultCycleLogFormState,
       }),
     ).toBeNull();
+  });
+
+  it("uses the selected entry phase when the form phase is blank", () => {
+    expect(
+      toCycleLogPayload({
+        selectedDate: new Date("2026-08-24T13:00:00"),
+        selectedData: cycles[0],
+        formState: {
+          ...defaultCycleLogFormState,
+          phase: "",
+          symptoms: ["Fatigue"],
+          notes: "Follow-up",
+        },
+      }),
+    ).toEqual({
+      date: "2026-08-24",
+      phase: "follicular",
+      mood: 5,
+      energy: 5,
+      libido: 5,
+      stress: 5,
+      symptoms: ["Fatigue"],
+      notes: "Follow-up",
+    });
   });
 });

@@ -24,6 +24,14 @@ describe("dashboard utils", () => {
     expect(cycles.map((cycle) => cycle.date)).toEqual(originalOrder);
   });
 
+  it("returns the only cycle when a single item is provided", () => {
+    const cycles: DashboardCycleLog[] = [
+      { date: "2026-08-24", phase: "follicular", mood: 7 },
+    ];
+
+    expect(getLatestCycle(cycles)).toBe(cycles[0]);
+  });
+
   it("returns undefined when there are no cycles", () => {
     expect(getLatestCycle([])).toBeUndefined();
   });
@@ -34,21 +42,37 @@ describe("dashboard utils", () => {
     expect(toPhaseLabel(undefined)).toBeNull();
   });
 
-  it("maps scores to labels but keeps missing scores unknown", () => {
-    expect(scoreToMood(8)).toBe("Energetic");
-    expect(scoreToMood(5)).toBe("Calm");
+  it("maps mood scores at threshold boundaries and keeps missing scores unknown", () => {
     expect(scoreToMood(1)).toBe("Tender");
+    expect(scoreToMood(4)).toBe("Tender");
+    expect(scoreToMood(5)).toBe("Calm");
+    expect(scoreToMood(7)).toBe("Calm");
+    expect(scoreToMood(8)).toBe("Energetic");
+    expect(scoreToMood(10)).toBe("Energetic");
     expect(scoreToMood(null)).toBeNull();
+    expect(scoreToMood(undefined)).toBeNull();
+  });
 
-    expect(scoreToEnergy(8)).toBe("High");
-    expect(scoreToEnergy(5)).toBe("Good");
+  it("maps energy scores at threshold boundaries and keeps missing scores unknown", () => {
     expect(scoreToEnergy(1)).toBe("Low");
+    expect(scoreToEnergy(4)).toBe("Low");
+    expect(scoreToEnergy(5)).toBe("Good");
+    expect(scoreToEnergy(7)).toBe("Good");
+    expect(scoreToEnergy(8)).toBe("High");
+    expect(scoreToEnergy(10)).toBe("High");
+    expect(scoreToEnergy(null)).toBeNull();
     expect(scoreToEnergy(undefined)).toBeNull();
+  });
 
-    expect(scoreToStress(8)).toBe("Peak");
-    expect(scoreToStress(5)).toBe("Mild");
+  it("maps stress scores at threshold boundaries and keeps missing scores unknown", () => {
     expect(scoreToStress(1)).toBe("Calm");
+    expect(scoreToStress(4)).toBe("Calm");
+    expect(scoreToStress(5)).toBe("Mild");
+    expect(scoreToStress(7)).toBe("Mild");
+    expect(scoreToStress(8)).toBe("Peak");
+    expect(scoreToStress(10)).toBe("Peak");
     expect(scoreToStress(null)).toBeNull();
+    expect(scoreToStress(undefined)).toBeNull();
   });
 
   it("builds a dashboard summary without fabricated fallback values", () => {
@@ -56,6 +80,20 @@ describe("dashboard utils", () => {
       todaysLog: undefined,
       latestLog: undefined,
       phaseLabel: null,
+      cycleDay: null,
+    });
+  });
+
+  it("prefers today's log over a newer historical latest log", () => {
+    const cycles: DashboardCycleLog[] = [
+      { date: "2026-08-25", phase: "luteal" },
+      { date: "2026-08-24", phase: "follicular" },
+    ];
+
+    expect(buildDashboardSummary(cycles, "2026-08-24")).toEqual({
+      todaysLog: cycles[1],
+      latestLog: cycles[1],
+      phaseLabel: "Follicular Phase",
       cycleDay: null,
     });
   });
