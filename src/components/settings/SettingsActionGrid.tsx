@@ -35,11 +35,16 @@ function SettingsAction({
   return (
     <Link
       href={href}
-      className="rounded-[2rem] border border-border bg-bg-surface p-6 shadow-md transition hover:border-cta-start focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cta-start"
+      className="ss-card p-6 transition hover:border-[color:var(--design-brown)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[color:var(--design-brown)] sm:p-8"
     >
-      <Icon className="h-7 w-7 text-cta-start" aria-hidden="true" />
-      <h2 className="mt-5 text-2xl font-bold text-foreground">{title}</h2>
-      <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
+      <Icon
+        className="h-7 w-7 text-[color:var(--design-sage)]"
+        aria-hidden="true"
+      />
+      <h2 className="ss-display mt-5 text-3xl font-bold text-[color:var(--design-ink)]">
+        {title}
+      </h2>
+      <p className="mt-2 text-base leading-relaxed text-[color:var(--design-muted)]">
         {description}
       </p>
     </Link>

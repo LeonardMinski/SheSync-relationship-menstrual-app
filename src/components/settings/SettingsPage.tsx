@@ -1,12 +1,13 @@
 "use client";
 
-import { TopNavbar } from "@/components/layout/TopNavbar";
+import { PublicFooter, PublicHeader } from "@/components/layout/PublicChrome";
 import LoadingSpinner from "@/components/ui/LoadingSpinner";
 import { useSettingsPageState } from "@/hooks/useSettingsPageState";
 
 import { AccountCard } from "./AccountCard";
 import { DataManagementCard } from "./DataManagementCard";
 import { DeleteDataDialog } from "./DeleteDataDialog";
+import { SessionManagementCard } from "./SessionManagementCard";
 import { SettingsActionGrid } from "./SettingsActionGrid";
 import { ThemeCard } from "./ThemeCard";
 
@@ -31,20 +32,16 @@ export default function SettingsPage() {
   }
 
   return (
-    <div className="min-h-screen bg-bg pb-10">
-      <TopNavbar
-        title="Settings"
-        subtitle="Account, privacy, and preferences"
-        showNotifications
-      />
+    <div className="ss-page min-h-screen text-[color:var(--design-ink)]">
+      <PublicHeader />
 
-      <main className="mx-auto w-full max-w-5xl space-y-6 px-4 py-6 sm:px-6 lg:px-10">
-        <section className="hidden md:block">
-          <h1 className="text-5xl font-bold tracking-tight text-foreground">
+      <main className="mx-auto w-full max-w-5xl space-y-8 px-5 py-16 sm:px-8 lg:px-10">
+        <section>
+          <h1 className="ss-display text-5xl font-bold tracking-tight text-[color:var(--design-brown)] md:text-6xl">
             Settings
           </h1>
-          <p className="mt-3 max-w-2xl text-xl leading-relaxed text-muted-foreground">
-            Manage your account, privacy, and preferences.
+          <p className="mt-4 max-w-2xl text-xl leading-relaxed text-[color:var(--design-muted)]">
+            Manage your intimate wellness journey preferences.
           </p>
         </section>
 
@@ -59,6 +56,8 @@ export default function SettingsPage() {
           onDelete={() => setShowDeleteConfirm(true)}
           onExport={exportData}
         />
+
+        <SessionManagementCard />
       </main>
 
       {showDeleteConfirm && (
@@ -67,6 +66,8 @@ export default function SettingsPage() {
           onConfirm={deleteAllData}
         />
       )}
+
+      <PublicFooter />
     </div>
   );
 }

@@ -9,21 +9,22 @@ interface CycleIntroProps {
 
 export function CycleIntro({ hasEntry, onLog }: CycleIntroProps) {
   return (
-    <section className="rounded-[2rem] border border-border bg-bg-surface px-5 py-8 text-center shadow-md sm:px-8 md:py-10">
-      <div className="mx-auto max-w-2xl space-y-4">
-        <h1 className="text-4xl font-bold leading-tight tracking-tight text-foreground md:text-5xl">
-          How are you feeling today?
-        </h1>
-        <p className="mx-auto max-w-xl text-lg leading-relaxed text-muted-foreground">
-          Log your daily metrics to discover personal insights.
+    <section className="ss-card px-5 py-8 text-center sm:px-8 md:py-10">
+      <div className="mx-auto max-w-2xl space-y-3">
+        <h2 className="ss-display text-3xl font-bold text-[color:var(--design-brown)] md:text-4xl">
+          Daily check-in
+        </h2>
+        <p className="mx-auto max-w-xl text-lg leading-relaxed text-[color:var(--design-muted)]">
+          {hasEntry
+            ? "You already have an entry for this date. Update it whenever your day changes."
+            : "Add today's mood, energy, symptoms, and private note in one place."}
         </p>
       </div>
 
       <Button
-        variant="cta"
         size="lg"
         onClick={onLog}
-        className="mx-auto mt-7 w-full max-w-xs"
+        className="mx-auto mt-8 w-full max-w-xs rounded-full bg-[color:var(--design-peach)] text-[color:var(--design-ink)] shadow-[var(--design-shadow-soft)] hover:brightness-105"
       >
         <Plus className="h-5 w-5" />
         {hasEntry ? "Edit Log" : "Log Today"}

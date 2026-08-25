@@ -37,7 +37,7 @@ export function LogoutButton({ onDone }: LogoutButtonProps) {
       type="button"
       onClick={handleLogout}
       disabled={isSigningOut}
-      className="flex min-h-12 w-full items-center gap-3 rounded-xl px-3 text-left text-sm font-semibold text-muted-foreground transition-colors hover:bg-bg-elevated hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cta-start disabled:cursor-not-allowed disabled:opacity-60"
+      className="inline-flex min-h-12 w-full items-center justify-center gap-3 rounded-full border border-[color:var(--design-border)] bg-white px-6 text-sm font-bold text-[color:var(--design-brown)] transition hover:border-[color:var(--design-brown)] hover:text-[color:var(--design-ink)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[color:var(--design-brown)] disabled:cursor-not-allowed disabled:opacity-60"
     >
       <LogOut className="h-5 w-5 shrink-0" aria-hidden="true" />
       <span>{isSigningOut ? "Logging out..." : "Log out"}</span>

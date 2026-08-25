@@ -20,7 +20,7 @@ export function PrivacySettingsCards({
   onSettingChange,
 }: PrivacySettingsCardsProps) {
   return (
-    <div className="grid gap-6 xl:grid-cols-[minmax(280px,0.8fr)_minmax(320px,1fr)_minmax(280px,0.8fr)]">
+    <div className="grid gap-7 lg:grid-cols-[minmax(0,0.85fr)_minmax(0,1.3fr)]">
       <ManagePartnerCard saving={saving} onReset={onReset} />
       <SharingSettingsCard
         saving={saving}

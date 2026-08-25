@@ -4,10 +4,10 @@
 
 /* Base Variables */
 :root {
-  --color-primary: #4b604f;
-  --color-secondary: #75668f;
-  --color-accent: #e5ad95;
-  --color-info: #7c91b6;
+  --color-primary: #2f4935;
+  --color-secondary: #5f5177;
+  --color-accent: #c87962;
+  --color-info: #5d739b;
   --color-success: #4f9c68;
   --color-error: #c84654;
   --color-warning: #d8a548;
@@ -15,17 +15,17 @@
   --bg-primary: #f8f6f3;
   --bg-secondary: #ffffff;
   --bg-glass: rgba(255, 255, 255, 0.86);
-  --bg-overlay: rgba(184, 211, 189, 0.12);
+  --bg-overlay: rgba(111, 143, 117, 0.14);
 
   --text-primary: #171917;
-  --text-secondary: #61685f;
-  --text-tertiary: #7d847c;
+  --text-secondary: #30362f;
+  --text-tertiary: #3f473e;
   --text-inverse: #ffffff;
   --btn-primary-text: #132018;
   --btn-primary-text-dark: #132018;
 
-  --border-subtle: rgba(75, 96, 79, 0.16);
-  --border-strong: rgba(75, 96, 79, 0.32);
+  --border-subtle: rgba(47, 73, 53, 0.2);
+  --border-strong: rgba(47, 73, 53, 0.42);
   --shadow-soft:
     0 0 0 1px rgb(255 255 255 / 0.56),
     0 16px 34px -26px rgba(17, 22, 18, 0.3);
@@ -33,21 +33,21 @@
     0 0 0 1px rgb(255 255 255 / 0.56),
     0 16px 34px -26px rgba(17, 22, 18, 0.3);
 
-  --gradient-primary: linear-gradient(135deg, #b8d3bd, #8fa98f);
-  --gradient-accent: linear-gradient(135deg, #e5ad95, #d9c5ff);
-  --accent-gradient: linear-gradient(135deg, #e5ad95, #d9c5ff);
-  --cta-gradient: linear-gradient(135deg, #b8d3bd, #8fa98f);
-  --accent-start: #e5ad95;
+  --gradient-primary: linear-gradient(135deg, #526f59, #2f4935);
+  --gradient-accent: linear-gradient(135deg, #c87962, #8f7ab6);
+  --accent-gradient: linear-gradient(135deg, #c87962, #8f7ab6);
+  --cta-gradient: linear-gradient(135deg, #526f59, #2f4935);
+  --accent-start: #c87962;
 
-  --accent-secondary: #75668f;
-  --info: #7c91b6;
+  --accent-secondary: #5f5177;
+  --info: #5d739b;
   --success: #4f9c68;
   --error: #c84654;
   --warning: #d8a548;
 }
 
 .dark {
-  --color-primary: #b8d3bd;
+  --color-primary: #9fbea4;
   --color-secondary: #8d7aaa;
   --color-accent: #efa88e;
   --color-info: #86a6d8;
@@ -58,7 +58,7 @@
   --bg-primary: #101411;
   --bg-secondary: rgba(26, 33, 28, 0.86);
   --bg-glass: rgba(26, 33, 28, 0.72);
-  --bg-overlay: rgba(184, 211, 189, 0.09);
+  --bg-overlay: rgba(159, 190, 164, 0.12);
 
   --text-primary: #f7f8f3;
   --text-secondary: #aeb6ad;
@@ -67,8 +67,8 @@
   --btn-primary-text: #132018;
   --btn-primary-text-dark: #132018;
 
-  --border-subtle: rgba(184, 211, 189, 0.12);
-  --border-strong: rgba(184, 211, 189, 0.28);
+  --border-subtle: rgba(159, 190, 164, 0.16);
+  --border-strong: rgba(159, 190, 164, 0.34);
   --shadow-soft:
     0 0 0 1px rgb(247 248 243 / 0.1),
     0 22px 44px -34px rgba(0, 0, 0, 0.94);
@@ -76,10 +76,10 @@
     0 0 0 1px rgb(247 248 243 / 0.1),
     0 22px 44px -34px rgba(0, 0, 0, 0.94);
 
-  --gradient-primary: linear-gradient(135deg, #b8d3bd, #93ad95);
+  --gradient-primary: linear-gradient(135deg, #9fbea4, #7f9b82);
   --gradient-accent: linear-gradient(135deg, #efa88e, #cdb6ff);
   --accent-gradient: linear-gradient(135deg, #efa88e, #cdb6ff);
-  --cta-gradient: linear-gradient(135deg, #b8d3bd, #93ad95);
+  --cta-gradient: linear-gradient(135deg, #9fbea4, #7f9b82);
   --accent-start: #efa88e;
 
   --accent-secondary: #8d7aaa;
@@ -104,7 +104,7 @@
 .dark {
   --phase-menstrual-bg: rgba(239, 168, 142, 0.15);
   --phase-menstrual-text: #ffc0ad;
-  --phase-follicular-bg: rgba(184, 211, 189, 0.16);
+  --phase-follicular-bg: rgba(159, 190, 164, 0.2);
   --phase-follicular-text: #cfe8d2;
   --phase-ovulation-bg: rgba(255, 206, 84, 0.15);
   --phase-ovulation-text: #fde047;

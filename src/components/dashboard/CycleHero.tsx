@@ -1,4 +1,4 @@
-import { PenLine, ShieldCheck } from "lucide-react";
+import { Droplets, PenLine, Smile, Stethoscope } from "lucide-react";
 
 import { Button } from "@/components/ui/Button";
 
@@ -16,41 +16,93 @@ export function CycleHero({
   onLog,
 }: CycleHeroProps) {
   return (
-    <section className="overflow-hidden rounded-[2rem] border border-border bg-bg-surface px-5 py-8 text-center shadow-lg sm:px-8 md:py-10">
-      <div className="mx-auto flex max-w-3xl flex-col items-center">
-        <div className="inline-flex items-center gap-2 rounded-full border border-border bg-bg-elevated px-4 py-2 text-xs font-bold uppercase tracking-[0.16em] text-muted-foreground">
-          <ShieldCheck className="h-4 w-4 text-info" aria-hidden="true" />
-          Privacy first
-        </div>
+    <section className="ss-card p-7 sm:p-9">
+      <h2 className="ss-display text-3xl font-bold text-[color:var(--design-brown)]">
+        Current Cycle Phase
+      </h2>
 
-        <h2 className="mt-6 text-4xl font-black leading-tight tracking-tight text-foreground sm:text-5xl">
-          {phaseLabel}
-        </h2>
+      <div className="mt-8 flex justify-center">
+        <div className="relative flex aspect-square w-full max-w-[390px] items-center justify-center">
+          <svg
+            className="absolute inset-0 h-full w-full -rotate-90"
+            viewBox="0 0 120 120"
+            aria-hidden="true"
+          >
+            <circle
+              cx="60"
+              cy="60"
+              r="48"
+              fill="none"
+              stroke="#f3efec"
+              strokeWidth="8"
+            />
+            <circle
+              cx="60"
+              cy="60"
+              r="48"
+              fill="none"
+              stroke="var(--design-peach)"
+              strokeLinecap="round"
+              strokeDasharray="196 302"
+              strokeWidth="8"
+            />
+          </svg>
 
-        <div className="mt-8 flex aspect-square w-full max-w-[280px] items-center justify-center rounded-full border-[10px] border-cta-start/80 bg-bg sm:max-w-[320px]">
-          <div className="text-center">
-            <p className="text-xs font-black uppercase tracking-[0.28em] text-muted-foreground">
-              Cycle Day
-            </p>
-            <p className="mt-1 text-7xl font-black leading-none text-foreground sm:text-8xl">
-              {dayNumber ?? "-"}
-            </p>
+          <div className="flex aspect-square w-[58%] items-center justify-center rounded-full border border-[color:var(--design-border)] bg-white text-center shadow-[inset_0_0_0_1px_rgba(255,255,255,0.9)]">
+            <div>
+              <p className="text-sm font-black uppercase tracking-[0.18em] text-[color:var(--design-sage)]">
+                Day {dayNumber ?? "—"}
+              </p>
+              <p className="ss-display mt-3 text-4xl font-bold leading-tight text-[color:var(--design-brown)]">
+                {phaseLabel}
+              </p>
+            </div>
           </div>
         </div>
-
-        <div className="mt-8 max-w-2xl">
-          <p className="text-lg leading-relaxed text-muted-foreground sm:text-xl">
-            {hasLog
-              ? "Your latest logged data is ready for review."
-              : "Log your cycle data to unlock phase context and trends."}
-          </p>
-        </div>
-
-        <Button className="mt-9 w-full max-w-xs" onClick={onLog}>
-          <PenLine className="h-5 w-5" aria-hidden="true" />
-          {hasLog ? "Update Log" : "Log Today"}
-        </Button>
       </div>
+
+      <div className="mt-8 flex flex-wrap justify-center gap-4">
+        <QuickLogButton icon={Droplets} label="Flow" onClick={onLog} />
+        <QuickLogButton icon={Smile} label="Mood" active onClick={onLog} />
+        <QuickLogButton icon={Stethoscope} label="Symptoms" onClick={onLog} />
+      </div>
+
+      <Button
+        type="button"
+        variant="secondary"
+        className="sr-only"
+        onClick={onLog}
+      >
+        <PenLine className="h-5 w-5" aria-hidden="true" />
+        {hasLog ? "Update Log" : "Log Today"}
+      </Button>
     </section>
+  );
+}
+
+function QuickLogButton({
+  icon: Icon,
+  label,
+  active,
+  onClick,
+}: {
+  icon: typeof Droplets;
+  label: string;
+  active?: boolean;
+  onClick: () => void;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className={
+        active
+          ? "flex min-h-20 min-w-20 flex-col items-center justify-center gap-2 rounded-xl bg-[color:var(--design-peach)] px-4 text-sm font-bold text-[color:var(--design-brown)] shadow-[var(--design-shadow-soft)]"
+          : "flex min-h-20 min-w-20 flex-col items-center justify-center gap-2 rounded-xl border border-[color:var(--design-border)] bg-[color:var(--design-footer)] px-4 text-sm font-bold text-[color:var(--design-ink)] transition hover:border-[color:var(--design-peach)]"
+      }
+    >
+      <Icon className="h-6 w-6" aria-hidden="true" />
+      {label}
+    </button>
   );
 }

@@ -1,6 +1,6 @@
 "use client";
 
-import { TopNavbar } from "@/components/layout/TopNavbar";
+import { PublicFooter, PublicHeader } from "@/components/layout/PublicChrome";
 import { usePartnerPortalData } from "@/hooks/usePartnerPortalData";
 
 import { NoPartnerState } from "./NoPartnerState";
@@ -36,24 +36,23 @@ export default function PartnerPortal() {
   }
 
   return (
-    <div className="min-h-screen bg-bg pb-10">
-      <TopNavbar
-        title="Partner View"
-        subtitle={`Supporting ${partnerData?.partnerName || "your partner"}`}
-        actions={
+    <div className="ss-page min-h-screen text-[color:var(--design-ink)]">
+      <PublicHeader />
+
+      <main className="mx-auto w-full max-w-6xl space-y-8 px-5 py-16 sm:px-8 lg:px-10">
+        <div className="flex justify-end">
           <PartnerRefreshButton
             refreshing={refreshing}
             onRefresh={refreshPartnerData}
           />
-        }
-      />
-
-      <main className="mx-auto w-full max-w-6xl space-y-7 px-4 py-6 sm:px-6 lg:px-10">
+        </div>
         <PartnerPortalHero partnerName={partnerData?.partnerName} />
         <PartnerSharedSummary partnerData={partnerData} />
         <RecentActivitySection partnerData={partnerData} />
         <SupportiveActions />
       </main>
+
+      <PublicFooter />
     </div>
   );
 }

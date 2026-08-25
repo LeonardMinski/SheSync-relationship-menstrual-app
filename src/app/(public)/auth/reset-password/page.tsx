@@ -1,157 +1,184 @@
-'use client'
+"use client";
 
-import React, { useEffect, useState } from 'react'
-import Link from 'next/link'
-import { useRouter } from 'next/navigation'
-import { useAuth } from '@/context/AuthContext'
-import { supabase } from '@/lib/supabase/client'
+import React, { useEffect, useState } from "react";
+import Link from "next/link";
+import { ArrowLeft, ArrowRight, KeyRound, LockKeyhole } from "lucide-react";
+import { useRouter } from "next/navigation";
+
+import { useAuth } from "@/context/AuthContext";
+import { supabase } from "@/lib/supabase/client";
 
 export default function ResetPasswordPage() {
-  const { updatePassword } = useAuth()
-  const router = useRouter()
-  const [password, setPassword] = useState('')
-  const [confirmPassword, setConfirmPassword] = useState('')
-  const [error, setError] = useState('')
-  const [success, setSuccess] = useState('')
-  const [loading, setLoading] = useState(false)
-  const [sessionReady, setSessionReady] = useState(false)
+  const { updatePassword } = useAuth();
+  const router = useRouter();
+  const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [error, setError] = useState("");
+  const [success, setSuccess] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [sessionReady, setSessionReady] = useState(false);
 
   useEffect(() => {
-    let isMounted = true
+    let isMounted = true;
 
     const checkRecoverySession = async () => {
-      const { data } = await supabase.auth.getSession()
-      if (!isMounted) return
+      const { data } = await supabase.auth.getSession();
+      if (!isMounted) return;
 
       if (data.session) {
-        setSessionReady(true)
+        setSessionReady(true);
       } else {
-        setError('This reset link is invalid or expired. Request a new one.')
+        setError("This reset link is invalid or expired. Request a new one.");
       }
-    }
+    };
 
-    checkRecoverySession()
+    checkRecoverySession();
 
     return () => {
-      isMounted = false
-    }
-  }, [])
+      isMounted = false;
+    };
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault()
-    if (loading) return
+    e.preventDefault();
+    if (loading) return;
 
-    setError('')
-    setSuccess('')
+    setError("");
+    setSuccess("");
 
     if (password !== confirmPassword) {
-      setError('Passwords do not match')
-      return
+      setError("Passwords do not match");
+      return;
     }
 
     if (password.length < 8) {
-      setError('Password must be at least 8 characters long')
-      return
+      setError("Password must be at least 8 characters long");
+      return;
     }
 
-    setLoading(true)
+    setLoading(true);
 
     try {
-      const result = await updatePassword(password)
+      const result = await updatePassword(password);
       if (!result.success) {
-        setError(result.error || 'Unable to update password')
-        return
+        setError(result.error || "Unable to update password");
+        return;
       }
 
-      setSuccess('Password updated. Redirecting to sign in...')
+      setSuccess("Password updated. Redirecting to sign in...");
       setTimeout(() => {
-        router.replace('/auth/login')
-      }, 1200)
+        router.replace("/auth/login");
+      }, 1200);
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
+  };
 
   return (
-    <div className="min-h-screen flex items-center justify-center" style={{ backgroundColor: 'var(--bg-primary)' }}>
-      <div className="max-w-md w-full space-y-8 p-8">
+    <div className="ss-page flex min-h-screen items-center justify-center px-5 py-16 text-[color:var(--design-ink)]">
+      <section className="ss-card w-full max-w-xl px-6 py-12 sm:px-14 sm:py-16">
         <div className="text-center">
-          <h1 className="text-3xl font-bold mb-2" style={{ color: 'var(--text-primary)' }}>Choose a new password</h1>
-          <p style={{ color: 'var(--text-secondary)' }}>Set a new password for your account.</p>
+          <div className="mx-auto flex h-20 w-20 items-center justify-center rounded-full bg-[color:var(--design-footer)]">
+            <KeyRound
+              className="h-10 w-10 text-[color:var(--design-brown)]"
+              aria-hidden="true"
+            />
+          </div>
+          <h1 className="ss-display mt-10 text-5xl font-bold text-[color:var(--design-ink)]">
+            Choose a new password
+          </h1>
+          <p className="mx-auto mt-5 max-w-sm text-xl leading-8 text-[color:var(--design-muted)]">
+            Set a fresh password for your SheSync+ account.
+          </p>
         </div>
 
-        <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
+        <form className="mt-12 space-y-7" onSubmit={handleSubmit}>
           {error && (
-            <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-md">
+            <div
+              className="rounded-xl border border-error/20 bg-error/10 px-4 py-3 text-sm font-semibold text-error"
+              role="alert"
+            >
               {error}
             </div>
           )}
 
           {success && (
-            <div className="bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded-md">
+            <div
+              className="rounded-xl border border-success/20 bg-success/10 px-4 py-3 text-sm font-semibold text-success"
+              role="status"
+            >
               {success}
             </div>
           )}
 
-          <div>
-            <label htmlFor="password" className="block text-sm font-medium mb-1" style={{ color: 'var(--text-primary)' }}>
-              New Password
-            </label>
-            <input
-              id="password"
-              name="password"
-              type="password"
-              autoComplete="new-password"
-              required
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              className="w-full px-3 py-2 rounded-md shadow-sm focus:outline-none focus:ring-2 transition-all duration-200"
-              style={{
-                backgroundColor: 'var(--bg-secondary)',
-                color: 'var(--text-primary)',
-                border: '1px solid var(--border-subtle)'
-              }}
-              placeholder="New password"
-            />
-          </div>
+          <PasswordField
+            id="password"
+            name="password"
+            label="New Password"
+            autoComplete="new-password"
+            value={password}
+            onChange={(event) => setPassword(event.target.value)}
+            placeholder="New password"
+          />
 
-          <div>
-            <label htmlFor="confirmPassword" className="block text-sm font-medium mb-1" style={{ color: 'var(--text-primary)' }}>
-              Confirm New Password
-            </label>
-            <input
-              id="confirmPassword"
-              name="confirmPassword"
-              type="password"
-              autoComplete="new-password"
-              required
-              value={confirmPassword}
-              onChange={(e) => setConfirmPassword(e.target.value)}
-              className="w-full px-3 py-2 rounded-md shadow-sm focus:outline-none focus:ring-2 transition-all duration-200"
-              style={{
-                backgroundColor: 'var(--bg-secondary)',
-                color: 'var(--text-primary)',
-                border: '1px solid var(--border-subtle)'
-              }}
-              placeholder="Confirm new password"
-            />
-          </div>
+          <PasswordField
+            id="confirmPassword"
+            name="confirmPassword"
+            label="Confirm New Password"
+            autoComplete="new-password"
+            value={confirmPassword}
+            onChange={(event) => setConfirmPassword(event.target.value)}
+            placeholder="Confirm new password"
+          />
 
           <button
             type="submit"
             disabled={loading || !sessionReady}
-            className="btn-primary group relative w-full flex justify-center py-2 px-4 text-sm font-medium rounded-md disabled:opacity-50 disabled:cursor-not-allowed"
+            className="inline-flex min-h-16 w-full items-center justify-center gap-3 rounded-full bg-[color:var(--design-peach)] px-8 text-xl font-bold text-[color:var(--design-ink)] shadow-[var(--design-shadow-soft)] transition hover:brightness-105 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[color:var(--design-brown)] disabled:cursor-not-allowed disabled:opacity-60"
           >
-            {loading ? 'Updating password...' : 'Update password'}
+            {loading ? "Updating password..." : "Update password"}
+            <ArrowRight className="h-6 w-6" aria-hidden="true" />
           </button>
 
           <div className="text-center">
-            <Link href="/auth/login" className="font-medium text-rose-600 hover:text-rose-500">
+            <Link
+              href="/auth/login"
+              className="inline-flex items-center justify-center gap-2 text-base font-bold text-[color:var(--design-muted)] transition hover:text-[color:var(--design-brown)]"
+            >
+              <ArrowLeft className="h-5 w-5" aria-hidden="true" />
               Back to sign in
             </Link>
           </div>
         </form>
+      </section>
+    </div>
+  );
+}
+
+function PasswordField({
+  label,
+  ...props
+}: React.InputHTMLAttributes<HTMLInputElement> & { label: string }) {
+  return (
+    <div className="space-y-2">
+      <label
+        htmlFor={props.id}
+        className="block text-base font-bold uppercase tracking-[0.12em] text-[color:var(--design-muted)]"
+      >
+        {label}
+      </label>
+      <div className="relative">
+        <LockKeyhole
+          className="pointer-events-none absolute left-6 top-1/2 h-7 w-7 -translate-y-1/2 text-[color:var(--design-muted)]"
+          aria-hidden="true"
+        />
+        <input
+          type="password"
+          required
+          className="ss-auth-input"
+          {...props}
+        />
       </div>
     </div>
-  )
+  );
 }

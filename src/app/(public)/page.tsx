@@ -1,104 +1,119 @@
 import Link from "next/link";
+import { Heart, ShieldCheck, Sparkles } from "lucide-react";
+
+import { PublicFooter, PublicHeader } from "@/components/layout/PublicChrome";
 
 export default function HomePage() {
   return (
-    <main className="min-h-screen bg-white text-gray-950 dark:bg-[#17121F] dark:text-white">
-      <header className="border-b border-gray-200 px-4 py-5 dark:border-[#34263F]">
-        <div className="mx-auto flex max-w-6xl items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-rose-600">
-              <span className="text-sm font-bold text-white">S+</span>
+    <div className="ss-page min-h-screen text-[color:var(--design-ink)]">
+      <PublicHeader />
+
+      <main>
+        <section className="mx-auto grid min-h-[720px] w-full max-w-7xl items-center gap-14 px-5 py-20 sm:px-8 lg:grid-cols-[0.95fr_1.05fr] lg:px-10">
+          <div className="max-w-xl">
+            <h1 className="ss-display text-5xl font-bold leading-[0.98] tracking-tight text-[color:var(--design-ink)] sm:text-6xl lg:text-7xl">
+              Harmony in your hands, shared with your heart.
+            </h1>
+            <p className="mt-8 max-w-lg text-xl leading-9 text-[color:var(--design-muted)]">
+              Empower your intimate wellness journey with a sophisticated,
+              private space for menstrual health and partner sharing.
+            </p>
+
+            <div className="mt-10 flex flex-col gap-4 sm:flex-row">
+              <Link
+                href="/auth/signup"
+                className="inline-flex min-h-14 items-center justify-center rounded-full bg-[color:var(--design-peach)] px-9 text-base font-bold text-[color:var(--design-ink)] shadow-[var(--design-shadow-soft)] transition hover:brightness-105 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[color:var(--design-brown)]"
+              >
+                Get Started
+              </Link>
+              <Link
+                href="/auth/login"
+                className="inline-flex min-h-14 items-center justify-center rounded-full border border-[color:var(--design-brown)] px-9 text-base font-bold text-[color:var(--design-ink)] transition hover:bg-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[color:var(--design-brown)]"
+              >
+                How it works
+              </Link>
             </div>
-            <span className="text-xl font-semibold">SheSync+</span>
           </div>
 
-          <nav className="flex items-center gap-3">
-            <Link
-              className="text-sm font-medium text-gray-700 dark:text-gray-200"
-              href="/auth/login"
-            >
-              Login
-            </Link>
-            <Link
-              className="inline-flex min-h-[44px] items-center justify-center rounded-lg bg-gradient-to-r from-rose-500 to-violet-500 px-4 text-sm font-semibold text-[var(--btn-primary-text)] shadow-lg shadow-rose-500/20 transition-transform hover:-translate-y-0.5"
-              href="/auth/signup"
-            >
-              Get Started
-            </Link>
-          </nav>
-        </div>
-      </header>
-
-      <section className="mx-auto max-w-6xl px-4 py-16">
-        <div className="max-w-3xl">
-          <h1 className="text-4xl font-bold leading-tight md:text-6xl">
-            Cycle tracking with privacy-first partner sharing
-          </h1>
-          <p className="mt-5 max-w-2xl text-lg leading-8 text-gray-600 dark:text-gray-300">
-            Log cycle data, see your dashboard, choose what your partner can
-            view, and keep the MVP flow clear.
-          </p>
-          <div className="mt-8 flex flex-col gap-3 sm:flex-row">
-            <Link
-              className="inline-flex min-h-[48px] items-center justify-center rounded-lg bg-gradient-to-r from-rose-500 to-violet-500 px-5 font-semibold text-[var(--btn-primary-text)] shadow-lg shadow-rose-500/20 transition-transform hover:-translate-y-0.5"
-              href="/auth/signup"
-            >
-              Start Your Journey
-              <span className="ml-2" aria-hidden="true">
-                -&gt;
-              </span>
-            </Link>
-            <Link
-              className="inline-flex min-h-[48px] items-center justify-center rounded-lg border border-gray-300 px-5 font-semibold text-gray-900 dark:border-[#34263F] dark:text-white"
-              href="/auth/login"
-            >
-              Sign In
-            </Link>
+          <div className="ss-card mx-auto w-full max-w-xl p-6">
+            <div className="relative aspect-[1.04] overflow-hidden rounded-xl border border-[color:var(--design-border)] bg-[#faf7f0]">
+              <div className="absolute inset-x-0 top-0 flex h-16 items-center justify-center border-b border-[color:var(--design-border)] bg-white/70">
+                <span className="ss-display text-3xl font-bold text-[color:var(--design-brown)]">
+                  SheSync+
+                </span>
+              </div>
+              <div className="absolute inset-0 top-16">
+                <div className="absolute -left-24 top-20 h-40 w-[120%] rotate-[-10deg] rounded-[50%] bg-[color:var(--design-peach)]/45 blur-sm" />
+                <div className="absolute left-16 top-28 h-32 w-[95%] rotate-[8deg] rounded-[50%] bg-[color:var(--design-sage-soft)]/80 blur-[2px]" />
+                <div className="absolute left-28 top-36 h-36 w-[92%] rotate-[-14deg] rounded-[50%] bg-[#d9bd9a]/50 blur-[2px]" />
+              </div>
+              <div className="absolute inset-x-0 top-24 text-center">
+                <p className="ss-display text-3xl font-semibold text-[color:var(--design-brown)]">
+                  Welcome
+                </p>
+              </div>
+            </div>
           </div>
-        </div>
+        </section>
 
-        <div className="mt-14 grid gap-4 md:grid-cols-3">
-          <FeatureCard
-            icon="C"
-            title="Cycle Logging"
-            description="Save phase, mood, energy, symptoms, and notes by cycle date."
-          />
-          <FeatureCard
-            icon="P"
-            title="Privacy Controls"
-            description="Choose whether cycle phase, mood, and energy are visible to a partner."
-          />
-          <FeatureCard
-            icon="2"
-            title="Partner View"
-            description="A read-only partner view that respects the privacy settings from the API."
-          />
-        </div>
-      </section>
-    </main>
+        <section className="border-t border-[color:var(--design-border)] bg-white/45 px-5 py-24 sm:px-8 lg:px-10">
+          <div className="mx-auto max-w-7xl">
+            <div className="text-center">
+              <h2 className="ss-display text-4xl font-bold text-[color:var(--design-ink)] md:text-5xl">
+                Elevate your awareness
+              </h2>
+              <p className="mx-auto mt-5 max-w-3xl text-lg leading-8 text-[color:var(--design-muted)]">
+                Designed with radical privacy and soft tactility to support
+                your holistic wellbeing.
+              </p>
+            </div>
+
+            <div className="mt-16 grid gap-8 md:grid-cols-3">
+              <FeatureCard
+                icon={Sparkles}
+                title="Deep Cycle Insights"
+                description="Track your natural rhythms with precision. Minimalist logs reduce cognitive load while keeping patterns useful."
+              />
+              <FeatureCard
+                icon={ShieldCheck}
+                title="Radical Privacy"
+                description="Your intimate data remains yours, with explicit controls for what a partner can see."
+              />
+              <FeatureCard
+                icon={Heart}
+                title="Empowered Partnerships"
+                description="Foster empathy and connection through calm, discreet partner context."
+              />
+            </div>
+          </div>
+        </section>
+      </main>
+
+      <PublicFooter />
+    </div>
   );
 }
 
 function FeatureCard({
-  icon,
+  icon: Icon,
   title,
   description,
 }: {
-  icon: string;
+  icon: typeof Sparkles;
   title: string;
   description: string;
 }) {
   return (
-    <div className="rounded-lg border border-gray-200 p-5 dark:border-[#34263F]">
-      <div className="mb-4 flex h-11 w-11 items-center justify-center rounded-lg bg-rose-50 text-rose-700 dark:bg-rose-950 dark:text-rose-200">
-        <span className="text-sm font-bold" aria-hidden="true">
-          {icon}
-        </span>
+    <article className="ss-card min-h-[260px] p-8">
+      <div className="flex h-14 w-14 items-center justify-center rounded-full bg-[color:var(--design-footer)]">
+        <Icon className="h-6 w-6 text-[color:var(--design-sage)]" aria-hidden="true" />
       </div>
-      <h2 className="text-lg font-semibold">{title}</h2>
-      <p className="mt-2 text-sm leading-6 text-gray-600 dark:text-gray-300">
+      <h3 className="ss-display mt-12 text-3xl font-bold text-[color:var(--design-ink)]">
+        {title}
+      </h3>
+      <p className="mt-5 text-base leading-7 text-[color:var(--design-muted)]">
         {description}
       </p>
-    </div>
+    </article>
   );
 }

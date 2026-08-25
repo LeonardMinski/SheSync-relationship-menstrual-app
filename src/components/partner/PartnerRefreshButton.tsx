@@ -12,7 +12,7 @@ export function PartnerRefreshButton({
       type="button"
       onClick={onRefresh}
       disabled={refreshing}
-      className="flex h-10 w-10 items-center justify-center rounded-full border border-border bg-bg-surface text-muted-foreground hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cta-start"
+      className="flex h-11 w-11 items-center justify-center rounded-full border border-[color:var(--design-border)] bg-white text-[color:var(--design-muted)] shadow-[var(--design-shadow-soft)] hover:text-[color:var(--design-brown)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[color:var(--design-brown)]"
       data-testid="refresh-button"
       aria-label="Refresh partner data"
     >

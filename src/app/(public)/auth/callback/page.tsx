@@ -1,41 +1,44 @@
 "use client";
 
 import Link from "next/link";
-import { CheckCircleIcon } from "@heroicons/react/24/solid";
+import { ArrowLeft, ArrowRight, CircleCheck } from "lucide-react";
 
 export default function AuthCallback() {
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-rose-50 via-white to-purple-50 dark:from-gray-900 dark:via-gray-800 dark:to-purple-900">
-      <div className="max-w-md w-full bg-white dark:bg-gray-800 rounded-2xl shadow-xl p-8 text-center">
-        <div className="flex justify-center mb-6">
-          <CheckCircleIcon className="h-16 w-16 text-green-500" />
+    <div className="ss-page flex min-h-screen items-center justify-center px-5 py-16 text-[color:var(--design-ink)]">
+      <section className="ss-card w-full max-w-xl px-6 py-14 text-center sm:px-14 sm:py-16">
+        <div className="mx-auto flex h-20 w-20 items-center justify-center rounded-full bg-[color:var(--design-sage-soft)]">
+          <CircleCheck
+            className="h-11 w-11 text-[color:var(--design-sage)]"
+            aria-hidden="true"
+          />
         </div>
 
-        <h1 className="text-2xl font-bold text-white dark:text-white mb-4">
-          Email Confirmed!
+        <h1 className="ss-display mt-10 text-5xl font-bold text-[color:var(--design-ink)]">
+          Email confirmed
         </h1>
 
-        <p className="text-gray-600 dark:text-gray-300 mb-8">
-          Your email has been confirmed successfully. You can now log in to your
-          account.
+        <p className="mx-auto mt-6 max-w-sm text-xl leading-8 text-[color:var(--design-muted)]">
+          Your email has been confirmed successfully. You can now log in to
+          your account.
         </p>
 
         <Link
           href="/auth/login"
-          className="w-full bg-gradient-to-r from-rose-500 to-purple-600 text-[var(--btn-primary-text)] font-semibold py-3 px-6 rounded-xl hover:from-rose-600 hover:to-purple-700 transition-all duration-200 transform hover:scale-105 inline-block"
+          className="mt-12 inline-flex min-h-14 w-full items-center justify-center gap-3 rounded-full bg-[color:var(--design-peach)] px-8 text-lg font-bold text-[color:var(--design-ink)] shadow-[var(--design-shadow-soft)] transition hover:brightness-105 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[color:var(--design-brown)]"
         >
           Continue to Login
+          <ArrowRight className="h-5 w-5" aria-hidden="true" />
         </Link>
 
-        <div className="mt-4">
-          <Link
-            href="/"
-            className="text-sm text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
-          >
-            ← Back to Home
-          </Link>
-        </div>
-      </div>
+        <Link
+          href="/"
+          className="mt-8 inline-flex items-center justify-center gap-2 text-sm font-bold text-[color:var(--design-muted)] transition hover:text-[color:var(--design-brown)]"
+        >
+          <ArrowLeft className="h-4 w-4" aria-hidden="true" />
+          Back to Home
+        </Link>
+      </section>
     </div>
   );
 }

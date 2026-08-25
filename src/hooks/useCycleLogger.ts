@@ -39,6 +39,7 @@ export const useCycleLogger = () => {
     setError(null);
 
     try {
+      console.trace("[cycle-logger] fetchCycles called");
       const res = await fetch("/api/cycle", {
         method: "GET",
         headers: {

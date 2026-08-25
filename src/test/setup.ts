@@ -7,6 +7,43 @@ process.env.NEXT_PUBLIC_SUPABASE_URL ||= "https://test.supabase.co";
 process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ||= "test-anon-key";
 (globalThis as typeof globalThis & { jest: typeof vi }).jest = vi;
 
+const createMemoryStorage = (): Storage => {
+  let store: Record<string, string> = {};
+
+  return {
+    get length() {
+      return Object.keys(store).length;
+    },
+    clear() {
+      store = {};
+    },
+    getItem(key: string) {
+      return Object.prototype.hasOwnProperty.call(store, key)
+        ? store[key]
+        : null;
+    },
+    key(index: number) {
+      return Object.keys(store)[index] ?? null;
+    },
+    removeItem(key: string) {
+      delete store[key];
+    },
+    setItem(key: string, value: string) {
+      store[key] = value;
+    },
+  };
+};
+
+if (
+  typeof window !== "undefined" &&
+  typeof window.localStorage?.setItem !== "function"
+) {
+  Object.defineProperty(window, "localStorage", {
+    configurable: true,
+    value: createMemoryStorage(),
+  });
+}
+
 vi.mock("stripe", () => {
   const Stripe = vi.fn() as ReturnType<typeof vi.fn> & {
     errors: {

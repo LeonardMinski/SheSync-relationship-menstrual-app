@@ -1,68 +1,56 @@
-'use client'
+"use client";
 
-import React from 'react'
-import Link from 'next/link'
+import Link from "next/link";
+import { ArrowLeft, ExternalLink, MailCheck, RefreshCw } from "lucide-react";
 
 export default function VerifyEmailPage() {
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-rose-50 via-white to-purple-50">
-      <div className="max-w-md w-full space-y-8 p-8 text-center">
-        <div className="space-y-4">
-          <div className="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-rose-100">
-            <svg
-              className="h-6 w-6 text-rose-600"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M3 8l7.89 4.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"
-              />
-            </svg>
-          </div>
-          
-          <h1 className="text-3xl font-bold text-white">Check your email</h1>
-          <p className="text-gray-600">
-            We&apos;ve sent you a verification link to confirm your email address.
-          </p>
+    <div className="ss-page relative flex min-h-screen items-center justify-center overflow-hidden px-5 py-16 text-[color:var(--design-ink)]">
+      <div className="pointer-events-none absolute -left-52 -top-52 h-[560px] w-[560px] rounded-full border-[70px] border-[color:var(--design-peach)]/35 bg-[color:var(--design-peach)]/10 blur-[1px]" />
+      <div className="pointer-events-none absolute -bottom-64 -right-52 h-[620px] w-[620px] rounded-full border-[70px] border-[color:var(--design-sage-soft)] bg-[color:var(--design-sage-soft)]/40 blur-[1px]" />
+
+      <section className="ss-card relative w-full max-w-xl px-6 py-14 text-center sm:px-16 sm:py-20">
+        <div className="mx-auto flex h-24 w-24 items-center justify-center rounded-full bg-[color:var(--design-footer)]">
+          <MailCheck
+            className="h-12 w-12 text-[color:var(--design-brown)]"
+            aria-hidden="true"
+          />
         </div>
 
-        <div className="bg-blue-50 border border-blue-200 rounded-md p-4">
-          <p className="text-sm text-blue-700">
-            <strong>Important:</strong> Please check your spam folder if you don&apos;t see the email in your inbox.
-          </p>
-        </div>
+        <h1 className="ss-display mt-12 text-5xl font-bold text-[color:var(--design-ink)]">
+          Check your inbox
+        </h1>
+        <p className="mx-auto mt-7 max-w-md text-xl leading-8 text-[color:var(--design-muted)]">
+          We&apos;ve sent a verification link to your email. Please click the
+          link to confirm your address and enter your sanctuary.
+        </p>
 
-        <div className="space-y-4">
-          <p className="text-sm text-gray-600">
-            Once you&apos;ve verified your email, you can{' '}
-            <Link href="/auth/login" className="font-medium text-rose-600 hover:text-rose-500">
-              sign in to your account
-            </Link>
-            .
-          </p>
-          
-          <p className="text-sm text-gray-600">
-            Didn&apos;t receive the email?{' '}
-            <Link href="/auth/resend-verification" className="font-medium text-rose-600 hover:text-rose-500">
-              Click here to resend
-            </Link>
-            .
-          </p>
-        </div>
-
-        <div className="pt-4">
-          <Link
-            href="/auth/login"
-            className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-rose-700 bg-rose-100 hover:bg-rose-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-rose-500"
+        <div className="mt-14 space-y-6">
+          <a
+            href="mailto:"
+            className="inline-flex min-h-14 w-full items-center justify-center gap-3 rounded-full bg-[color:var(--design-peach)] px-8 text-lg font-bold text-[color:var(--design-brown)] shadow-[var(--design-shadow-soft)] transition hover:brightness-105 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[color:var(--design-brown)]"
           >
-            Back to Sign In
+            Open Email App
+            <ExternalLink className="h-5 w-5" aria-hidden="true" />
+          </a>
+
+          <Link
+            href="/auth/signup"
+            className="inline-flex min-h-14 w-full items-center justify-center gap-3 rounded-full border border-[color:var(--design-sage)] bg-white px-8 text-lg font-bold text-[color:var(--design-sage)] transition hover:bg-[color:var(--design-footer)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[color:var(--design-brown)]"
+          >
+            <RefreshCw className="h-5 w-5" aria-hidden="true" />
+            Resend Verification Email
           </Link>
         </div>
-      </div>
+
+        <Link
+          href="/auth/login"
+          className="mt-12 inline-flex items-center justify-center gap-2 text-base font-bold text-[color:var(--design-muted)] transition hover:text-[color:var(--design-brown)]"
+        >
+          <ArrowLeft className="h-5 w-5" aria-hidden="true" />
+          Return to login
+        </Link>
+      </section>
     </div>
-  )
+  );
 }

@@ -1,7 +1,6 @@
 import type { ComponentType } from "react";
 import { Brain, Droplet, Heart, Zap } from "lucide-react";
 
-import { Card, CardContent } from "@/components/ui/Card";
 import type { CycleEntry } from "@/types";
 
 export function CycleStatsGrid({
@@ -10,7 +9,7 @@ export function CycleStatsGrid({
   selectedData?: CycleEntry;
 }) {
   return (
-    <div className="grid grid-cols-2 gap-4">
+    <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
       <StatCard
         label="Energy"
         value={selectedData?.energy}
@@ -60,21 +59,21 @@ function StatCard({
   suffix?: string;
 }) {
   return (
-    <Card>
-      <CardContent className="p-4">
-        <div className="flex items-center gap-3">
-          <div className={`rounded-lg p-2 ${iconBgClassName}`}>
-            <Icon className={`h-5 w-5 ${iconClassName}`} aria-hidden="true" />
+    <article className="ss-card p-5">
+      <div className="flex items-center gap-3">
+        <div className={`rounded-full p-3 ${iconBgClassName}`}>
+          <Icon className={`h-5 w-5 ${iconClassName}`} aria-hidden="true" />
+        </div>
+        <div>
+          <div className="text-sm font-bold uppercase tracking-[0.12em] text-[color:var(--design-muted)]">
+            {label}
           </div>
-          <div>
-            <div className="text-sm text-muted-foreground">{label}</div>
-            <div className="text-lg font-semibold text-foreground">
-              {value ?? "—"}
-              {suffix}
-            </div>
+          <div className="mt-1 text-2xl font-bold text-[color:var(--design-ink)]">
+            {value ?? "—"}
+            {suffix}
           </div>
         </div>
-      </CardContent>
-    </Card>
+      </div>
+    </article>
   );
 }

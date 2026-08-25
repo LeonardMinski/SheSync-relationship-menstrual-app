@@ -1,28 +1,31 @@
 import { Users } from "lucide-react";
 
-import { TopNavbar } from "@/components/layout/TopNavbar";
+import { PublicFooter, PublicHeader } from "@/components/layout/PublicChrome";
 
 export function NoPartnerState() {
   return (
-    <div className="min-h-screen bg-bg pb-10">
-      <TopNavbar title="Partner" subtitle="Invite a trusted partner" />
-      <main className="mx-auto flex max-w-xl px-4 py-16">
+    <div className="ss-page min-h-screen text-[color:var(--design-ink)]">
+      <PublicHeader />
+      <main className="mx-auto flex max-w-xl px-5 py-16 sm:px-8">
         <div
-          className="w-full rounded-[2rem] border border-border bg-bg-surface p-8 text-center shadow-lg"
+          className="ss-card w-full p-8 text-center sm:p-12"
           data-testid="no-partner"
         >
-          <div className="mx-auto mb-6 flex h-16 w-16 items-center justify-center rounded-full bg-bg-elevated">
-            <Users className="h-8 w-8 text-cta-start" aria-hidden="true" />
+          <div className="mx-auto mb-7 flex h-20 w-20 items-center justify-center rounded-full bg-[color:var(--design-footer)]">
+            <Users
+              className="h-10 w-10 text-[color:var(--design-sage)]"
+              aria-hidden="true"
+            />
           </div>
-          <h1 className="mb-4 text-3xl font-bold text-foreground">
+          <h1 className="ss-display mb-5 text-5xl font-bold text-[color:var(--design-ink)]">
             Invite your Partner
           </h1>
-          <p className="mx-auto mb-8 max-w-sm text-muted-foreground">
+          <p className="mx-auto mb-10 max-w-sm text-lg leading-8 text-[color:var(--design-muted)]">
             Sharing your cycle phases fosters deeper understanding and better
             support. You choose what to share.
           </p>
           <button
-            className="btn-cta w-full"
+            className="inline-flex min-h-14 w-full items-center justify-center gap-3 rounded-full bg-[color:var(--design-peach)] px-8 text-lg font-bold text-[color:var(--design-ink)] shadow-[var(--design-shadow-soft)] transition hover:brightness-105 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[color:var(--design-brown)]"
             data-testid="connect-partner-button"
           >
             <Users className="h-5 w-5" aria-hidden="true" />
@@ -30,6 +33,7 @@ export function NoPartnerState() {
           </button>
         </div>
       </main>
+      <PublicFooter />
     </div>
   );
 }

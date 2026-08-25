@@ -9,8 +9,8 @@ export const supabase = createClient(
   env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
   {
     auth: {
-      persistSession: true,
-      autoRefreshToken: true,
+      persistSession: typeof window !== "undefined",
+      autoRefreshToken: typeof window !== "undefined",
       storage:
         typeof window !== "undefined"
           ? {

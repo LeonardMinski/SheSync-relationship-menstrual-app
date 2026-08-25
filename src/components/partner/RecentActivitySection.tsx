@@ -14,24 +14,29 @@ export function RecentActivitySection({
 
   return (
     <section
-      className="rounded-[2rem] border border-border bg-bg-surface p-6 shadow-md"
+      className="ss-card p-6 sm:p-8"
       data-testid="recent-activity"
     >
       <div className="mb-5 flex items-center gap-3">
-        <Heart className="h-6 w-6 text-[color:var(--accent-peach)]" />
-        <h2 className="text-2xl font-bold text-foreground">Recent Activity</h2>
+        <Heart
+          className="h-6 w-6 text-[color:var(--design-peach)]"
+          aria-hidden="true"
+        />
+        <h2 className="ss-display text-3xl font-bold text-[color:var(--design-ink)]">
+          Recent Activity
+        </h2>
       </div>
       <div className="grid gap-3 md:grid-cols-2">
         {partnerData.recentActivity.map((activity, index) => (
           <div
             key={`${activity.date}-${index}`}
-            className="rounded-2xl bg-bg p-4"
+            className="rounded-2xl bg-[color:var(--design-footer)] p-4"
             data-testid="activity-item"
           >
-            <p className="text-sm font-semibold text-foreground">
+            <p className="text-sm font-semibold text-[color:var(--design-ink)]">
               {activity.description}
             </p>
-            <p className="mt-2 text-xs font-semibold text-muted-foreground">
+            <p className="mt-2 text-xs font-semibold text-[color:var(--design-muted)]">
               {formatDateShort(activity.date)}
             </p>
           </div>

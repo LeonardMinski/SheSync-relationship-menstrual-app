@@ -1,10 +1,4 @@
-@import "tailwindcss" source(none);
-
-@source "./(public)/**/*.tsx";
-@source "./(app)/**/*.tsx";
-@source "../components/**/*.tsx";
-@source "../context/**/*.tsx";
-@source "../hooks/**/*.tsx";
+@import "tailwindcss";
 
 /* Import design tokens first */
 @import "../styles/tokens.css";
@@ -150,4 +144,230 @@
 
 .nav-inactive:hover {
   color: var(--color-primary);
+}
+
+:root {
+  --design-bg: #fbf8f6;
+  --design-surface: #fffefe;
+  --design-footer: #f7f4f2;
+  --design-card: #ffffff;
+  --design-ink: #201614;
+  --design-brown: #684235;
+  --design-muted: #4a3933;
+  --design-sage: #2f4935;
+  --design-sage-soft: #8fac93;
+  --design-peach: #d4927d;
+  --design-peach-soft: #f9e7df;
+  --design-border: #d8cbc4;
+  --design-shadow:
+    0 1px 0 rgb(255 255 255 / 0.92) inset,
+    0 24px 60px -44px rgb(80 56 47 / 0.34);
+  --design-shadow-soft: 0 18px 42px -30px rgb(80 56 47 / 0.34);
+}
+
+.ss-display {
+  font-family: Georgia, "Times New Roman", Times, serif;
+}
+
+.ss-page {
+  min-height: 100vh;
+  background:
+    radial-gradient(
+      circle at 85% 30%,
+      rgb(232 185 166 / 0.14),
+      transparent 30rem
+    ),
+    linear-gradient(180deg, #fffcfa 0%, var(--design-bg) 100%);
+  color: var(--design-ink);
+}
+
+.ss-card {
+  border: 1px solid var(--design-border);
+  border-radius: 1rem;
+  background: var(--design-card);
+  box-shadow: var(--design-shadow);
+}
+
+/* Contrast bridge for legacy utility classes used across parked and MVP pages. */
+.text-muted,
+.text-muted-foreground,
+.text-gray-500,
+.text-gray-600,
+.text-gray-700,
+.placeholder-muted-foreground::placeholder,
+.placeholder\:text-muted::placeholder {
+  color: var(--text-muted);
+}
+
+.text-gray-400 {
+  color: var(--text-tertiary);
+}
+
+.dark .text-muted,
+.dark .text-muted-foreground,
+.dark .text-gray-300,
+.dark .text-gray-400,
+.dark .text-gray-500,
+.dark .dark\:text-gray-300,
+.dark .dark\:text-gray-400 {
+  color: var(--text-secondary);
+}
+
+.dark .text-gray-600,
+.dark .text-gray-700,
+.dark .dark\:text-gray-200 {
+  color: var(--text-primary);
+}
+
+.bg-\[var\(--accent-gradient\)\].text-white,
+.bg-\[var\(--accent-gradient\)\] .text-white {
+  color: var(--btn-primary-text);
+}
+
+.ss-auth-page {
+  min-height: 100svh;
+  align-items: center;
+  justify-content: center;
+  padding: clamp(1rem, 4vh, 3rem) 1.25rem;
+}
+
+.ss-auth-card {
+  width: 100%;
+  max-width: 40rem;
+  max-height: calc(100svh - clamp(2rem, 8vh, 6rem));
+  overflow-y: auto;
+  padding: clamp(1.5rem, 4vh, 3.5rem) clamp(1.5rem, 5vw, 3.5rem);
+  overscroll-behavior: contain;
+}
+
+.ss-auth-card--wide {
+  max-width: 42rem;
+}
+
+.ss-auth-header {
+  text-align: center;
+}
+
+.ss-auth-icon {
+  margin: 0 auto clamp(1rem, 2vh, 2rem);
+}
+
+.ss-auth-title {
+  color: var(--design-brown);
+  font-size: clamp(3rem, 8vw, 4.75rem);
+  line-height: 0.95;
+}
+
+.ss-auth-copy {
+  margin: clamp(0.75rem, 2vh, 1.5rem) auto 0;
+  max-width: 32rem;
+  color: var(--design-muted);
+  font-size: clamp(1.05rem, 2.2vw, 1.5rem);
+  line-height: 1.5;
+}
+
+.ss-auth-form {
+  margin-top: clamp(1.5rem, 4vh, 3.5rem);
+  display: grid;
+  gap: clamp(0.85rem, 2vh, 1.75rem);
+}
+
+.ss-auth-field {
+  display: grid;
+  gap: 0.5rem;
+}
+
+.ss-auth-label {
+  color: var(--design-muted);
+  font-size: 0.9rem;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.ss-auth-field-control {
+  position: relative;
+}
+
+.ss-auth-field-icon {
+  pointer-events: none;
+  position: absolute;
+  left: 1.25rem;
+  top: 50%;
+  height: 1.45rem;
+  width: 1.45rem;
+  transform: translateY(-50%);
+  color: var(--design-muted);
+}
+
+.ss-auth-input {
+  min-height: clamp(3.25rem, 7vh, 4rem);
+  width: 100%;
+  border: 1px solid var(--design-border);
+  border-radius: 0.75rem;
+  background-color: #fffefe;
+  color: var(--design-ink);
+  font-size: clamp(1rem, 2vw, 1.2rem);
+  outline: none;
+  padding: 0.75rem 1.25rem 0.75rem 4rem;
+  transition:
+    border-color 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+.ss-auth-input::placeholder {
+  color: var(--design-muted);
+  opacity: 1;
+}
+
+.ss-auth-input:focus {
+  border-color: var(--design-brown);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--design-peach) 42%, white);
+}
+
+.ss-auth-input:-webkit-autofill,
+.ss-auth-input:-webkit-autofill:hover,
+.ss-auth-input:-webkit-autofill:focus {
+  -webkit-text-fill-color: var(--design-ink);
+  caret-color: var(--design-ink);
+  box-shadow: 0 0 0 1000px #fffefe inset;
+}
+
+@media (max-height: 760px) {
+  .ss-auth-page {
+    align-items: flex-start;
+    padding-block: 0.75rem;
+  }
+
+  .ss-auth-card {
+    max-height: calc(100svh - 1.5rem);
+  }
+
+  .ss-auth-icon {
+    height: 2.75rem;
+    width: 2.75rem;
+  }
+
+  .ss-auth-copy {
+    max-width: 28rem;
+  }
+
+  .ss-auth-form {
+    gap: 0.8rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .ss-auth-card {
+    border-radius: 0.875rem;
+    padding-inline: 1.25rem;
+  }
+
+  .ss-auth-input {
+    padding-left: 3.65rem;
+  }
+
+  .ss-auth-field-icon {
+    left: 1.1rem;
+  }
 }

@@ -1,9 +1,3 @@
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/Card";
 import type { CycleEntry } from "@/types";
 
 export function CycleDetailsCards({
@@ -24,35 +18,35 @@ export function CycleDetailsCards({
 
 function SymptomsCard({ symptoms }: { symptoms: string[] }) {
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>Symptoms</CardTitle>
-      </CardHeader>
-      <CardContent>
-        <div className="flex flex-wrap gap-2">
+    <section className="ss-card p-6 sm:p-8">
+      <h2 className="ss-display text-3xl font-bold text-[color:var(--design-ink)]">
+        Symptoms
+      </h2>
+      <div className="mt-5">
+        <div className="flex flex-wrap gap-3">
           {symptoms.map((symptom) => (
             <span
               key={symptom}
-              className="rounded-full bg-bg-elevated px-3 py-1 text-sm font-semibold text-[color:var(--accent-peach)]"
+              className="rounded-full bg-[color:var(--design-footer)] px-4 py-2 text-sm font-bold text-[color:var(--design-brown)]"
             >
               {symptom}
             </span>
           ))}
         </div>
-      </CardContent>
-    </Card>
+      </div>
+    </section>
   );
 }
 
 function NotesCard({ notes }: { notes: string }) {
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>Notes</CardTitle>
-      </CardHeader>
-      <CardContent>
-        <p className="text-foreground">{notes}</p>
-      </CardContent>
-    </Card>
+    <section className="ss-card p-6 sm:p-8">
+      <h2 className="ss-display text-3xl font-bold text-[color:var(--design-ink)]">
+        Private Note
+      </h2>
+      <p className="mt-5 text-lg leading-8 text-[color:var(--design-muted)]">
+        {notes}
+      </p>
+    </section>
   );
 }

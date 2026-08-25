@@ -8,10 +8,15 @@ interface AccountCardProps {
 
 export function AccountCard({ user }: AccountCardProps) {
   return (
-    <article className="rounded-[2rem] border border-border bg-bg-surface p-6 shadow-md">
+    <article className="ss-card p-6 sm:p-8">
       <div className="flex items-center gap-3">
-        <User className="h-7 w-7 text-cta-start" aria-hidden="true" />
-        <h2 className="text-2xl font-bold text-foreground">Account</h2>
+        <User
+          className="h-7 w-7 text-[color:var(--design-sage)]"
+          aria-hidden="true"
+        />
+        <h2 className="ss-display text-3xl font-bold text-[color:var(--design-ink)]">
+          Account
+        </h2>
       </div>
 
       <div className="mt-6 space-y-4">
@@ -28,10 +33,14 @@ export function AccountCard({ user }: AccountCardProps) {
 function ReadOnlyField({ label, value }: { label: string; value: string }) {
   return (
     <div>
-      <label className="mb-2 block text-sm font-bold text-muted-foreground">
+      <label className="mb-2 block text-sm font-bold uppercase tracking-[0.12em] text-[color:var(--design-muted)]">
         {label}
       </label>
-      <input className="input" value={value} readOnly />
+      <input
+        className="min-h-12 w-full rounded-none border border-[color:var(--design-border)] bg-white px-4 text-[color:var(--design-ink)]"
+        value={value}
+        readOnly
+      />
     </div>
   );
 }

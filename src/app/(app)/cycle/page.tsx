@@ -7,7 +7,7 @@ import { CycleInsightsPanel } from "@/components/cycle/CycleInsightsPanel";
 import { CycleIntro } from "@/components/cycle/CycleIntro";
 import { CycleLogDialog } from "@/components/cycle/CycleLogDialog";
 import { CycleSummaryCards } from "@/components/cycle/CycleSummaryCards";
-import { TopNavbar } from "@/components/layout/TopNavbar";
+import { PublicFooter, PublicHeader } from "@/components/layout/PublicChrome";
 import { useCyclePageState } from "@/hooks/useCyclePageState";
 
 export default function CyclePage() {
@@ -51,14 +51,22 @@ export default function CyclePage() {
   }
 
   return (
-    <div className="min-h-screen bg-bg pb-10">
-      <TopNavbar
-        title={selectedData ? `${selectedData.phase} phase` : "Cycle log"}
-        subtitle={format(selectedDate, "EEEE, MMMM d")}
-        showNotifications
-      />
+    <div className="ss-page min-h-screen text-[color:var(--design-ink)]">
+      <PublicHeader />
 
-      <main className="mx-auto w-full max-w-5xl space-y-6 px-4 py-6 sm:px-6 lg:px-10">
+      <main className="mx-auto w-full max-w-6xl space-y-8 px-5 py-12 sm:px-8 lg:px-10">
+        <section className="mx-auto max-w-3xl text-center">
+          <p className="text-sm font-bold uppercase tracking-[0.16em] text-[color:var(--design-sage)]">
+            {format(selectedDate, "EEEE, MMMM d")}
+          </p>
+          <h1 className="ss-display mt-4 text-5xl font-bold leading-tight text-[color:var(--design-ink)] md:text-6xl">
+            How are you feeling today?
+          </h1>
+          <p className="mx-auto mt-5 max-w-2xl text-xl leading-8 text-[color:var(--design-muted)]">
+            Log your daily metrics to discover personal insights.
+          </p>
+        </section>
+
         <CycleIntro hasEntry={Boolean(selectedData)} onLog={openLogForm} />
 
         {cycleError && (
@@ -105,6 +113,8 @@ export default function CyclePage() {
           nutritionSuggestion={nutritionSuggestion}
         />
       )}
+
+      <PublicFooter />
     </div>
   );
 }

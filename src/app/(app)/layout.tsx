@@ -6,7 +6,6 @@ import { AppProvider } from "@/context/AppContext";
 import { AuthProvider, useAuth } from "@/context/AuthContext";
 import ThemeProvider from "@/components/ThemeProvider";
 import { getLoginRedirectPath } from "@/utils/authRedirects";
-import { AppSidebar } from "@/components/layout/AppSidebar";
 
 const AuthLoadingState = ({ text }: { text: string }) => (
   <div className="min-h-screen bg-bg text-foreground">
@@ -44,8 +43,7 @@ function AuthenticatedAppLayout({ children }: { children: React.ReactNode }) {
   return (
     <AppProvider>
       <ThemeProvider>
-        <div className="min-h-screen bg-bg text-foreground md:pl-72">
-          <AppSidebar />
+        <div className="min-h-screen bg-bg text-foreground">
           <div className="min-h-screen">{children}</div>
         </div>
       </ThemeProvider>

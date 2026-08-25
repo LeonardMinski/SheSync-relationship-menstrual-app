@@ -10,20 +10,27 @@ export function ManagePartnerCard({
   onReset: () => void;
 }) {
   return (
-    <section className="rounded-[2rem] border border-border border-l-[6px] border-l-[color:var(--accent-peach)] bg-bg-surface p-6 shadow-md">
-      <div className="flex items-center gap-3">
-        <Users className="h-7 w-7 text-cta-start" aria-hidden="true" />
-        <h2 className="text-2xl font-bold text-foreground">Manage Partner</h2>
+    <section className="ss-card border-l-[6px] border-l-[color:var(--design-sage-soft)] p-6 sm:p-8">
+      <div className="flex items-center gap-4 border-b border-[color:var(--design-border)] pb-6">
+        <Users
+          className="h-7 w-7 text-[color:var(--design-sage)]"
+          aria-hidden="true"
+        />
+        <h2 className="ss-display text-3xl font-bold text-[color:var(--design-ink)]">
+          Manage Partner
+        </h2>
       </div>
 
-      <div className="mt-7 rounded-2xl bg-bg p-5">
-        <div className="flex items-center gap-4">
-          <span className="flex h-16 w-16 items-center justify-center rounded-full border border-[color:var(--accent-peach)] bg-bg-elevated text-xl font-black text-foreground">
+      <div className="mt-7 rounded-2xl bg-[color:var(--design-footer)] p-6 text-center">
+        <div className="flex flex-col items-center gap-4">
+          <span className="flex h-20 w-20 items-center justify-center rounded-full border border-[color:var(--design-peach)] bg-white text-2xl font-black text-[color:var(--design-brown)]">
             A
           </span>
           <div>
-            <p className="text-xl font-bold text-foreground">Alex M.</p>
-            <p className="text-sm font-semibold text-[color:var(--accent-peach)]">
+            <p className="ss-display text-3xl font-bold text-[color:var(--design-ink)]">
+              Alex M.
+            </p>
+            <p className="mt-1 text-sm font-bold uppercase tracking-[0.12em] text-[color:var(--design-muted)]">
               Connected
             </p>
           </div>
@@ -36,7 +43,7 @@ export function ManagePartnerCard({
           </Button>
           <Button
             variant="secondary"
-            className="w-full justify-between border-error/30 text-error hover:border-error"
+            className="w-full justify-between border-error/30 bg-white text-error hover:border-error"
             onClick={onReset}
             disabled={saving}
           >
