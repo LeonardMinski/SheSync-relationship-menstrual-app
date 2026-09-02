@@ -5,9 +5,14 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import type { PrivacySettings } from "@/schemas/privacy";
 import PrivacySettingsForm from "./PrivacySettingsForm";
 import { usePrivacySettingsForm } from "@/hooks/usePrivacySettingsForm";
+import { usePartnerPortalData } from "@/hooks/usePartnerPortalData";
 
 vi.mock("@/hooks/usePrivacySettingsForm", () => ({
   usePrivacySettingsForm: vi.fn(),
+}));
+
+vi.mock("@/hooks/usePartnerPortalData", () => ({
+  usePartnerPortalData: vi.fn(),
 }));
 
 const settings: PrivacySettings = {
@@ -20,6 +25,8 @@ const settings: PrivacySettings = {
 
 const updateSetting = vi.fn();
 const resetSettings = vi.fn();
+const invitePartner = vi.fn();
+const revokeConnection = vi.fn();
 
 function mockFormState(
   overrides: Partial<ReturnType<typeof usePrivacySettingsForm>> = {},
@@ -37,10 +44,32 @@ function mockFormState(
   });
 }
 
+function mockPartnerState(
+  overrides: Partial<ReturnType<typeof usePartnerPortalData>> = {},
+) {
+  vi.mocked(usePartnerPortalData).mockReturnValue({
+    actionError: null,
+    dataLoading: false,
+    invitePartner,
+    loading: false,
+    ownerLink: null,
+    ownSharingSummary: [],
+    partnerData: null,
+    refreshing: false,
+    refreshPartnerData: vi.fn(),
+    respondToIncomingInvite: vi.fn(),
+    revokeConnection,
+    user: null,
+    viewerLink: null,
+    ...overrides,
+  });
+}
+
 describe("PrivacySettingsForm", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     mockFormState();
+    mockPartnerState();
   });
 
   it("renders a loading status while privacy settings load", () => {
@@ -76,11 +105,37 @@ describe("PrivacySettingsForm", () => {
     expect(updateSetting).toHaveBeenCalledWith("share_cycle_phase", true);
   });
 
-  it("invokes reset when revoke access is clicked", async () => {
+  it("invokes reset when 'Reset to private' is clicked", async () => {
     render(<PrivacySettingsForm />);
 
-    await userEvent.click(screen.getByRole("button", { name: /revoke access/i }));
+    await userEvent.click(screen.getByRole("button", { name: /reset to private/i }));
 
     expect(resetSettings).toHaveBeenCalledOnce();
+  });
+
+  it("shows a no-partner state and lets the owner send an invite", () => {
+    render(<PrivacySettingsForm />);
+
+    expect(screen.getByText(/no partner connected/i)).toBeInTheDocument();
+  });
+
+  it("shows the connected partner and sharing summary when an active owner link exists", () => {
+    mockPartnerState({
+      ownerLink: {
+        id: "link-1",
+        owner_user_id: "owner-1",
+        viewer_user_id: "viewer-1",
+        status: "active",
+        created_at: new Date().toISOString(),
+        personName: "Jordan",
+        personEmail: "jordan@example.com",
+      },
+      ownSharingSummary: ["Cycle Phase"],
+    });
+
+    render(<PrivacySettingsForm />);
+
+    expect(screen.getByText("Jordan")).toBeInTheDocument();
+    expect(screen.getByText(/sharing: cycle phase/i)).toBeInTheDocument();
   });
 });

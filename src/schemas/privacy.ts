@@ -51,8 +51,8 @@ export const PRIVACY_SETTING_DEFINITIONS: z.infer<typeof PrivacySettingItemSchem
   },
   {
     key: 'share_mood',
-    label: 'Share Mood Data',
-    description: 'Share your mood tracking data with your partner',
+    label: 'Share Mood & Energy',
+    description: 'Share your logged mood and energy levels with your partner',
     category: 'data_sharing',
   },
   {

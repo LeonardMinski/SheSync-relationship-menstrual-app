@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 
 import { useAuth } from "@/context/AuthContext";
@@ -39,6 +39,10 @@ export function useCyclePageState() {
     useState<CycleLogFormState>(defaultCycleLogFormState);
   const [logging, setLogging] = useState(false);
   const [formError, setFormError] = useState<string | null>(null);
+  const [saveSuccess, setSaveSuccess] = useState(false);
+  const saveSuccessTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(
+    null,
+  );
   const [healthInsights, setHealthInsights] = useState<HealthInsight[]>([]);
   const [nutritionSuggestion, setNutritionSuggestion] =
     useState<NutritionSuggestion | null>(null);
@@ -86,6 +90,14 @@ export function useCyclePageState() {
     }
   }, [user, authLoading, router]);
 
+  useEffect(() => {
+    return () => {
+      if (saveSuccessTimeoutRef.current) {
+        clearTimeout(saveSuccessTimeoutRef.current);
+      }
+    };
+  }, []);
+
   const updateFormState = (updates: Partial<CycleLogFormState>) => {
     setFormError(null);
     setFormState((current) => ({ ...current, ...updates }));
@@ -127,6 +139,14 @@ export function useCyclePageState() {
       if (success) {
         setShowLogForm(false);
         resetForm();
+        setSaveSuccess(true);
+
+        if (saveSuccessTimeoutRef.current) {
+          clearTimeout(saveSuccessTimeoutRef.current);
+        }
+        saveSuccessTimeoutRef.current = setTimeout(() => {
+          setSaveSuccess(false);
+        }, 4000);
       }
     } catch (error) {
       console.error("[cycle-page] failed to log cycle", error);
@@ -164,6 +184,7 @@ export function useCyclePageState() {
     logging,
     nutritionSuggestion,
     openLogForm,
+    saveSuccess,
     selectedData,
     selectedDate,
     selectCycleDate,

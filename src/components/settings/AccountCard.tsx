@@ -15,11 +15,8 @@ export function AccountCard({ user }: AccountCardProps) {
       </div>
 
       <div className="mt-6 space-y-4">
-        <ReadOnlyField label="Name" value={user?.name || "Sarah J."} />
-        <ReadOnlyField
-          label="Email"
-          value={user?.email || "hello@example.com"}
-        />
+        <ReadOnlyField label="Name" value={user?.name || "—"} />
+        <ReadOnlyField label="Email" value={user?.email || "—"} />
       </div>
     </article>
   );

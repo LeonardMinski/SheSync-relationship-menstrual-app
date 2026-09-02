@@ -39,11 +39,16 @@ export function CardHeader({ className, children, ...props }: CardHeaderProps) {
 
 interface CardTitleProps extends React.HTMLAttributes<HTMLHeadingElement> {
   children: React.ReactNode;
+  /** Heading level to render. Defaults to h3 (a card nested in a page that
+   * already has its own h1/h2). Pass "h1" when this card's title IS the
+   * page's only heading (e.g. a centered auth card). */
+  as?: "h1" | "h2" | "h3";
 }
 
-export function CardTitle({ className, children, ...props }: CardTitleProps) {
+export function CardTitle({ className, children, as = "h3", ...props }: CardTitleProps) {
+  const Heading = as;
   return (
-    <h3
+    <Heading
       className={cn(
         "text-xl font-semibold leading-none tracking-tight",
         className,
@@ -51,7 +56,7 @@ export function CardTitle({ className, children, ...props }: CardTitleProps) {
       {...props}
     >
       {children}
-    </h3>
+    </Heading>
   );
 }
 

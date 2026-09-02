@@ -10,6 +10,7 @@ module.exports = {
     extend: {
       fontFamily: {
         sans: ['var(--font-family)', 'system-ui', '-apple-system', 'sans-serif'],
+        display: ['var(--font-display)', 'Georgia', 'serif'],
       },
       colors: {
         // Design system colors
@@ -32,6 +33,10 @@ module.exports = {
         'cta-end': 'var(--cta-end)',
         'accent-rose': 'var(--accent-rose)',
         'accent-purple': 'var(--accent-purple)',
+        'accent-sage': 'var(--accent-sage)',
+        'accent-sage-soft': 'var(--accent-sage-soft)',
+        'accent-clay': 'var(--accent-clay)',
+        'accent-gold': 'var(--accent-gold)',
         
         // Status colors
         success: 'var(--success)',

@@ -26,6 +26,7 @@ export default function CyclePage() {
     logging,
     nutritionSuggestion,
     openLogForm,
+    saveSuccess,
     selectedData,
     selectedDate,
     selectCycleDate,
@@ -39,7 +40,7 @@ export default function CyclePage() {
     return (
       <div className="flex min-h-screen items-center justify-center bg-bg">
         <div
-          className="h-8 w-8 animate-spin rounded-full border-b-2 border-cta-start"
+          className="h-8 w-8 motion-reduce:animate-none animate-spin rounded-full border-b-2 border-cta-start"
           aria-label="Loading cycle logger"
         />
       </div>
@@ -55,11 +56,19 @@ export default function CyclePage() {
       <TopNavbar
         title={selectedData ? `${selectedData.phase} phase` : "Cycle log"}
         subtitle={format(selectedDate, "EEEE, MMMM d")}
-        showNotifications
       />
 
       <main className="mx-auto w-full max-w-5xl space-y-6 px-4 py-6 sm:px-6 lg:px-10">
         <CycleIntro hasEntry={Boolean(selectedData)} onLog={openLogForm} />
+
+        {saveSuccess && (
+          <div
+            role="status"
+            className="rounded-2xl border border-success/20 bg-success/10 px-4 py-3 text-sm font-semibold text-success"
+          >
+            Today&apos;s log saved
+          </div>
+        )}
 
         {cycleError && (
           <div className="rounded-2xl border border-error/20 bg-error/10 px-4 py-3 text-sm text-error">

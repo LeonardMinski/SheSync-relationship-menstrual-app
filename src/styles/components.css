@@ -2,6 +2,66 @@
    COMPONENT STYLES - BEM METHODOLOGY
    ========================================================================== */
 
+/* Toggle switch (src/components/ui/Toggle.tsx). "On" uses sage — the
+   private/trust/connected status color — since Toggle is used almost
+   exclusively for privacy/sharing controls in this app. */
+.toggle {
+  position: relative;
+  display: inline-flex;
+  min-height: 44px;
+  min-width: 44px;
+  align-items: center;
+}
+
+.toggle-slider {
+  position: relative;
+  display: inline-block;
+  width: 44px;
+  height: 26px;
+  border-radius: 999px;
+  background: var(--border-secondary);
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.toggle-slider::before {
+  content: "";
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  width: 20px;
+  height: 20px;
+  border-radius: 999px;
+  background: var(--bg-surface);
+  box-shadow: var(--shadow-sm);
+  transition: transform 0.2s ease;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .toggle-slider,
+  .toggle-slider::before {
+    transition: none;
+  }
+}
+
+.toggle input:checked + .toggle-slider {
+  background: var(--accent-sage);
+}
+
+.toggle input:checked + .toggle-slider::before {
+  transform: translateX(18px);
+}
+
+.toggle input:focus-visible + .toggle-slider {
+  outline: none;
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--ring) 38%, transparent);
+}
+
+.toggle input:disabled + .toggle-slider {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
 /* Glass Effect Components */
 .glass {
   background: var(--bg-glass);
@@ -305,7 +365,7 @@
   width: 20px;
   height: 20px;
   border-radius: 50%;
-  background: var(--accent-start);
+  background: var(--cta-start);
   cursor: pointer;
   border: 2px solid var(--bg-primary);
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
@@ -321,7 +381,7 @@
   width: 20px;
   height: 20px;
   border-radius: 50%;
-  background: var(--accent-start);
+  background: var(--cta-start);
   cursor: pointer;
   border: 2px solid var(--bg-primary);
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);

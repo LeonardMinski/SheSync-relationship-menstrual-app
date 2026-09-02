@@ -9,6 +9,7 @@ interface SharingSettingsCardProps {
   settings: PrivacySettings;
   stealthMode: boolean;
   onSettingChange: (key: keyof PrivacySettings, value: boolean) => void;
+  onReset: () => void;
 }
 
 export function SharingSettingsCard({
@@ -16,29 +17,40 @@ export function SharingSettingsCard({
   settings,
   stealthMode,
   onSettingChange,
+  onReset,
 }: SharingSettingsCardProps) {
   return (
     <section className="rounded-[2rem] border border-border border-l-[6px] border-l-cta-start bg-bg-surface p-6 shadow-md">
-      <div className="flex items-center gap-3">
-        <ShieldCheck className="h-7 w-7 text-cta-start" aria-hidden="true" />
-        <h2 className="text-2xl font-bold text-foreground">
-          What You&apos;re Sharing
-        </h2>
+      <div className="flex items-center justify-between gap-3">
+        <div className="flex items-center gap-3">
+          <ShieldCheck className="h-7 w-7 text-[color:var(--accent-sage)]" aria-hidden="true" />
+          <h2 className="text-2xl font-bold text-foreground">
+            What You&apos;re Sharing
+          </h2>
+        </div>
+        <button
+          type="button"
+          onClick={onReset}
+          disabled={saving}
+          className="text-sm font-semibold text-muted-foreground underline underline-offset-4 hover:text-foreground disabled:opacity-50"
+        >
+          Reset to private
+        </button>
       </div>
 
       <div className="mt-7 divide-y divide-border rounded-2xl bg-bg p-4">
         <SharingRow
           icon={CalendarDays}
-          title="Cycle Dates"
-          description="Share phase context and prediction windows."
+          title="Cycle Phase"
+          description="Share your current cycle phase with your partner."
           checked={settings.share_cycle_phase}
           disabled={saving || stealthMode}
           onChange={(checked) => onSettingChange("share_cycle_phase", checked)}
         />
         <SharingRow
           icon={Smile}
-          title="Mood Insights"
-          description="Share high-level mood trends with your partner."
+          title="Mood & Energy"
+          description="Share your logged mood and energy levels with your partner."
           checked={settings.share_mood}
           disabled={saving || stealthMode}
           onChange={(checked) => onSettingChange("share_mood", checked)}

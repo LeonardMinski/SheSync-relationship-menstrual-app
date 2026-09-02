@@ -7,29 +7,26 @@ describe("navigation items", () => {
     expect(isItemActive("/dashboard", "/dashboard")).toBe(true);
   });
 
-  it("activates settings for nested settings routes", () => {
-    expect(isItemActive("/settings/privacy", "/settings")).toBe(true);
+  it("activates nested routes under a primary destination", () => {
+    expect(isItemActive("/connect/boundaries", "/connect")).toBe(true);
   });
 
   it("does not activate unrelated routes", () => {
-    expect(isItemActive("/cycle", "/settings")).toBe(false);
+    expect(isItemActive("/cycle", "/connect")).toBe(false);
   });
 
-  it("does not treat partner-like prefixes as active partner routes", () => {
-    expect(isItemActive("/partner/history", "/partner")).toBe(false);
-    expect(isItemActive("/partner-history", "/partner")).toBe(false);
+  it("does not treat sibling-prefixed routes as active", () => {
+    expect(isItemActive("/connect-history", "/connect")).toBe(false);
   });
 
   it("does not mark hash links active when only pathname is available", () => {
     expect(isItemActive("/dashboard", "/dashboard#insights")).toBe(false);
   });
 
-  it("contains expected MVP destinations", () => {
+  it("contains exactly the five primary destinations", () => {
     const hrefs = navItems.map((item) => item.href);
 
-    expect(hrefs).toEqual(
-      expect.arrayContaining(["/dashboard", "/cycle", "/partner", "/settings"]),
-    );
+    expect(hrefs).toEqual(["/dashboard", "/cycle", "/coach", "/connect", "/vault"]);
   });
 
   it("does not contain duplicate hrefs", () => {
@@ -38,19 +35,13 @@ describe("navigation items", () => {
     expect(new Set(hrefs).size).toBe(hrefs.length);
   });
 
-  it("marks parked feature links consistently", () => {
-    const parkedHrefs = [
-      "/dashboard#insights",
-      "/coach",
-      "/ai-coach",
-      "/fantasy",
-      "/intimacy",
-      "/partner/intimacy",
-      "/pricing",
-    ];
+  it("does not expose settings in primary nav (accessed via avatar menu)", () => {
+    const hrefs = navItems.map((item) => item.href);
 
-    for (const href of parkedHrefs) {
-      expect(navItems.find((item) => item.href === href)?.status).toBe("soon");
-    }
+    expect(hrefs).not.toContain("/settings");
+  });
+
+  it("marks no item as 'soon'", () => {
+    expect(navItems.every((item) => item.status === undefined)).toBe(true);
   });
 });

@@ -1,18 +1,9 @@
-import {
-  BarChart3,
-  Brain,
-  CalendarDays,
-  CreditCard,
-  HeartHandshake,
-  Home,
-  LockKeyhole,
-  Settings,
-  Sparkles,
-  Users,
-} from "lucide-react";
+import { CalendarDays, Heart, Home, Lock, Sparkles } from "lucide-react";
 
 import type { NavItem } from "@/types/navigation";
 
+// Primary navigation. Settings is accessed from the avatar/profile menu,
+// not from this list (see TopNav / MobileHeader).
 export const navItems: NavItem[] = [
   {
     href: "/dashboard",
@@ -21,60 +12,23 @@ export const navItems: NavItem[] = [
   },
   {
     href: "/cycle",
-    label: "Log",
+    label: "Cycle",
     icon: CalendarDays,
-  },
-  {
-    href: "/partner",
-    label: "Partner",
-    icon: Users,
-  },
-  {
-    href: "/dashboard#insights",
-    label: "Insights",
-    icon: BarChart3,
-    status: "soon",
   },
   {
     href: "/coach",
     label: "Coach",
     icon: Sparkles,
-    status: "soon",
   },
   {
-    href: "/ai-coach",
-    label: "AI Coach",
-    icon: Brain,
-    status: "soon",
+    href: "/connect",
+    label: "Connect",
+    icon: Heart,
   },
   {
-    href: "/fantasy",
-    label: "Fantasy Vault",
-    icon: LockKeyhole,
-    status: "soon",
-  },
-  {
-    href: "/intimacy",
-    label: "Intimacy",
-    icon: HeartHandshake,
-    status: "soon",
-  },
-  {
-    href: "/partner/intimacy",
-    label: "Partner Intimacy",
-    icon: Users,
-    status: "soon",
-  },
-  {
-    href: "/pricing",
-    label: "Pricing",
-    icon: CreditCard,
-    status: "soon",
-  },
-  {
-    href: "/settings",
-    label: "Settings",
-    icon: Settings,
+    href: "/vault",
+    label: "Vault",
+    icon: Lock,
   },
 ];
 
@@ -90,5 +44,5 @@ export function isItemActive(pathname: string, href: string) {
     return true;
   }
 
-  return itemPath === "/settings" && pathname.startsWith("/settings/");
+  return pathname.startsWith(`${itemPath}/`);
 }
