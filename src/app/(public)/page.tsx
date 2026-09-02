@@ -1,58 +1,50 @@
 import Link from "next/link";
+import { ShieldCheck } from "lucide-react";
 
 export default function HomePage() {
   return (
-    <main className="min-h-screen bg-white text-gray-950 dark:bg-[#17121F] dark:text-white">
-      <header className="border-b border-gray-200 px-4 py-5 dark:border-[#34263F]">
+    <main className="min-h-screen bg-bg text-foreground">
+      <header className="border-b border-border px-4 py-5">
         <div className="mx-auto flex max-w-6xl items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-rose-600">
-              <span className="text-sm font-bold text-white">S+</span>
-            </div>
-            <span className="text-xl font-semibold">SheSync+</span>
+          <div className="flex items-center gap-2">
+            <span className="flex h-9 w-9 items-center justify-center rounded-full bg-cta-start text-[color:var(--cta-foreground)]">
+              <ShieldCheck className="h-4 w-4" aria-hidden="true" />
+            </span>
+            <span className="text-lg font-bold tracking-tight">SheSync+</span>
           </div>
 
           <nav className="flex items-center gap-3">
             <Link
-              className="text-sm font-medium text-gray-700 dark:text-gray-200"
+              className="flex min-h-[44px] items-center text-sm font-semibold text-muted-foreground hover:text-foreground"
               href="/auth/login"
             >
-              Login
+              Log in
             </Link>
-            <Link
-              className="inline-flex min-h-[44px] items-center justify-center rounded-lg bg-gradient-to-r from-rose-500 to-violet-500 px-4 text-sm font-semibold text-[var(--btn-primary-text)] shadow-lg shadow-rose-500/20 transition-transform hover:-translate-y-0.5"
-              href="/auth/signup"
-            >
-              Get Started
+            <Link className="btn-cta flex min-h-[44px] items-center px-4 text-sm" href="/auth/signup">
+              Get started
             </Link>
           </nav>
         </div>
       </header>
 
-      <section className="mx-auto max-w-6xl px-4 py-16">
+      <section className="mx-auto max-w-6xl px-4 py-16 sm:px-6">
         <div className="max-w-3xl">
-          <h1 className="text-4xl font-bold leading-tight md:text-6xl">
-            Cycle tracking with privacy-first partner sharing
+          <h1 className="font-display text-4xl font-bold leading-tight text-foreground md:text-6xl">
+            Understand yourself. Share only what you choose.
           </h1>
-          <p className="mt-5 max-w-2xl text-lg leading-8 text-gray-600 dark:text-gray-300">
-            Log cycle data, see your dashboard, choose what your partner can
-            view, and keep the MVP flow clear.
+          <p className="mt-5 max-w-2xl text-lg leading-8 text-muted-foreground">
+            Log your cycle privately, see it reflected on your dashboard, and decide exactly what
+            a connected partner can see — nothing is shared until you turn it on.
           </p>
           <div className="mt-8 flex flex-col gap-3 sm:flex-row">
-            <Link
-              className="inline-flex min-h-[48px] items-center justify-center rounded-lg bg-gradient-to-r from-rose-500 to-violet-500 px-5 font-semibold text-[var(--btn-primary-text)] shadow-lg shadow-rose-500/20 transition-transform hover:-translate-y-0.5"
-              href="/auth/signup"
-            >
-              Start Your Journey
-              <span className="ml-2" aria-hidden="true">
-                -&gt;
-              </span>
+            <Link href="/auth/signup" className="btn-cta flex min-h-[48px] items-center justify-center px-5">
+              Create free account
             </Link>
             <Link
-              className="inline-flex min-h-[48px] items-center justify-center rounded-lg border border-gray-300 px-5 font-semibold text-gray-900 dark:border-[#34263F] dark:text-white"
               href="/auth/login"
+              className="flex min-h-[48px] items-center justify-center rounded-lg border border-border px-5 font-semibold text-foreground hover:border-cta-start"
             >
-              Sign In
+              Sign in
             </Link>
           </div>
         </div>
@@ -60,18 +52,18 @@ export default function HomePage() {
         <div className="mt-14 grid gap-4 md:grid-cols-3">
           <FeatureCard
             icon="C"
-            title="Cycle Logging"
-            description="Save phase, mood, energy, symptoms, and notes by cycle date."
+            title="Cycle logging"
+            description="Save phase, mood, energy, stress, symptoms, and notes by date."
           />
           <FeatureCard
             icon="P"
-            title="Privacy Controls"
-            description="Choose whether cycle phase, mood, and energy are visible to a partner."
+            title="Privacy controls"
+            description="Choose exactly whether cycle phase and mood are visible to a partner. Off by default."
           />
           <FeatureCard
             icon="2"
-            title="Partner View"
-            description="A read-only partner view that respects the privacy settings from the API."
+            title="Partner connection"
+            description="An optional, read-only partner view that only shows what you've explicitly enabled."
           />
         </div>
       </section>
@@ -89,16 +81,14 @@ function FeatureCard({
   description: string;
 }) {
   return (
-    <div className="rounded-lg border border-gray-200 p-5 dark:border-[#34263F]">
-      <div className="mb-4 flex h-11 w-11 items-center justify-center rounded-lg bg-rose-50 text-rose-700 dark:bg-rose-950 dark:text-rose-200">
+    <div className="rounded-2xl border border-border bg-bg-surface p-5 shadow-sm">
+      <div className="mb-4 flex h-11 w-11 items-center justify-center rounded-lg bg-[color:var(--accent-rose)]/10 text-[color:var(--accent-rose)]">
         <span className="text-sm font-bold" aria-hidden="true">
           {icon}
         </span>
       </div>
-      <h2 className="text-lg font-semibold">{title}</h2>
-      <p className="mt-2 text-sm leading-6 text-gray-600 dark:text-gray-300">
-        {description}
-      </p>
+      <h2 className="text-lg font-semibold text-foreground">{title}</h2>
+      <p className="mt-2 text-sm leading-6 text-muted-foreground">{description}</p>
     </div>
   );
 }

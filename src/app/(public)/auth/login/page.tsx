@@ -1,9 +1,9 @@
 "use client";
 
-import React, { useEffect, useMemo, useState } from "react";
+import React, { Suspense, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
-import { ArrowRight, Leaf, ShieldCheck } from "lucide-react";
+import { ArrowRight, Leaf } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
 import { Button } from "@/components/ui/Button";
 import {
@@ -23,6 +23,20 @@ import {
 import { getSafeAuthRedirect } from "@/utils/authRedirects";
 
 export default function LoginPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="flex min-h-screen items-center justify-center bg-bg px-4">
+          <p className="text-sm text-muted-foreground">Loading...</p>
+        </div>
+      }
+    >
+      <LoginPageContent />
+    </Suspense>
+  );
+}
+
+function LoginPageContent() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
@@ -107,7 +121,7 @@ export default function LoginPage() {
             <div className="mx-auto mb-7 flex h-14 w-14 items-center justify-center rounded-full border border-border bg-bg">
               <Leaf className="h-7 w-7 text-cta-start" aria-hidden="true" />
             </div>
-            <CardTitle className="text-5xl font-black tracking-tight text-foreground">
+            <CardTitle as="h1" className="font-display text-5xl font-black tracking-tight text-foreground">
               SheSync+
             </CardTitle>
             <CardDescription className="mx-auto mt-4 max-w-xs text-lg leading-relaxed text-muted-foreground">
@@ -176,30 +190,7 @@ export default function LoginPage() {
                 <ArrowRight className="h-5 w-5" aria-hidden="true" />
               </Button>
 
-              <div className="flex items-center gap-4 py-4">
-                <span className="h-px flex-1 bg-border" />
-                <span className="text-xs font-black uppercase tracking-[0.18em] text-muted-foreground">
-                  or continue with
-                </span>
-                <span className="h-px flex-1 bg-border" />
-              </div>
-
-              <div className="grid grid-cols-2 gap-3">
-                <button
-                  type="button"
-                  className="min-h-12 rounded-lg border border-border bg-bg-elevated px-4 text-sm font-bold text-foreground hover:border-cta-start focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cta-start"
-                >
-                  Apple
-                </button>
-                <button
-                  type="button"
-                  className="min-h-12 rounded-lg border border-border bg-bg-elevated px-4 text-sm font-bold text-foreground hover:border-cta-start focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cta-start"
-                >
-                  Google
-                </button>
-              </div>
-
-              <div className="space-y-3 text-center">
+              <div className="space-y-3 pt-2 text-center">
                 <p className="text-sm text-muted-foreground">
                   Don&apos;t have an account?{" "}
                   <Link
@@ -209,9 +200,8 @@ export default function LoginPage() {
                     Create an account
                   </Link>
                 </p>
-                <p className="inline-flex items-center justify-center gap-2 text-xs font-bold text-info">
-                  <ShieldCheck className="h-4 w-4" aria-hidden="true" />
-                  End-to-end encrypted
+                <p className="text-xs font-semibold text-muted-foreground">
+                  Sharing is off by default. You choose what your partner sees.
                 </p>
               </div>
             </form>

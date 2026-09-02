@@ -1,25 +1,41 @@
 "use client";
 
-import { useState } from "react";
-import { useRouter } from "next/navigation";
+import { useEffect } from "react";
 
 import { useApp } from "@/context/AppContext";
 import { useAuth } from "@/context/AuthContext";
+import { useCycleLogger } from "@/hooks/useCycleLogger";
+import { getPrivacySettings } from "@/services/privacy/settings";
 
 export function useSettingsPageState() {
   const { state, toggleTheme } = useApp();
-  const { user: authUser, signOut } = useAuth();
-  const router = useRouter();
-  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const { user: authUser } = useAuth();
+  const { cycles, fetchCycles } = useCycleLogger();
 
-  const exportData = () => {
+  useEffect(() => {
+    if (authUser) {
+      void fetchCycles();
+    }
+  }, [authUser, fetchCycles]);
+
+  const exportData = async () => {
+    if (!authUser) return;
+
+    let privacySettings = null;
+    try {
+      privacySettings = await getPrivacySettings(authUser.id);
+    } catch (error) {
+      console.error("[settings] failed to include privacy settings in export", error);
+    }
+
     const data = {
-      user: authUser,
-      cycleData: state.cycleData,
-      aiMessages: state.aiMessages,
-      intimacyCards: state.intimacyCards,
-      fantasyEntries: state.fantasyEntries,
-      notifications: state.notifications,
+      user: {
+        id: authUser.id,
+        email: authUser.email,
+        name: authUser.name,
+      },
+      privacySettings,
+      cycleLogs: cycles,
       exportDate: new Date().toISOString(),
     };
 
@@ -36,21 +52,11 @@ export function useSettingsPageState() {
     URL.revokeObjectURL(url);
   };
 
-  const deleteAllData = async () => {
-    localStorage.clear();
-    await signOut();
-    setShowDeleteConfirm(false);
-    router.replace("/");
-  };
-
   return {
     authUser,
-    deleteAllData,
     exportData,
     isDarkMode: state.isDarkMode,
     isLoading: state.isLoading,
-    setShowDeleteConfirm,
-    showDeleteConfirm,
     toggleTheme,
   };
 }

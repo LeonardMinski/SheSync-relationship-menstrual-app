@@ -14,8 +14,8 @@ export function SettingsActionGrid() {
       <SettingsAction
         href="/partner"
         icon={Users}
-        title="Partner View"
-        description="Preview the read-only partner experience."
+        title="Partner"
+        description="Manage your partner connection and what they can see. Also reachable from Connect."
       />
     </section>
   );

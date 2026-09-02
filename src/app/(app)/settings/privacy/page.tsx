@@ -13,19 +13,9 @@ export default async function PrivacySettingsPage() {
       <TopNavbar
         title="Privacy & Partner"
         subtitle="Control what you share and who you share it with."
-        showNotifications
       />
 
       <main className="mx-auto w-full max-w-7xl space-y-8 px-4 py-6 sm:px-6 lg:px-10">
-        <section className="hidden md:block">
-          <h1 className="text-5xl font-bold tracking-tight text-foreground">
-            Privacy & Partner
-          </h1>
-          <p className="mt-3 max-w-2xl text-xl leading-relaxed text-muted-foreground">
-            Control what you share and maintain your digital sanctuary.
-          </p>
-        </section>
-
         <PrivacySettingsForm />
 
         <section className="rounded-[2rem] border border-border bg-bg-surface p-6 text-center shadow-md">

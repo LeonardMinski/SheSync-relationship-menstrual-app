@@ -103,7 +103,7 @@ export default function SignupPage() {
             <div className="mx-auto mb-7 flex h-14 w-14 items-center justify-center rounded-full border border-border bg-bg">
               <Leaf className="h-7 w-7 text-cta-start" aria-hidden="true" />
             </div>
-            <CardTitle className="text-5xl font-black tracking-tight text-foreground">
+            <CardTitle as="h1" className="font-display text-5xl font-black tracking-tight text-foreground">
               SheSync+
             </CardTitle>
             <CardDescription className="mx-auto mt-4 max-w-xs text-lg leading-relaxed text-muted-foreground">

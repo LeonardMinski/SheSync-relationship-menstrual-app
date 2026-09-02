@@ -1,157 +1,152 @@
-'use client'
+"use client";
 
-import React, { useEffect, useState } from 'react'
-import Link from 'next/link'
-import { useRouter } from 'next/navigation'
-import { useAuth } from '@/context/AuthContext'
-import { supabase } from '@/lib/supabase/client'
+import React, { useEffect, useState } from "react";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+
+import { useAuth } from "@/context/AuthContext";
+import { supabase } from "@/lib/supabase/client";
+import { Button } from "@/components/ui/Button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/Card";
+import { Input } from "@/components/ui/Input";
+import { InlineBanner } from "@/components/ui/InlineBanner";
 
 export default function ResetPasswordPage() {
-  const { updatePassword } = useAuth()
-  const router = useRouter()
-  const [password, setPassword] = useState('')
-  const [confirmPassword, setConfirmPassword] = useState('')
-  const [error, setError] = useState('')
-  const [success, setSuccess] = useState('')
-  const [loading, setLoading] = useState(false)
-  const [sessionReady, setSessionReady] = useState(false)
+  const { updatePassword } = useAuth();
+  const router = useRouter();
+  const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [error, setError] = useState("");
+  const [success, setSuccess] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [sessionReady, setSessionReady] = useState(false);
 
   useEffect(() => {
-    let isMounted = true
+    let isMounted = true;
 
     const checkRecoverySession = async () => {
-      const { data } = await supabase.auth.getSession()
-      if (!isMounted) return
+      const { data } = await supabase.auth.getSession();
+      if (!isMounted) return;
 
       if (data.session) {
-        setSessionReady(true)
+        setSessionReady(true);
       } else {
-        setError('This reset link is invalid or expired. Request a new one.')
+        setError("This reset link is invalid or expired. Request a new one.");
       }
-    }
+    };
 
-    checkRecoverySession()
+    checkRecoverySession();
 
     return () => {
-      isMounted = false
-    }
-  }, [])
+      isMounted = false;
+    };
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault()
-    if (loading) return
+    e.preventDefault();
+    if (loading) return;
 
-    setError('')
-    setSuccess('')
+    setError("");
+    setSuccess("");
 
     if (password !== confirmPassword) {
-      setError('Passwords do not match')
-      return
+      setError("Passwords do not match");
+      return;
     }
 
     if (password.length < 8) {
-      setError('Password must be at least 8 characters long')
-      return
+      setError("Password must be at least 8 characters long");
+      return;
     }
 
-    setLoading(true)
+    setLoading(true);
 
     try {
-      const result = await updatePassword(password)
+      const result = await updatePassword(password);
       if (!result.success) {
-        setError(result.error || 'Unable to update password')
-        return
+        setError(result.error || "Unable to update password");
+        return;
       }
 
-      setSuccess('Password updated. Redirecting to sign in...')
+      setSuccess("Password updated. Redirecting to sign in...");
       setTimeout(() => {
-        router.replace('/auth/login')
-      }, 1200)
+        router.replace("/auth/login");
+      }, 1200);
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
+  };
 
   return (
-    <div className="min-h-screen flex items-center justify-center" style={{ backgroundColor: 'var(--bg-primary)' }}>
-      <div className="max-w-md w-full space-y-8 p-8">
-        <div className="text-center">
-          <h1 className="text-3xl font-bold mb-2" style={{ color: 'var(--text-primary)' }}>Choose a new password</h1>
-          <p style={{ color: 'var(--text-secondary)' }}>Set a new password for your account.</p>
-        </div>
+    <div className="flex min-h-screen items-center justify-center bg-bg px-4 py-10 text-foreground">
+      <div className="w-full max-w-lg">
+        <Card className="border-border bg-[var(--bg-surface)] px-4 py-8 shadow-lg sm:px-10 sm:py-12">
+          <CardHeader className="pb-6 text-center">
+            <CardTitle as="h1" className="font-display text-3xl font-bold text-foreground">
+              Choose a new password
+            </CardTitle>
+            <CardDescription className="mx-auto mt-3 max-w-sm text-base leading-relaxed text-muted-foreground">
+              Set a new password for your account.
+            </CardDescription>
+          </CardHeader>
 
-        <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
-          {error && (
-            <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-md">
-              {error}
-            </div>
-          )}
+          <CardContent>
+            <form className="space-y-5" onSubmit={handleSubmit}>
+              {error && <InlineBanner tone="error">{error}</InlineBanner>}
+              {success && <InlineBanner tone="success">{success}</InlineBanner>}
 
-          {success && (
-            <div className="bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded-md">
-              {success}
-            </div>
-          )}
+              <Input
+                id="password"
+                name="password"
+                type="password"
+                label="New password"
+                autoComplete="new-password"
+                required
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                placeholder="New password"
+              />
 
-          <div>
-            <label htmlFor="password" className="block text-sm font-medium mb-1" style={{ color: 'var(--text-primary)' }}>
-              New Password
-            </label>
-            <input
-              id="password"
-              name="password"
-              type="password"
-              autoComplete="new-password"
-              required
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              className="w-full px-3 py-2 rounded-md shadow-sm focus:outline-none focus:ring-2 transition-all duration-200"
-              style={{
-                backgroundColor: 'var(--bg-secondary)',
-                color: 'var(--text-primary)',
-                border: '1px solid var(--border-subtle)'
-              }}
-              placeholder="New password"
-            />
-          </div>
+              <Input
+                id="confirmPassword"
+                name="confirmPassword"
+                type="password"
+                label="Confirm new password"
+                autoComplete="new-password"
+                required
+                value={confirmPassword}
+                onChange={(e) => setConfirmPassword(e.target.value)}
+                placeholder="Confirm new password"
+              />
 
-          <div>
-            <label htmlFor="confirmPassword" className="block text-sm font-medium mb-1" style={{ color: 'var(--text-primary)' }}>
-              Confirm New Password
-            </label>
-            <input
-              id="confirmPassword"
-              name="confirmPassword"
-              type="password"
-              autoComplete="new-password"
-              required
-              value={confirmPassword}
-              onChange={(e) => setConfirmPassword(e.target.value)}
-              className="w-full px-3 py-2 rounded-md shadow-sm focus:outline-none focus:ring-2 transition-all duration-200"
-              style={{
-                backgroundColor: 'var(--bg-secondary)',
-                color: 'var(--text-primary)',
-                border: '1px solid var(--border-subtle)'
-              }}
-              placeholder="Confirm new password"
-            />
-          </div>
+              <Button
+                type="submit"
+                variant="cta"
+                loading={loading}
+                disabled={!sessionReady}
+                className="w-full"
+              >
+                {loading ? "Updating password..." : "Update password"}
+              </Button>
 
-          <button
-            type="submit"
-            disabled={loading || !sessionReady}
-            className="btn-primary group relative w-full flex justify-center py-2 px-4 text-sm font-medium rounded-md disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            {loading ? 'Updating password...' : 'Update password'}
-          </button>
-
-          <div className="text-center">
-            <Link href="/auth/login" className="font-medium text-rose-600 hover:text-rose-500">
-              Back to sign in
-            </Link>
-          </div>
-        </form>
+              <div className="text-center">
+                <Link
+                  href="/auth/login"
+                  className="text-sm font-semibold text-[color:var(--accent-rose)] hover:underline"
+                >
+                  Back to sign in
+                </Link>
+              </div>
+            </form>
+          </CardContent>
+        </Card>
       </div>
     </div>
-  )
+  );
 }

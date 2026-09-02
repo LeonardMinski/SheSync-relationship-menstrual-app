@@ -3,19 +3,19 @@
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { format } from "date-fns";
-import { BarChart3, Moon } from "lucide-react";
 
 import { TopNavbar } from "@/components/layout/TopNavbar";
 import { useAuth } from "@/context/AuthContext";
 import { buildDashboardSummary } from "@/features/dashboard/dashboard.utils";
 import { useCycleLogger } from "@/hooks/useCycleLogger";
+import { usePartnerPortalData } from "@/hooks/usePartnerPortalData";
 import type { DashboardCycleLog } from "@/types/dashboard";
 
-import { ComingSoonTile } from "./ComingSoonTile";
 import { CycleHero } from "./CycleHero";
 import { DailySnapshot } from "./DailySnapshot";
 import { InsightCard } from "./InsightCard";
 import { PartnerCard } from "./PartnerCard";
+import { QuickExploreLinks } from "./QuickExploreLinks";
 
 export default function Dashboard() {
   const router = useRouter();
@@ -27,6 +27,8 @@ export default function Dashboard() {
     error: cycleError,
     clearError,
   } = useCycleLogger();
+  const { ownerLink, ownSharingSummary, invitePartner } =
+    usePartnerPortalData();
 
   useEffect(() => {
     if (user && !authLoading) {
@@ -44,7 +46,7 @@ export default function Dashboard() {
     return (
       <div className="flex min-h-screen items-center justify-center bg-bg">
         <div
-          className="h-9 w-9 animate-spin rounded-full border-2 border-border border-t-cta-start"
+          className="h-9 w-9 motion-reduce:animate-none animate-spin rounded-full border-2 border-border border-t-cta-start"
           aria-label="Loading dashboard"
         />
       </div>
@@ -68,14 +70,15 @@ export default function Dashboard() {
       <TopNavbar
         title={dashboardTitle}
         subtitle={format(new Date(), "EEEE, MMMM d")}
-        showNotifications
       />
 
       <main className="mx-auto w-full max-w-7xl space-y-7 px-4 py-6 sm:px-6 lg:px-10">
         <section className="hidden md:block">
-          <h1 className="text-5xl font-bold tracking-tight text-foreground">
+          {/* TopNavbar above already renders this page's single <h1>; this is a
+              supplementary editorial restatement, not a second heading. */}
+          <p className="font-display text-5xl font-bold tracking-tight text-foreground">
             Your Cycle Dashboard
-          </h1>
+          </p>
           <p className="mt-2 text-xl font-semibold text-muted-foreground">
             {format(new Date(), "EEEE, MMMM d")} ·{" "}
             {dashboardSummary.latestLog
@@ -115,17 +118,13 @@ export default function Dashboard() {
 
         <section id="insights" className="grid gap-6">
           <InsightCard />
-          <PartnerCard onManage={() => router.push("/settings/privacy")} />
-          <ComingSoonTile
-            label="Insights"
-            description="Deep pattern summaries are parked until the MVP loop is reliable."
-            icon={BarChart3}
+          <PartnerCard
+            ownerLink={ownerLink}
+            sharingSummary={ownSharingSummary}
+            onManage={() => router.push("/settings/privacy")}
+            onInvite={invitePartner}
           />
-          <ComingSoonTile
-            label="AI Coach"
-            description="Personalized guidance will return after the core journey is stable."
-            icon={Moon}
-          />
+          <QuickExploreLinks />
         </section>
       </main>
     </div>

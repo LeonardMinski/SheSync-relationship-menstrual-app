@@ -11,9 +11,10 @@ export function PartnerPortalHero({
         <Eye className="h-4 w-4 text-info" aria-hidden="true" />
         Partner Perspective
       </div>
-      <h1 className="mt-5 text-4xl font-bold tracking-tight text-foreground md:text-5xl">
+      {/* The page's <h1> is TopNavbar's title, rendered above this component. */}
+      <h2 className="mt-5 text-4xl font-bold tracking-tight text-foreground md:text-5xl">
         {partnerName || "Partner"}&apos;s Context
-      </h1>
+      </h2>
       <p className="mt-3 max-w-2xl text-lg leading-relaxed text-muted-foreground">
         A calm, read-only view of the details they explicitly shared.
       </p>

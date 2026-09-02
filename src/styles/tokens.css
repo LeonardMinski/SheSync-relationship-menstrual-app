@@ -20,14 +20,17 @@
   --border-subtle: #ebe7e0;
   --border-secondary: #d1ccc3;
 
-  --cta-start: #b8d3bd;
-  --cta-end: #8fa98f;
-  --cta-foreground: #142017;
+  --cta-start: #e0637e;
+  --cta-end: #c23f5e;
+  --cta-foreground: #ffffff;
   --accent-sage: #4b604f;
+  --accent-sage-soft: #b8d3bd;
+  --accent-clay: #ab7256;
+  --accent-gold: #b68b3c;
   --accent-peach: #e5ad95;
   --accent-lilac: #d9c5ff;
   --accent-blue: #7c91b6;
-  --accent-rose: #e5ad95;
+  --accent-rose: #e0637e;
   --accent-purple: #75668f;
   --accent-secondary: #e5ad95;
   --accent-tertiary: #75668f;
@@ -70,6 +73,7 @@
   --radius-2xl: 1.5rem;
 
   --font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  /* --font-display is set on <html> by next/font (Playfair Display) in src/app/layout.tsx */
   --font-size-xs: 0.75rem;
   --font-size-sm: 0.875rem;
   --font-size-base: 1rem;
@@ -98,14 +102,17 @@
   --border-subtle: #293029;
   --border-secondary: #465048;
 
-  --cta-start: #b8d3bd;
-  --cta-end: #93ad95;
-  --cta-foreground: #132018;
+  --cta-start: #eb7f96;
+  --cta-end: #d1546e;
+  --cta-foreground: #241014;
   --accent-sage: #93ad95;
+  --accent-sage-soft: #35422f;
+  --accent-clay: #c99872;
+  --accent-gold: #d8ad5c;
   --accent-peach: #efa88e;
   --accent-lilac: #cdb6ff;
   --accent-blue: #7f9ac4;
-  --accent-rose: #efa88e;
+  --accent-rose: #eb7f96;
   --accent-purple: #8d7aaa;
   --accent-secondary: #efa88e;
   --accent-tertiary: #8d7aaa;

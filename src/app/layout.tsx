@@ -1,5 +1,13 @@
 import type { Metadata, Viewport } from "next";
+import { Playfair_Display } from "next/font/google";
 import "./globals.css";
+
+const playfairDisplay = Playfair_Display({
+  subsets: ["latin"],
+  weight: ["600", "700"],
+  variable: "--font-display",
+  display: "swap",
+});
 
 export const metadata: Metadata = {
   title: "SheSync+ | Cycle-Powered Wellbeing & Intimacy",
@@ -26,7 +34,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en" suppressHydrationWarning>
+    <html lang="en" suppressHydrationWarning className={playfairDisplay.variable}>
       <body className="font-sans antialiased" suppressHydrationWarning>
         {children}
       </body>

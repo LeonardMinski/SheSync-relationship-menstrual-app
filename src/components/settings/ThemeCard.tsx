@@ -27,14 +27,17 @@ export function ThemeCard({
         <button
           type="button"
           onClick={onToggle}
-          className="relative h-8 w-14 rounded-full bg-bg-tertiary transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cta-start"
+          className="flex min-h-[44px] min-w-[44px] items-center justify-center rounded-full focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cta-start"
           aria-label="Toggle theme"
+          aria-pressed={isDarkMode}
         >
-          <span
-            className={`absolute top-1 h-6 w-6 rounded-full bg-cta-start transition ${
-              isDarkMode ? "left-7" : "left-1"
-            }`}
-          />
+          <span className="relative h-8 w-14 rounded-full bg-bg-tertiary motion-reduce:transition-none transition">
+            <span
+              className={`absolute top-1 h-6 w-6 rounded-full bg-cta-start motion-reduce:transition-none transition ${
+                isDarkMode ? "left-7" : "left-1"
+              }`}
+            />
+          </span>
         </button>
       </div>
     </article>

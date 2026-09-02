@@ -1,4 +1,5 @@
 import type { PrivacySettings } from "@/schemas/privacy";
+import type { PartnerLinkWithPerson } from "@/types/partner";
 
 import { ManagePartnerCard } from "./ManagePartnerCard";
 import { SharingSettingsCard } from "./SharingSettingsCard";
@@ -8,8 +9,13 @@ interface PrivacySettingsCardsProps {
   saving: boolean;
   settings: PrivacySettings;
   stealthMode: boolean;
-  onReset: () => void;
   onSettingChange: (key: keyof PrivacySettings, value: boolean) => void;
+  onReset: () => void;
+  ownerLink: PartnerLinkWithPerson | null;
+  ownerLinkLoading: boolean;
+  ownSharingSummary: string[];
+  onInvite: (email: string) => Promise<boolean>;
+  onRevokeConnection: () => Promise<boolean>;
 }
 
 export function PrivacySettingsCards({
@@ -18,15 +24,27 @@ export function PrivacySettingsCards({
   stealthMode,
   onReset,
   onSettingChange,
+  ownerLink,
+  ownerLinkLoading,
+  ownSharingSummary,
+  onInvite,
+  onRevokeConnection,
 }: PrivacySettingsCardsProps) {
   return (
     <div className="grid gap-6 xl:grid-cols-[minmax(280px,0.8fr)_minmax(320px,1fr)_minmax(280px,0.8fr)]">
-      <ManagePartnerCard saving={saving} onReset={onReset} />
+      <ManagePartnerCard
+        ownerLink={ownerLink}
+        loading={ownerLinkLoading}
+        sharingSummary={ownSharingSummary}
+        onInvite={onInvite}
+        onRevoke={onRevokeConnection}
+      />
       <SharingSettingsCard
         saving={saving}
         settings={settings}
         stealthMode={stealthMode}
         onSettingChange={onSettingChange}
+        onReset={onReset}
       />
       <StealthModeCard
         saving={saving}
