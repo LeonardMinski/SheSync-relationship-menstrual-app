@@ -6,6 +6,10 @@ import { AppProvider } from "@/context/AppContext";
 import { AuthProvider, useAuth } from "@/context/AuthContext";
 import ThemeProvider from "@/components/ThemeProvider";
 import { getLoginRedirectPath } from "@/utils/authRedirects";
+import {
+  isWaitingForOnboardingStatus,
+  shouldRedirectAwayFromOnboarding,
+} from "@/features/onboarding/onboarding.utils";
 
 const AuthLoadingState = ({ text }: { text: string }) => (
   <div className="min-h-screen bg-bg text-foreground">
@@ -19,15 +23,20 @@ const AuthLoadingState = ({ text }: { text: string }) => (
 // flows (currently just onboarding) that shouldn't show primary nav while
 // the user is still being set up.
 function AuthenticatedOnboardingLayout({ children }: { children: React.ReactNode }) {
-  const { session, user, loading } = useAuth();
+  const { session, user, loading, profileError } = useAuth();
   const pathname = usePathname();
   const router = useRouter();
 
   useEffect(() => {
     if (!loading && !session) {
       router.replace(getLoginRedirectPath(pathname));
+      return;
     }
-  }, [loading, pathname, router, session]);
+
+    if (session && shouldRedirectAwayFromOnboarding(user)) {
+      router.replace("/dashboard");
+    }
+  }, [loading, pathname, router, session, user]);
 
   if (loading) {
     return <AuthLoadingState text="Loading..." />;
@@ -41,6 +50,14 @@ function AuthenticatedOnboardingLayout({ children }: { children: React.ReactNode
     return (
       <AuthLoadingState text="We couldn't load your profile. Please refresh or try signing in again." />
     );
+  }
+
+  if (isWaitingForOnboardingStatus(user, profileError)) {
+    return <AuthLoadingState text="Loading..." />;
+  }
+
+  if (shouldRedirectAwayFromOnboarding(user)) {
+    return <AuthLoadingState text="Taking you to your dashboard..." />;
   }
 
   return (

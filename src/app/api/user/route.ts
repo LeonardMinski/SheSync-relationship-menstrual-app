@@ -54,6 +54,7 @@ export async function PUT(request: NextRequest) {
         share_fantasy_vault: boolean
         share_intimacy_deck: boolean
       }
+      onboarding_completed_at?: string
     } = {}
     
     if (updateData.name !== undefined) {
@@ -89,6 +90,15 @@ export async function PUT(request: NextRequest) {
         share_fantasy_vault: !!privacy.shareFantasyVault,
         share_intimacy_deck: !!privacy.shareIntimacyDeck,
       }
+    }
+
+    // Write-only completion flag: the client can only ever mark onboarding
+    // complete (server sets the timestamp), never unset it or backdate it.
+    if (updateData.completeOnboarding !== undefined) {
+      if (updateData.completeOnboarding !== true) {
+        return createErrorResponse('Invalid completeOnboarding value', 400)
+      }
+      allowedUpdates.onboarding_completed_at = new Date().toISOString()
     }
 
     if (Object.keys(allowedUpdates).length === 0) {

@@ -19,6 +19,8 @@ export type UserRecord = {
   partner_id?: string;
   profile_image_url?: string | null;
   privacy_settings: PrivacySettingsRecord;
+  /** NULL = onboarding not completed; ISO timestamp = completed at that time. */
+  onboarding_completed_at?: string | null;
 };
 
 export type CreateUserData = {
@@ -91,6 +93,10 @@ export type AuthContextType = {
   user: User | null;
   session: Session | null;
   loading: boolean;
+  /** True only when we tried to load the real profile and it failed — not
+   * merely "hasn't loaded yet." See onboarding.utils.ts for why this
+   * distinction matters for onboarding routing. */
+  profileError: boolean;
 
   signUp: (data: SignUpInput) => Promise<AuthResult>;
   signIn: (data: SignInInput) => Promise<AuthResult>;

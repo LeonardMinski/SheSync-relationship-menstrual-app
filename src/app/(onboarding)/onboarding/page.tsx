@@ -3,10 +3,11 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 
+import { useAuth } from "@/context/AuthContext";
+import { completeOnboarding } from "@/services/onboarding";
 import { Button } from "@/components/ui/Button";
 import { Card, CardContent } from "@/components/ui/Card";
-import { FeaturePlaceholder } from "@/components/ui/FeaturePlaceholder";
-import { Input } from "@/components/ui/Input";
+import { InlineBanner } from "@/components/ui/InlineBanner";
 import { StatusPill } from "@/components/ui/StatusPill";
 
 type Step = 1 | 2 | 3;
@@ -17,16 +18,37 @@ const STEP_LABELS: Record<Step, string> = {
   3: "Privacy Promise",
 };
 
-// UI-only onboarding sequence. Nothing entered here is persisted yet — see
-// the FeaturePlaceholder on step 2 and the TODO below.
-// TODO(V1-ONBOARDING): once a real "has completed onboarding" + cycle-setup
-// field exists on the user profile, wire step 2's fields and the final
-// button to a real save call instead of routing straight to /dashboard.
+// Only whether onboarding was completed is persisted (see
+// src/services/onboarding). Step 2 is deliberately informational only — we
+// do not collect cycle data here (last period date, cycle length) that
+// would be immediately discarded. There is no agreed, persisted
+// cycle-baseline model yet; real cycle logging happens on the Cycle page.
 export default function OnboardingPage() {
   const router = useRouter();
+  const { refreshUser } = useAuth();
   const [step, setStep] = useState<Step>(1);
-  const [lastPeriodDate, setLastPeriodDate] = useState("");
-  const [cycleLength, setCycleLength] = useState("28");
+  const [submitting, setSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState<string | null>(null);
+
+  const handleComplete = async () => {
+    if (submitting) return;
+
+    setSubmitting(true);
+    setSubmitError(null);
+
+    const result = await completeOnboarding();
+
+    if (!result.success) {
+      setSubmitError(result.error);
+      setSubmitting(false);
+      return;
+    }
+
+    await refreshUser();
+    router.replace("/dashboard");
+    // Intentionally leave `submitting` true — we're navigating away, and
+    // resetting it here would just re-enable the button for a moment.
+  };
 
   return (
     <div className="mx-auto flex min-h-screen max-w-2xl flex-col justify-center px-4 py-12 sm:px-6">
@@ -52,8 +74,7 @@ export default function OnboardingPage() {
                 Understand yourself. Share only what you choose.
               </p>
               <p className="text-sm text-muted-foreground">
-                Next, we&apos;ll optionally set up your cycle baseline and walk through your
-                privacy promise. Every setting here is optional and can be changed later.
+                Next, we&apos;ll introduce cycle logging and walk through your privacy promise.
               </p>
             </div>
           )}
@@ -61,33 +82,19 @@ export default function OnboardingPage() {
           {step === 2 && (
             <div className="space-y-4">
               <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-                Step 2: Cycle setup
+                Step 2: Cycle introduction
               </p>
               <h1 className="font-display text-2xl font-bold text-foreground">
-                Intimate rhythms
+                Your cycle, your pace
               </h1>
               <p className="text-sm text-muted-foreground">
-                Let&apos;s set your baseline. Completely optional — skip if you&apos;d rather log
-                as you go.
+                You can start logging your cycle and wellbeing whenever you&apos;re ready.
+                SheSync+ won&apos;t guess what you haven&apos;t told us.
               </p>
-              <Input
-                type="date"
-                label="Last period start date"
-                value={lastPeriodDate}
-                onChange={(event) => setLastPeriodDate(event.target.value)}
-              />
-              <Input
-                type="number"
-                min={15}
-                max={45}
-                label="Usual cycle length (days)"
-                value={cycleLength}
-                onChange={(event) => setCycleLength(event.target.value)}
-              />
-              <FeaturePlaceholder
-                title="Not saved to your profile yet"
-                description="This is a design preview of onboarding. Your real cycle history is still logged day-by-day on the Cycle page — nothing you enter here is saved yet."
-              />
+              <p className="text-sm text-muted-foreground">
+                When you&apos;re ready, you&apos;ll log each day on the Cycle page — mood,
+                energy, symptoms, and notes, entirely at your own pace.
+              </p>
             </div>
           )}
 
@@ -108,12 +115,20 @@ export default function OnboardingPage() {
                   entirely optional and can be changed anytime from Settings.
                 </p>
               </div>
+
+              {submitError && (
+                <InlineBanner tone="error">{submitError}</InlineBanner>
+              )}
             </div>
           )}
 
           <div className="flex items-center justify-between gap-3 pt-2">
             {step > 1 ? (
-              <Button variant="secondary" onClick={() => setStep((current) => (current - 1) as Step)}>
+              <Button
+                variant="secondary"
+                disabled={submitting}
+                onClick={() => setStep((current) => (current - 1) as Step)}
+              >
                 Back
               </Button>
             ) : (
@@ -125,8 +140,8 @@ export default function OnboardingPage() {
                 Continue
               </Button>
             ) : (
-              <Button variant="cta" onClick={() => router.push("/dashboard")}>
-                Start using SheSync+
+              <Button variant="cta" loading={submitting} onClick={handleComplete}>
+                {submitting ? "Setting up..." : "Start using SheSync+"}
               </Button>
             )}
           </div>

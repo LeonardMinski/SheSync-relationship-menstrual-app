@@ -9,6 +9,10 @@ import { getLoginRedirectPath } from "@/utils/authRedirects";
 import { BottomTabBar } from "@/components/layout/BottomTabBar";
 import { MobileHeader } from "@/components/layout/MobileHeader";
 import { TopNav } from "@/components/layout/TopNav";
+import {
+  isWaitingForOnboardingStatus,
+  shouldRedirectToOnboarding,
+} from "@/features/onboarding/onboarding.utils";
 
 const AuthLoadingState = ({ text }: { text: string }) => (
   <div className="min-h-screen bg-bg text-foreground">
@@ -19,15 +23,20 @@ const AuthLoadingState = ({ text }: { text: string }) => (
 );
 
 function AuthenticatedAppLayout({ children }: { children: React.ReactNode }) {
-  const { session, user, loading } = useAuth();
+  const { session, user, loading, profileError } = useAuth();
   const pathname = usePathname();
   const router = useRouter();
 
   useEffect(() => {
     if (!loading && !session) {
       router.replace(getLoginRedirectPath(pathname));
+      return;
     }
-  }, [loading, pathname, router, session]);
+
+    if (session && shouldRedirectToOnboarding(user)) {
+      router.replace("/onboarding");
+    }
+  }, [loading, pathname, router, session, user]);
 
   if (loading) {
     return <AuthLoadingState text="Loading..." />;
@@ -41,6 +50,14 @@ function AuthenticatedAppLayout({ children }: { children: React.ReactNode }) {
     return (
       <AuthLoadingState text="We couldn't load your profile. Please refresh or try signing in again." />
     );
+  }
+
+  if (isWaitingForOnboardingStatus(user, profileError)) {
+    return <AuthLoadingState text="Loading..." />;
+  }
+
+  if (shouldRedirectToOnboarding(user)) {
+    return <AuthLoadingState text="Taking you to onboarding..." />;
   }
 
   return (

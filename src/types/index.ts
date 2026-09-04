@@ -13,6 +13,15 @@ export interface User {
   user_metadata?: Record<string, unknown>;
   aud?: string;
   created_at?: string;
+  /**
+   * NULL = known to be incomplete; an ISO timestamp = known complete.
+   * `undefined` specifically means "not yet loaded from the real profile" —
+   * callers that gate navigation on this must treat `undefined` as "wait,
+   * don't decide yet," not as "incomplete." See AuthContext's mapSessionUser
+   * (the brief session-only fallback before the DB profile resolves) vs.
+   * mapDbUser (the real value).
+   */
+  onboardingCompletedAt?: string | null;
 }
 
 export interface PrivacySettings {

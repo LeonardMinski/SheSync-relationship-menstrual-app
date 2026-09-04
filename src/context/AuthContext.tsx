@@ -96,6 +96,8 @@ const mapDbUser = (rawUser: UserRecord | null | undefined): User | null => {
     profileImageUrl: rawUser.profile_image_url ?? undefined,
 
     created_at: rawUser.created_at,
+
+    onboardingCompletedAt: rawUser.onboarding_completed_at ?? null,
   };
 };
 
@@ -126,6 +128,12 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [session, setSession] = useState<Session | null>(null);
 
   const [loading, setLoading] = useState(true);
+  // True only when we tried to load the real DB profile and it failed (not
+  // merely "not loaded yet"). Guards elsewhere (onboarding routing) must be
+  // able to tell these apart: a transient profile-load failure must never
+  // be read as "onboarding incomplete," and must not leave the user stuck
+  // on a loading screen forever either. See onboarding.utils.ts.
+  const [profileError, setProfileError] = useState(false);
   const profileRefreshId = useRef(0);
 
   const refreshUser = async () => {
@@ -141,6 +149,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       if (sessionError || !currentSession) {
         setSession(null);
         setUser(null);
+        setProfileError(false);
         return;
       }
 
@@ -160,6 +169,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
           ? mapDbUser(result.user)
           : mapSessionUser(result.session ?? currentSession),
       );
+      setProfileError(Boolean(result.error && !result.user));
 
       if (result.error) {
         console.error("Auth refresh error:", result.error);
@@ -190,6 +200,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         if (sessionError || !initialSession) {
           setSession(null);
           setUser(null);
+          setProfileError(false);
           return;
         }
 
@@ -213,6 +224,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
             ? mapDbUser(result.user)
             : mapSessionUser(result.session ?? initialSession),
         );
+        setProfileError(Boolean(result.error && !result.user));
 
         if (result.error) {
           console.error("Auth initialisation error:", result.error);
@@ -237,6 +249,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
       if (!nextSession) {
         setUser(null);
+        setProfileError(false);
         setLoading(false);
         return;
       }
@@ -265,6 +278,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
             ? mapDbUser(result.user)
             : mapSessionUser(result.session ?? nextSession),
         );
+        setProfileError(Boolean(result.error && !result.user));
 
         if (result.error) {
           console.error("Auth state refresh error:", result.error);
@@ -420,6 +434,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
     setSession(null);
     setUser(null);
+    setProfileError(false);
   };
 
   return (
@@ -428,6 +443,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         user,
         session,
         loading,
+        profileError,
         signUp,
         signIn,
         requestPasswordReset,
