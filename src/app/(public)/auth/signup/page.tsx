@@ -3,17 +3,12 @@
 import React, { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { ArrowRight, Leaf, ShieldCheck } from "lucide-react";
+import { ArrowRight, ShieldCheck } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
 import { Button } from "@/components/ui/Button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/Card";
+import { Card, CardContent } from "@/components/ui/Card";
 import { Input } from "@/components/ui/Input";
+import { OrganicArtwork } from "@/components/ui/OrganicArtwork";
 import { signupSchema } from "@/schemas/auth";
 import {
   getSignupFieldErrors,
@@ -94,24 +89,22 @@ export default function SignupPage() {
   }
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-bg px-4 py-10 text-foreground">
-      <div className="pointer-events-none fixed inset-0 bg-[linear-gradient(120deg,rgba(184,211,189,0.12),transparent_42%,rgba(239,168,142,0.08))]" />
+    <div className="flex min-h-screen items-center bg-bg px-4 py-10 text-foreground">
+      <div className="mx-auto grid w-full max-w-5xl items-center gap-10 md:grid-cols-2">
+        <div>
+          <h1 className="font-display text-3xl font-bold leading-tight text-foreground md:text-4xl">
+            Your space starts entirely private.
+          </h1>
+          <p className="mt-4 max-w-sm text-base text-muted-foreground">
+            Nothing is shared with a partner unless you choose to share it.
+          </p>
+          <OrganicArtwork variant="duo" className="mt-10 hidden max-w-xs md:block" />
+        </div>
 
-      <div className="relative w-full max-w-lg">
-        <Card className="border-border bg-[var(--bg-surface)] px-4 py-8 shadow-lg sm:px-10 sm:py-12">
-          <CardHeader className="pb-8 text-center">
-            <div className="mx-auto mb-7 flex h-14 w-14 items-center justify-center rounded-full border border-border bg-bg">
-              <Leaf className="h-7 w-7 text-cta-start" aria-hidden="true" />
-            </div>
-            <CardTitle as="h1" className="font-display text-5xl font-black tracking-tight text-foreground">
-              SheSync+
-            </CardTitle>
-            <CardDescription className="mx-auto mt-4 max-w-xs text-lg leading-relaxed text-muted-foreground">
-              Your private sanctuary for health and cycle tracking.
-            </CardDescription>
-          </CardHeader>
+        <Card className="border-border bg-[var(--bg-surface)] px-4 py-8 shadow-lg sm:px-8 sm:py-10">
+          <p className="mb-6 font-display text-2xl font-bold text-foreground">Create your space</p>
 
-          <CardContent>
+          <CardContent className="p-0">
             <form className="space-y-6" onSubmit={handleSubmit}>
               {error && (
                 <div

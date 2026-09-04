@@ -11,6 +11,7 @@ import { InlineBanner } from "@/components/ui/InlineBanner";
 import { Input, Textarea } from "@/components/ui/Input";
 import { Modal } from "@/components/ui/Modal";
 import { SectionHeading } from "@/components/ui/SectionHeading";
+import { SharingGate } from "@/components/ui/SharingGate";
 import { StatusPill } from "@/components/ui/StatusPill";
 
 // TODO(V1-VAULT): wire to a real Vault persistence + sharing model (current fantasy schema is drifted, see docs/ROADMAP.md)
@@ -179,10 +180,19 @@ export default function NewVaultEntryPage() {
           <SectionHeading
             title={savedEntry.title}
             actions={
-              <StatusPill tone="muted">
-                <Lock className="h-3 w-3" aria-hidden="true" />
-                Private
-              </StatusPill>
+              revealConfirmed ? (
+                <StatusPill tone="sage">
+                  <Eye className="h-3 w-3" aria-hidden="true" />
+                  Full Reveal
+                </StatusPill>
+              ) : teaseSent ? (
+                <StatusPill tone="amber">Tease Shared</StatusPill>
+              ) : (
+                <StatusPill tone="rose">
+                  <Lock className="h-3 w-3" aria-hidden="true" />
+                  Private
+                </StatusPill>
+              )
             }
           />
 
@@ -255,14 +265,39 @@ export default function NewVaultEntryPage() {
             {teaseSent ? (
               <InlineBanner tone="success">Tease saved for this preview.</InlineBanner>
             ) : (
-              <Textarea
-                label="Teaser text"
-                placeholder="A short hint about this entry — not the full thing."
-                rows={3}
-                value={teaseText}
-                onChange={(event) => setTeaseText(event.target.value)}
-              />
+              <div className="grid gap-4 sm:grid-cols-[1fr_auto_1fr]">
+                <div className="rounded-xl border border-[color:var(--accent-sage)]/40 bg-[color:var(--accent-sage-soft)]/15 p-4">
+                  <p className="text-xs font-semibold uppercase tracking-wide text-[color:var(--accent-sage)]">
+                    Private Original
+                  </p>
+                  <p className="mt-1 text-xs text-muted-foreground">Only you see this.</p>
+                  <p className="mt-3 whitespace-pre-wrap text-sm text-foreground">
+                    {savedEntry?.content}
+                  </p>
+                </div>
+
+                <SharingGate label="Gate" />
+
+                <div className="rounded-xl border border-[color:var(--accent-amber)]/40 bg-[color:var(--accent-amber-soft)] p-4">
+                  <p className="text-xs font-semibold uppercase tracking-wide text-[color:var(--accent-amber)]">
+                    Partner Teaser Draft
+                  </p>
+                  <p className="mt-1 text-xs text-muted-foreground">What your partner can see.</p>
+                  <Textarea
+                    label="Teaser text"
+                    placeholder="A short hint about this entry — not the full thing."
+                    rows={4}
+                    value={teaseText}
+                    onChange={(event) => setTeaseText(event.target.value)}
+                    className="mt-3"
+                  />
+                </div>
+              </div>
             )}
+
+            <p className="text-xs text-muted-foreground">
+              Private to you until you choose to share.
+            </p>
 
             <FeaturePlaceholder
               title="Not wired to partner sharing yet"
@@ -271,13 +306,20 @@ export default function NewVaultEntryPage() {
 
             <div className="flex flex-wrap gap-3">
               {!teaseSent && (
-                <Button variant="cta" disabled={!teaseText.trim()} onClick={() => setTeaseSent(true)}>
-                  Confirm tease
+                <>
+                  <Button variant="cta" disabled={!teaseText.trim()} onClick={() => setTeaseSent(true)}>
+                    Share tease
+                  </Button>
+                  <Button variant="secondary" onClick={() => setTeaseOpen(false)}>
+                    Keep private
+                  </Button>
+                </>
+              )}
+              {teaseSent && (
+                <Button variant="secondary" onClick={() => setTeaseOpen(false)}>
+                  Close
                 </Button>
               )}
-              <Button variant="secondary" onClick={() => setTeaseOpen(false)}>
-                Close
-              </Button>
             </div>
           </div>
         </Modal>

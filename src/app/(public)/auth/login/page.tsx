@@ -113,19 +113,17 @@ function LoginPageContent() {
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-bg px-4 py-10 text-foreground">
-      <div className="pointer-events-none fixed inset-0 bg-[linear-gradient(120deg,rgba(184,211,189,0.12),transparent_42%,rgba(205,182,255,0.08))]" />
-
       <div className="relative w-full max-w-lg">
         <Card className="border-border bg-[var(--bg-surface)] px-4 py-8 shadow-lg sm:px-10 sm:py-12">
           <CardHeader className="pb-8 text-center">
             <div className="mx-auto mb-7 flex h-14 w-14 items-center justify-center rounded-full border border-border bg-bg">
               <Leaf className="h-7 w-7 text-cta-start" aria-hidden="true" />
             </div>
-            <CardTitle as="h1" className="font-display text-5xl font-black tracking-tight text-foreground">
-              SheSync+
+            <CardTitle as="h1" className="font-display text-4xl font-bold tracking-tight text-foreground">
+              Welcome back
             </CardTitle>
-            <CardDescription className="mx-auto mt-4 max-w-xs text-lg leading-relaxed text-muted-foreground">
-              Your secure sanctuary for wellbeing.
+            <CardDescription className="mx-auto mt-4 max-w-xs text-base leading-relaxed text-muted-foreground">
+              Sign in to your private space.
             </CardDescription>
           </CardHeader>
 

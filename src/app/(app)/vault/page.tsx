@@ -16,8 +16,10 @@ export default function VaultPage() {
   return (
     <div className="mx-auto w-full max-w-4xl space-y-6 px-4 py-8 sm:px-6">
       <SectionHeading
+        eyebrow="Private by default"
+        eyebrowVariant="pill"
         title="Your Vault"
-        description="A private place for thoughts, desires, and things you might want to explore at your own pace."
+        description="A private space for desires, curiosity, and things worth exploring."
         actions={
           <Link href="/vault/new" className={NEW_ENTRY_LINK_CLASSES}>
             <Plus className="h-4 w-4" aria-hidden="true" />

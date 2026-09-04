@@ -8,13 +8,12 @@ import { ExploreTab } from "@/components/connect/ExploreTab";
 import { PartnerConnectSummary } from "@/components/connect/PartnerConnectSummary";
 import { ReflectionsTab } from "@/components/connect/ReflectionsTab";
 
-type ConnectTab = "explore" | "boundaries" | "reflections" | "partner";
+type ConnectTab = "explore" | "boundaries" | "reflections";
 
 const TABS: { id: ConnectTab; label: string }[] = [
   { id: "explore", label: "Explore" },
   { id: "boundaries", label: "Boundaries" },
   { id: "reflections", label: "Reflections" },
-  { id: "partner", label: "Partner" },
 ];
 
 export default function ConnectPage() {
@@ -34,9 +33,11 @@ export default function ConnectPage() {
   return (
     <div className="mx-auto max-w-6xl space-y-6 px-4 py-8 sm:px-6">
       <SectionHeading
-        title="Connect with intention."
-        description="Explore relationship connection cards, align on boundaries, and manage your partner connection."
+        title="Connect"
+        description="Share what matters, build understanding, and explore intimacy on your terms."
       />
+
+      <PartnerConnectSummary />
 
       <div
         role="tablist"
@@ -56,7 +57,7 @@ export default function ConnectPage() {
             onKeyDown={handleTabKeyDown}
             className={`min-h-[44px] rounded-full px-4 py-2 text-sm font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cta-start ${
               activeTab === tab.id
-                ? "bg-bg-elevated text-foreground"
+                ? "bg-cta-start text-[color:var(--cta-foreground)] shadow-sm"
                 : "text-muted-foreground hover:bg-bg-elevated hover:text-foreground"
             }`}
           >
@@ -74,7 +75,6 @@ export default function ConnectPage() {
         {activeTab === "explore" && <ExploreTab />}
         {activeTab === "boundaries" && <BoundariesTab />}
         {activeTab === "reflections" && <ReflectionsTab />}
-        {activeTab === "partner" && <PartnerConnectSummary />}
       </div>
     </div>
   );

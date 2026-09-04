@@ -37,6 +37,94 @@ export const FOLLOW_UP_SUGGESTIONS: string[] = [
   "What else shows up in my recent logs?",
 ];
 
+/**
+ * "Jobs to be done" entry tiles shown on the Coach home screen. Three of the
+ * four kick off a conversation with a canned starter question; the fourth
+ * ("Prepare to talk to my partner") is a navigational entry point into the
+ * Partner Translation surface, which has its own placeholder-backed UI.
+ */
+export type CoachTileTone = "sage" | "rose" | "amber" | "muted";
+
+export type CoachTileAction =
+  | { type: "prompt"; question: string }
+  | { type: "link"; href: string };
+
+export interface CoachEntryTile {
+  id: string;
+  eyebrow: string;
+  eyebrowTone: CoachTileTone;
+  title: string;
+  description: string;
+  highlighted?: boolean;
+  action: CoachTileAction;
+}
+
+export const COACH_ENTRY_TILES: CoachEntryTile[] = [
+  {
+    id: "explore-pattern",
+    eyebrow: "Insight window",
+    eyebrowTone: "sage",
+    title: "Explore a pattern",
+    description: "Review patterns in your energy and mood logs.",
+    action: {
+      type: "prompt",
+      question: "What patterns have you noticed in my energy and mood?",
+    },
+  },
+  {
+    id: "reflect-today",
+    eyebrow: "Current wave",
+    eyebrowTone: "rose",
+    title: "Reflect on today",
+    description:
+      "Explore how you felt this morning based on your check-in.",
+    highlighted: true,
+    action: {
+      type: "prompt",
+      question: "How did I feel this morning based on my check-in?",
+    },
+  },
+  {
+    id: "prepare-partner",
+    eyebrow: "Connection tool",
+    eyebrowTone: "amber",
+    title: "Prepare to talk to my partner",
+    description: "Help your partner understand how you're feeling.",
+    action: { type: "link", href: "/coach/translate" },
+  },
+  {
+    id: "reflect-privately",
+    eyebrow: "Sovereign space",
+    eyebrowTone: "muted",
+    title: "Reflect privately",
+    description: "Draft questions about your feelings and desires.",
+    action: {
+      type: "prompt",
+      question:
+        "Help me draft some private questions about my feelings and desires.",
+    },
+  },
+];
+
+// This is the load-bearing truth claim about what Coach can and can't see.
+// Keep the exact wording if you touch this file — it's referenced from
+// CoachView and CoachContextPanel.
+export const COACH_DISCLOSURE_TEXT =
+  "Coach can use your cycle and wellbeing logs. Your Vault and private intimacy content are not included unless you explicitly choose to bring something into a conversation.";
+
+export const COACH_CONTEXT_INCLUDED: string[] = [
+  "Mood Logs",
+  "Energy Metrics",
+  "Stress Indicators",
+  "Cycle History",
+];
+
+export const COACH_CONTEXT_NEVER_SHARED: string[] = [
+  "Vault Entries",
+  "Shared Reflections",
+  "Partner Messages",
+];
+
 export interface CoachSampleReply {
   fromLogs: string;
   general: string;
@@ -50,3 +138,16 @@ export const SAMPLE_REPLY: CoachSampleReply = {
   general:
     "Many people notice shifts in energy tied to hormonal changes across the cycle. This is general context, not a diagnosis, and it doesn't replace advice from a healthcare provider.",
 };
+
+/**
+ * Static content for /coach/translate (Partner Translation). Like the rest
+ * of this file, nothing here is wired to a real backend — see
+ * PartnerTranslationView.tsx for the FeaturePlaceholder shown instead of a
+ * fake "sent" confirmation when the user clicks "Share with your partner".
+ */
+export const TRANSLATION_DEFAULT_EXCLUSIONS: string[] = ["Advice or solutions"];
+
+export const TRANSLATION_NOT_SENT_TITLE =
+  "This is a design preview — nothing is sent yet";
+export const TRANSLATION_NOT_SENT_DESCRIPTION =
+  "There's no real sharing pipeline connected here. Your draft stays on this screen and isn't saved or delivered to your partner.";

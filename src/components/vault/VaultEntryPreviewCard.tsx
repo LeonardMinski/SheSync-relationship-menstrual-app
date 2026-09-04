@@ -30,7 +30,7 @@ export function VaultEntryPreviewCard() {
               <StatusPill tone="muted">another tag</StatusPill>
             </div>
           </div>
-          <StatusPill tone="sage">
+          <StatusPill tone="rose">
             <Lock className="h-3 w-3" aria-hidden="true" />
             Private
           </StatusPill>

@@ -37,7 +37,11 @@ module.exports = {
         'accent-sage-soft': 'var(--accent-sage-soft)',
         'accent-clay': 'var(--accent-clay)',
         'accent-gold': 'var(--accent-gold)',
-        
+        'accent-amber': 'var(--accent-amber)',
+        'accent-amber-soft': 'var(--accent-amber-soft)',
+        'accent-premium': 'var(--accent-premium)',
+        'accent-premium-foreground': 'var(--accent-premium-foreground)',
+
         // Status colors
         success: 'var(--success)',
         warning: 'var(--warning)',

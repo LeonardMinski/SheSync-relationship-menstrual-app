@@ -52,7 +52,7 @@ export function PartnerConnectSummary() {
       <CardHeader className="flex-row items-center justify-between space-y-0">
         <CardTitle>Partner connection</CardTitle>
         {ownerLink?.status === "active" ? (
-          <StatusPill tone="sage">Connected</StatusPill>
+          <StatusPill tone="sage">Sharing Active</StatusPill>
         ) : ownerLink?.status === "pending" ? (
           <StatusPill tone="warning">Invitation pending</StatusPill>
         ) : viewerLink?.status === "pending" ? (
@@ -80,7 +80,7 @@ export function PartnerConnectSummary() {
           </p>
         )}
         <Link href="/partner">
-          <Button variant="secondary">Manage connection</Button>
+          <Button variant="secondary">Manage Space</Button>
         </Link>
       </CardContent>
     </Card>

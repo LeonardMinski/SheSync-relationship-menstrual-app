@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { HelpCircle, XCircle } from "lucide-react";
 
+import { Button } from "@/components/ui/Button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/Card";
 import { FeaturePlaceholder } from "@/components/ui/FeaturePlaceholder";
 import { InlineBanner } from "@/components/ui/InlineBanner";
@@ -52,8 +53,15 @@ export function BoundariesTab() {
 
   return (
     <div className="space-y-6">
-      <InlineBanner tone="info">
-        Preferences aren&apos;t consent. Always check in with each other directly, in the moment.
+      <div>
+        <h2 className="font-display text-xl font-bold text-foreground">Your Boundaries</h2>
+        <p className="mt-1 text-sm text-muted-foreground">
+          Your boundaries are private by default. Communicate comfort maps with total agency.
+        </p>
+      </div>
+
+      <InlineBanner tone="success">
+        Preferences are not consent. Consent should always be checked in the moment.
       </InlineBanner>
 
       <div className="grid gap-4 md:grid-cols-3">
@@ -93,7 +101,11 @@ export function BoundariesTab() {
       <FeaturePlaceholder
         title={changed ? "Not saved yet" : "Boundaries aren't saved yet"}
         description="This is a design preview. Tapping an item cycles it between Yes/Maybe/No so you can see the interaction, but changes aren't persisted to your account or shared with a partner yet."
-      />
+      >
+        <Button variant="secondary" disabled title="Not available yet — this is a design preview">
+          Share boundaries with partner
+        </Button>
+      </FeaturePlaceholder>
     </div>
   );
 }

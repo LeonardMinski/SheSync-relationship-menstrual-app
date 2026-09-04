@@ -1,10 +1,11 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname, useRouter } from "next/navigation";
-import { Settings as SettingsIcon, ShieldCheck } from "lucide-react";
+import { usePathname } from "next/navigation";
+import { Settings as SettingsIcon } from "lucide-react";
 
 import { useAuth } from "@/context/AuthContext";
+import { PrivacyBadge } from "@/components/ui/PrivacyBadge";
 import { cn } from "@/utils/cn";
 
 import { LogoutButton } from "./LogoutButton";
@@ -12,7 +13,6 @@ import { isItemActive, navItems } from "./navItems";
 
 export function TopNav() {
   const pathname = usePathname();
-  const router = useRouter();
   const { user } = useAuth();
 
   return (
@@ -20,34 +20,32 @@ export function TopNav() {
       className="sticky top-0 z-40 hidden w-full border-b border-border bg-[var(--bg-surface)] md:block"
       data-testid="desktop-top-nav"
     >
-      <div className="mx-auto flex h-16 max-w-7xl items-center justify-between gap-6 px-6">
+      <div className="mx-auto grid h-16 max-w-7xl grid-cols-[auto_1fr_auto] items-center gap-6 px-6">
         <Link
           href="/dashboard"
-          className="flex shrink-0 items-center gap-2 text-lg font-bold tracking-tight text-foreground"
+          className="font-display shrink-0 text-lg font-bold tracking-tight text-foreground"
         >
-          <span className="flex h-8 w-8 items-center justify-center rounded-full bg-cta-start text-[color:var(--cta-foreground)]">
-            <ShieldCheck className="h-4 w-4" aria-hidden="true" />
-          </span>
-          SheSync+
+          SheSync<span className="text-[color:var(--accent-rose)]">+</span>
         </Link>
 
-        <nav aria-label="Primary navigation" className="flex min-w-0 flex-1 items-center gap-1">
+        <nav
+          aria-label="Primary navigation"
+          className="flex min-w-0 items-center justify-center gap-1"
+        >
           {navItems.map((item) => {
             const active = isItemActive(pathname, item.href);
-            const Icon = item.icon;
             return (
               <Link
                 key={item.href}
                 href={item.href}
                 aria-current={active ? "page" : undefined}
                 className={cn(
-                  "flex items-center gap-2 rounded-full px-4 py-2 text-sm font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cta-start",
+                  "rounded-full px-4 py-2 text-sm font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cta-start",
                   active
-                    ? "bg-bg-elevated text-foreground"
-                    : "text-muted-foreground hover:bg-bg-elevated hover:text-foreground",
+                    ? "text-[color:var(--accent-rose)]"
+                    : "text-muted-foreground hover:text-foreground",
                 )}
               >
-                <Icon className="h-4 w-4" aria-hidden="true" />
                 {item.label}
               </Link>
             );
@@ -55,13 +53,7 @@ export function TopNav() {
         </nav>
 
         <div className="flex shrink-0 items-center gap-3">
-          <button
-            type="button"
-            onClick={() => router.push("/cycle")}
-            className="btn-cta px-4 py-2 text-sm"
-          >
-            Log Today
-          </button>
+          <PrivacyBadge className="hidden lg:inline-flex" />
 
           {user && (
             <div className="group relative">

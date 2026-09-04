@@ -3,6 +3,7 @@ import { format } from "date-fns";
 import { Button } from "@/components/ui/Button";
 import { Modal } from "@/components/ui/Modal";
 import { symptomOptions } from "@/features/cycle/cycle.utils";
+import { cn } from "@/utils/cn";
 import type { CycleLogFormState } from "@/types";
 import type { CyclePhase } from "@/types/cycle";
 
@@ -73,21 +74,25 @@ export function CycleLogDialog({
         <RangeField
           label="Mood"
           value={formState.mood}
+          tone="rose"
           onChange={(mood) => onUpdate({ mood })}
         />
         <RangeField
           label="Energy"
           value={formState.energy}
+          tone="amber"
           onChange={(energy) => onUpdate({ energy })}
         />
         <RangeField
-          label="Libido"
+          label="Desire"
           value={formState.libido}
+          tone="rose"
           onChange={(libido) => onUpdate({ libido })}
         />
         <RangeField
           label="Stress"
           value={formState.stress}
+          tone="sage"
           onChange={(stress) => onUpdate({ stress })}
         />
 
@@ -141,7 +146,7 @@ export function CycleLogDialog({
             loading={logging}
             className="flex-1"
           >
-            {logging ? "Saving..." : "Save Entry"}
+            {logging ? "Saving..." : "Save check-in"}
           </Button>
         </div>
       </div>
@@ -149,20 +154,32 @@ export function CycleLogDialog({
   );
 }
 
+const RANGE_TONE_CLASSES: Record<"rose" | "sage" | "amber", string> = {
+  rose: "bg-[color:var(--accent-rose)]",
+  sage: "bg-[color:var(--accent-sage)]",
+  amber: "bg-[color:var(--accent-amber)]",
+};
+
 function RangeField({
   label,
   value,
+  tone = "rose",
   onChange,
 }: {
   label: string;
   value: number;
+  tone?: "rose" | "sage" | "amber";
   onChange: (value: number) => void;
 }) {
   return (
     <div>
-      <label className="mb-2 block text-sm font-medium text-foreground">
-        {label}: {value}/10
+      <label className="mb-2 flex items-baseline justify-between text-sm font-medium text-foreground">
+        <span>{label}</span>
+        <span className="text-muted-foreground">{value}/10</span>
       </label>
+      {/* Real, fully keyboard/screen-reader operable range input — this is
+          the field of record. The segmented bar beneath it is a purely
+          decorative, aria-hidden restatement of the same live value. */}
       <input
         type="range"
         min="1"
@@ -172,6 +189,17 @@ function RangeField({
         className="slider h-2 w-full cursor-pointer appearance-none rounded-lg bg-border"
         aria-label={`${label}, ${value} out of 10`}
       />
+      <div className="mt-2 flex gap-1" aria-hidden="true">
+        {Array.from({ length: 10 }, (_, i) => (
+          <span
+            key={i}
+            className={cn(
+              "h-1.5 flex-1 rounded-full transition-colors",
+              i < value ? RANGE_TONE_CLASSES[tone] : "bg-bg-elevated",
+            )}
+          />
+        ))}
+      </div>
     </div>
   );
 }

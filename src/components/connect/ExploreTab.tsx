@@ -10,6 +10,8 @@ import { InlineBanner } from "@/components/ui/InlineBanner";
 import { Modal } from "@/components/ui/Modal";
 import { StatusPill } from "@/components/ui/StatusPill";
 import { Textarea } from "@/components/ui/Input";
+import { MutualReveal } from "@/components/connect/MutualReveal";
+import { OrganicArtwork } from "@/components/ui/OrganicArtwork";
 
 type CardCategory = "Talk" | "Connect" | "Affection" | "Play" | "Reflect";
 
@@ -55,11 +57,17 @@ const CARDS: IntimacyCard[] = [
 
 const CATEGORIES: (CardCategory | "All")[] = ["All", "Talk", "Connect", "Affection", "Play", "Reflect"];
 
+// A fixed, curated highlight from the catalog above — app-provided content,
+// not user data, so it's safe to feature deterministically.
+const TODAYS_SUGGESTION = CARDS[3];
+
 export function ExploreTab() {
   const [activeCategory, setActiveCategory] = useState<CardCategory | "All">("All");
   const [activeCard, setActiveCard] = useState<IntimacyCard | null>(null);
   const [response, setResponse] = useState("");
   const [saved, setSaved] = useState(false);
+  const [savedForLater, setSavedForLater] = useState(false);
+  const [showMutualReveal, setShowMutualReveal] = useState(false);
 
   const visibleCards =
     activeCategory === "All" ? CARDS : CARDS.filter((card) => card.category === activeCategory);
@@ -68,10 +76,27 @@ export function ExploreTab() {
     setActiveCard(null);
     setResponse("");
     setSaved(false);
+    setSavedForLater(false);
+    setShowMutualReveal(false);
   }
 
   return (
     <div className="space-y-6">
+      <Card className="relative overflow-hidden">
+        <div className="absolute inset-0 -z-0 opacity-60" aria-hidden="true">
+          <OrganicArtwork variant="trio" />
+        </div>
+        <CardContent className="relative space-y-3 pt-4">
+          <StatusPill tone="rose">TODAY&apos;S INTIMACY SUGGESTION</StatusPill>
+          <p className="font-display text-xl font-semibold leading-snug text-foreground">
+            &ldquo;{TODAYS_SUGGESTION.prompt}&rdquo;
+          </p>
+          <Button variant="cta" onClick={() => setActiveCard(TODAYS_SUGGESTION)}>
+            Explore Prompt
+          </Button>
+        </CardContent>
+      </Card>
+
       <div className="flex flex-wrap gap-2" role="group" aria-label="Filter cards by category">
         {CATEGORIES.map((category) => (
           <button
@@ -109,6 +134,16 @@ export function ExploreTab() {
       {activeCard && (
         <Modal title={activeCard.prompt} onClose={closeCard}>
           <div className="space-y-4">
+            <p className="text-sm text-muted-foreground">
+              Private by default — your reflection stays just yours unless you choose to share it.
+            </p>
+
+            {savedForLater && (
+              <InlineBanner tone="success">
+                Saved for later, privately. Nothing is shared with your partner.
+              </InlineBanner>
+            )}
+
             {saved ? (
               <InlineBanner tone="success">
                 Saved privately. Nothing is shared with your partner unless you choose to.
@@ -132,11 +167,29 @@ export function ExploreTab() {
                   </Button>
                   <Button variant="outline" disabled={!response.trim()} onClick={() => setSaved(true)}>
                     <Heart className="h-4 w-4" aria-hidden="true" />
-                    Share with partner
+                    Share response
+                  </Button>
+                  <Button
+                    variant="secondary"
+                    disabled={!response.trim() || savedForLater}
+                    onClick={() => setSavedForLater(true)}
+                  >
+                    Save for later
                   </Button>
                 </div>
               </>
             )}
+
+            {saved && !showMutualReveal && (
+              <Button variant="outline" onClick={() => setShowMutualReveal(true)}>
+                Answer together
+              </Button>
+            )}
+
+            {showMutualReveal && (
+              <MutualReveal yourAnswer={response} onClose={() => setShowMutualReveal(false)} />
+            )}
+
             <FeaturePlaceholder
               title="Reflections aren't saved yet"
               description="This is a design preview of the Explore flow. Reflection responses and partner-sharing for this section aren't wired to a real backend yet — nothing you write here persists after you close this window."

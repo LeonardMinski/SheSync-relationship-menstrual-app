@@ -1,17 +1,21 @@
 "use client";
 
 import { FormEvent, useState } from "react";
-import { AlertCircle, RotateCcw } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { AlertCircle, MessageCircleHeart, RotateCcw } from "lucide-react";
 
 import { Button } from "@/components/ui/Button";
-import { Card, CardContent } from "@/components/ui/Card";
 import { FeaturePlaceholder } from "@/components/ui/FeaturePlaceholder";
 import { Textarea } from "@/components/ui/Input";
 import LoadingSpinner from "@/components/ui/LoadingSpinner";
+import { CoachContextPanel } from "@/components/coach/CoachContextPanel";
+import { CoachEntryTileButton } from "@/components/coach/CoachEntryTileButton";
 import {
+  COACH_ENTRY_TILES,
   FOLLOW_UP_SUGGESTIONS,
   PROMPT_SUGGESTIONS,
   SAMPLE_REPLY,
+  type CoachEntryTile,
   type CoachSampleReply,
 } from "@/components/coach/coach.constants";
 
@@ -27,6 +31,7 @@ interface CoachTurn {
 }
 
 export default function CoachView() {
+  const router = useRouter();
   const [status, setStatus] = useState<CoachStatus>("start");
   const [input, setInput] = useState("");
   const [pendingQuestion, setPendingQuestion] = useState("");
@@ -76,8 +81,28 @@ export default function CoachView() {
     submitQuestion(question);
   };
 
+  const handleTileSelect = (tile: CoachEntryTile) => {
+    if (tile.action.type === "link") {
+      router.push(tile.action.href);
+      return;
+    }
+    submitQuestion(tile.action.question);
+  };
+
+  const handleShareWithPartner = () => {
+    if (!turn) return;
+    // No cross-route state store here on purpose — Coach and Partner
+    // Translation are both placeholder-backed, so the bridge between them
+    // stays as simple as possible: a plain query param the destination
+    // reads to pre-fill the private insight field. See
+    // PartnerTranslationView.tsx.
+    router.push(
+      `/coach/translate?insight=${encodeURIComponent(turn.reply.fromLogs)}`,
+    );
+  };
+
   return (
-    <div className="mx-auto max-w-4xl px-4 py-8 sm:px-6">
+    <div className="mx-auto max-w-6xl px-4 py-8 sm:px-6">
       <div className="flex flex-wrap items-start justify-between gap-4">
         <div>
           <p className="text-sm font-semibold uppercase tracking-[0.14em] text-cta-start">
@@ -88,6 +113,12 @@ export default function CoachView() {
               ? "What would you like to understand?"
               : "Your conversation"}
           </h1>
+          {status === "start" && (
+            <p className="mt-3 max-w-2xl text-base leading-7 text-muted-foreground">
+              Your Coach helps you notice patterns and find ways to share
+              what matters.
+            </p>
+          )}
         </div>
 
         {status !== "start" && (
@@ -104,61 +135,51 @@ export default function CoachView() {
       </div>
 
       {status === "start" && (
-        <p className="mt-3 max-w-2xl text-base leading-7 text-muted-foreground">
-          Your SheSync+ Coach interprets personal patterns through secure
-          reflection and cycle metrics.
-        </p>
-      )}
-
-      {status === "start" && (
-        <>
-          <div className="mt-6 grid gap-4 sm:grid-cols-2">
-            {PROMPT_SUGGESTIONS.map((prompt) => (
-              <button
-                key={prompt.question}
-                type="button"
-                onClick={() => submitQuestion(prompt.question)}
-                className="min-h-[44px] rounded-2xl text-left focus:outline-none focus-visible:ring-2 focus-visible:ring-cta-start"
-              >
-                <Card className="h-full transition hover:border-cta-start/40 hover:shadow-md">
-                  <CardContent className="pt-6">
-                    <p className="font-semibold text-foreground">
-                      &ldquo;{prompt.question}&rdquo;
-                    </p>
-                    <p className="mt-2 text-sm text-muted-foreground">
-                      {prompt.description}
-                    </p>
-                  </CardContent>
-                </Card>
-              </button>
-            ))}
-          </div>
-
-          <div
-            role="status"
-            className="mt-6 rounded-2xl border border-cta-start/25 bg-cta-start/10 px-4 py-3 text-sm leading-6 text-foreground"
-          >
-            Coach can use your cycle and wellbeing logs. Your Vault and
-            private intimacy content are not included unless you explicitly
-            choose to bring something into a conversation.
-          </div>
-
-          <form onSubmit={handleSubmit} className="mt-6 space-y-3">
-            <Textarea
-              id="coach-question"
-              label="Ask your Coach a question"
-              placeholder="e.g. What patterns have you noticed in my sleep?"
-              value={input}
-              onChange={(event) => setInput(event.target.value)}
-              rows={3}
-            />
-            <div className="flex justify-end">
-              <Button type="submit" variant="cta" disabled={!input.trim()}>
-                Send Question
-              </Button>
+        <div className="mt-8 grid gap-6 lg:grid-cols-[1fr_320px]">
+          <div className="space-y-6">
+            <div className="grid gap-4 sm:grid-cols-2">
+              {COACH_ENTRY_TILES.map((tile) => (
+                <CoachEntryTileButton
+                  key={tile.id}
+                  tile={tile}
+                  onSelect={handleTileSelect}
+                />
+              ))}
             </div>
-          </form>
-        </>
+
+            <form onSubmit={handleSubmit} className="space-y-3">
+              <Textarea
+                id="coach-question"
+                label="Explore something I've noticed"
+                placeholder="e.g. What patterns have you noticed in my sleep?"
+                value={input}
+                onChange={(event) => setInput(event.target.value)}
+                rows={3}
+              />
+              <div className="flex flex-wrap gap-2">
+                {PROMPT_SUGGESTIONS.map((prompt) => (
+                  <button
+                    key={prompt.question}
+                    type="button"
+                    onClick={() => submitQuestion(prompt.question)}
+                    className="min-h-[44px] rounded-full border border-border bg-bg-surface px-4 text-left text-sm text-foreground transition hover:border-cta-start/40 focus:outline-none focus-visible:ring-2 focus-visible:ring-cta-start"
+                  >
+                    {prompt.question}
+                  </button>
+                ))}
+              </div>
+              <div className="flex justify-end">
+                <Button type="submit" variant="cta" disabled={!input.trim()}>
+                  Send Question
+                </Button>
+              </div>
+            </form>
+          </div>
+
+          <div className="lg:sticky lg:top-6 lg:self-start">
+            <CoachContextPanel />
+          </div>
+        </div>
       )}
 
       {status === "loading" && (
@@ -210,9 +231,9 @@ export default function CoachView() {
                   title="Sample response — not yet connected to a live Coach service"
                   description="This reply is a static placeholder for this UI pass. It isn't personalized and shouldn't be read as real analysis of your logs."
                 >
-                  <div className="space-y-3">
+                  <div className="space-y-4">
                     <div>
-                      <span className="inline-flex items-center rounded-full bg-cta-start/15 px-2.5 py-1 text-[11px] font-semibold uppercase tracking-wide text-cta-start">
+                      <span className="inline-flex items-center rounded-full bg-accent-sage-soft/40 px-2.5 py-1 text-[11px] font-semibold uppercase tracking-wide text-accent-sage">
                         From your logs
                       </span>
                       <p className="mt-2 text-sm leading-6 text-foreground">
@@ -226,6 +247,20 @@ export default function CoachView() {
                       <p className="mt-2 text-sm leading-6 text-foreground">
                         {turn.reply.general}
                       </p>
+                    </div>
+                    <div className="pt-1">
+                      <Button
+                        type="button"
+                        variant="cta"
+                        size="sm"
+                        onClick={handleShareWithPartner}
+                      >
+                        <MessageCircleHeart
+                          className="h-4 w-4"
+                          aria-hidden="true"
+                        />
+                        Turn this into something I can share with my partner
+                      </Button>
                     </div>
                   </div>
                 </FeaturePlaceholder>

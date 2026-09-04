@@ -2,9 +2,17 @@
 
 import { PrivacySettingsCards } from "@/components/settings/PrivacySettingsCards";
 import { InlineBanner } from "@/components/ui/InlineBanner";
+import { PrivacyPreview } from "@/components/ui/PrivacyPreview";
 import { usePartnerPortalData } from "@/hooks/usePartnerPortalData";
 import { usePrivacySettingsForm } from "@/hooks/usePrivacySettingsForm";
 import type { PrivacySettings } from "@/schemas/privacy";
+
+// Always-private list verified against src/app/api/partner/shared-data/route.ts
+// and src/features/partner/sharing-summary.ts: the only fields the shared-data
+// RPC can ever expose are cycle phase and mood/energy. Everything else —
+// symptoms, notes, and features with no partner-sharing mechanism at all
+// (Coach, Vault) — never leaves the owner's account.
+const ALWAYS_PRIVATE = ["Symptoms", "Private notes", "Coach conversations", "Vault"];
 
 interface PrivacySettingsFormProps {
   initialSettings?: PrivacySettings;
@@ -56,6 +64,14 @@ export default function PrivacySettingsForm({
         onInvite={invitePartner}
         onRevokeConnection={revokeConnection}
       />
+
+      {ownerLink?.status === "active" && !dataLoading && (
+        <PrivacyPreview
+          partnerName={ownerLink.personName}
+          visible={ownSharingSummary}
+          hidden={ALWAYS_PRIVATE}
+        />
+      )}
     </div>
   );
 }

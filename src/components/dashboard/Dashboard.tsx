@@ -5,17 +5,19 @@ import { useRouter } from "next/navigation";
 import { format } from "date-fns";
 
 import { TopNavbar } from "@/components/layout/TopNavbar";
+import { SectionHeading } from "@/components/ui/SectionHeading";
 import { useAuth } from "@/context/AuthContext";
 import { buildDashboardSummary } from "@/features/dashboard/dashboard.utils";
 import { useCycleLogger } from "@/hooks/useCycleLogger";
 import { usePartnerPortalData } from "@/hooks/usePartnerPortalData";
 import type { DashboardCycleLog } from "@/types/dashboard";
 
-import { CycleHero } from "./CycleHero";
-import { DailySnapshot } from "./DailySnapshot";
+import { CheckInCard } from "./CheckInCard";
 import { InsightCard } from "./InsightCard";
 import { PartnerCard } from "./PartnerCard";
 import { QuickExploreLinks } from "./QuickExploreLinks";
+import { RelationshipTranslationTeaser } from "./RelationshipTranslationTeaser";
+import { YourStateCard } from "./YourStateCard";
 
 export default function Dashboard() {
   const router = useRouter();
@@ -64,6 +66,7 @@ export default function Dashboard() {
   const dashboardTitle = dashboardSummary.cycleDay
     ? `Day ${dashboardSummary.cycleDay} · ${phaseLabel}`
     : phaseLabel;
+  const firstName = user.name?.split(" ")[0] || user.name || "there";
 
   return (
     <div className="min-h-screen bg-bg pb-10">
@@ -74,17 +77,16 @@ export default function Dashboard() {
 
       <main className="mx-auto w-full max-w-7xl space-y-7 px-4 py-6 sm:px-6 lg:px-10">
         <section className="hidden md:block">
-          {/* TopNavbar above already renders this page's single <h1>; this is a
-              supplementary editorial restatement, not a second heading. */}
-          <p className="font-display text-5xl font-bold tracking-tight text-foreground">
-            Your Cycle Dashboard
-          </p>
-          <p className="mt-2 text-xl font-semibold text-muted-foreground">
-            {format(new Date(), "EEEE, MMMM d")} ·{" "}
-            {dashboardSummary.latestLog
-              ? "Latest entry available"
-              : "Log an entry to build your dashboard"}
-          </p>
+          {/* TopNavbar above already renders this page's single <h1>, so this
+              heading is demoted to h2 — a supplementary editorial
+              restatement, not a second top-level heading. */}
+          <SectionHeading
+            as="h2"
+            eyebrowVariant="pill"
+            eyebrow="CORE PHILOSOPHY"
+            title={`Good morning, ${firstName}`}
+            description={format(new Date(), "EEEE, MMMM d")}
+          />
         </section>
 
         {cycleError && (
@@ -103,27 +105,27 @@ export default function Dashboard() {
           </div>
         )}
 
-        <section className="grid gap-6 lg:grid-cols-[minmax(0,1.25fr)_minmax(360px,0.75fr)]">
-          <CycleHero
-            dayNumber={dashboardSummary.cycleDay}
-            phaseLabel={phaseLabel}
-            hasLog={Boolean(dashboardSummary.todaysLog)}
-            onLog={() => router.push("/cycle")}
-          />
-          <DailySnapshot
-            todaysData={dashboardSummary.todaysLog}
-            latestLog={dashboardSummary.latestLog}
+        <section className="grid gap-6 lg:grid-cols-2">
+          <YourStateCard todaysLog={dashboardSummary.todaysLog} />
+          <CheckInCard
+            todaysLog={dashboardSummary.todaysLog}
+            onCheckIn={() => router.push("/cycle")}
           />
         </section>
 
         <section id="insights" className="grid gap-6">
           <InsightCard />
-          <PartnerCard
-            ownerLink={ownerLink}
-            sharingSummary={ownSharingSummary}
-            onManage={() => router.push("/settings/privacy")}
-            onInvite={invitePartner}
-          />
+
+          <div className="grid gap-6 lg:grid-cols-2">
+            <RelationshipTranslationTeaser />
+            <PartnerCard
+              ownerLink={ownerLink}
+              sharingSummary={ownSharingSummary}
+              onManage={() => router.push("/settings/privacy")}
+              onInvite={invitePartner}
+            />
+          </div>
+
           <QuickExploreLinks />
         </section>
       </main>

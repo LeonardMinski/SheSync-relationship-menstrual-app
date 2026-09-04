@@ -3,45 +3,49 @@
    ========================================================================== */
 
 :root {
-  --bg: #f8f6f3;
+  --bg: #f5f4f7;
   --bg-surface: #ffffff;
-  --bg-elevated: #f1efec;
-  --bg-muted: #ebe8e3;
-  --bg-secondary: #e2dfd9;
-  --bg-tertiary: #d7d4cd;
+  --bg-elevated: #f0eef3;
+  --bg-muted: #e9e7ed;
+  --bg-secondary: #e0dee5;
+  --bg-tertiary: #d3d0da;
 
-  --text-foreground: #171917;
-  --text-muted: #61685f;
-  --text-help: #7d847c;
-  --text-secondary: #3f463f;
-  --text-tertiary: #8b9188;
+  --text-foreground: #211a2c;
+  --text-muted: #5d5a6a;
+  --text-help: #7d7a89;
+  --text-secondary: #423b4d;
+  --text-tertiary: #918da0;
 
-  --border: #ddd9d2;
-  --border-subtle: #ebe7e0;
-  --border-secondary: #d1ccc3;
+  --border: #e2dfe6;
+  --border-subtle: #ebe9f0;
+  --border-secondary: #d4d0dc;
 
-  --cta-start: #e0637e;
-  --cta-end: #c23f5e;
+  --cta-start: #ec2f6e;
+  --cta-end: #d21b5c;
   --cta-foreground: #ffffff;
-  --accent-sage: #4b604f;
-  --accent-sage-soft: #b8d3bd;
+  --accent-sage: #4b6b52;
+  --accent-sage-soft: #e3ede2;
   --accent-clay: #ab7256;
   --accent-gold: #b68b3c;
+  --accent-amber: #c99a3f;
+  --accent-amber-soft: #fbf3df;
   --accent-peach: #e5ad95;
   --accent-lilac: #d9c5ff;
   --accent-blue: #7c91b6;
-  --accent-rose: #e0637e;
+  --accent-rose: #ec2f6e;
   --accent-purple: #75668f;
   --accent-secondary: #e5ad95;
   --accent-tertiary: #75668f;
+  --accent-premium: #2b1a3d;
+  --accent-premium-foreground: #f6f1ff;
 
-  --success: #5cbf85;
-  --warning: #d8a548;
+  --success: #4b6b52;
+  --warning: #c99a3f;
   --error: #c84654;
   --info: #7c91b6;
 
-  --ring: #9fbea4;
-  --ring-offset: #f8f6f3;
+  --ring: #ec2f6e;
+  --ring-offset: #f5f4f7;
 
   --shadow-sm:
     0 0 0 1px rgb(255 255 255 / 0.56),
@@ -85,45 +89,49 @@
 }
 
 .dark {
-  --bg: #101411;
-  --bg-surface: #1a211c;
-  --bg-elevated: #202821;
-  --bg-muted: #2a312b;
-  --bg-secondary: #313833;
-  --bg-tertiary: #3c433e;
+  --bg: #16121e;
+  --bg-surface: #201a2b;
+  --bg-elevated: #271f34;
+  --bg-muted: #2e2540;
+  --bg-secondary: #362c49;
+  --bg-tertiary: #423653;
 
-  --text-foreground: #f7f8f3;
-  --text-muted: #aeb6ad;
-  --text-help: #8c958c;
-  --text-secondary: #d1d9cf;
-  --text-tertiary: #7f897f;
+  --text-foreground: #f5f2fa;
+  --text-muted: #b8b2c6;
+  --text-help: #9a94ab;
+  --text-secondary: #ddd8e6;
+  --text-tertiary: #8a8399;
 
-  --border: #343c35;
-  --border-subtle: #293029;
-  --border-secondary: #465048;
+  --border: #392f4a;
+  --border-subtle: #2c2438;
+  --border-secondary: #4a3d5e;
 
-  --cta-start: #eb7f96;
-  --cta-end: #d1546e;
-  --cta-foreground: #241014;
-  --accent-sage: #93ad95;
-  --accent-sage-soft: #35422f;
+  --cta-start: #f0578c;
+  --cta-end: #d1356e;
+  --cta-foreground: #2a0f1c;
+  --accent-sage: #8fb497;
+  --accent-sage-soft: #263329;
   --accent-clay: #c99872;
   --accent-gold: #d8ad5c;
+  --accent-amber: #d8ad5c;
+  --accent-amber-soft: #362c1c;
   --accent-peach: #efa88e;
   --accent-lilac: #cdb6ff;
   --accent-blue: #7f9ac4;
-  --accent-rose: #eb7f96;
+  --accent-rose: #f0578c;
   --accent-purple: #8d7aaa;
   --accent-secondary: #efa88e;
   --accent-tertiary: #8d7aaa;
+  --accent-premium: #17101f;
+  --accent-premium-foreground: #f6f1ff;
 
-  --success: #6bd88f;
-  --warning: #f0bd54;
+  --success: #8fb497;
+  --warning: #d8ad5c;
   --error: #ff6f7d;
   --info: #86a6d8;
 
-  --ring: #b8d3bd;
-  --ring-offset: #1a211c;
+  --ring: #f0578c;
+  --ring-offset: #201a2b;
 
   --shadow-sm:
     0 0 0 1px rgb(247 248 243 / 0.1),

@@ -1,19 +1,23 @@
 import { BarChart3 } from "lucide-react";
 
+import { Card, CardContent } from "@/components/ui/Card";
+import { EmptyState } from "@/components/ui/EmptyState";
+
+/**
+ * No pattern-detection logic exists yet in this codebase (checked
+ * dashboard.utils / cycle utils — nothing computes a real weekly pattern),
+ * so this stays an honest placeholder rather than inventing a fake stat.
+ */
 export function InsightCard() {
   return (
-    <article className="flex min-w-0 flex-col rounded-[2rem] border border-border bg-bg-surface p-5 shadow-md">
-      <div className="flex items-center gap-3">
-        <BarChart3 className="h-6 w-6 shrink-0 text-info" aria-hidden="true" />
-        <h2 className="min-w-0 truncate text-xl font-bold text-foreground">
-          AI Insight
-        </h2>
-      </div>
-      <p className="mt-5 text-sm leading-relaxed text-muted-foreground">
-        Insights will appear after enough logged cycle data is available for a
-        reliable summary.
-      </p>
-      <p className="mt-6 text-sm font-bold text-info">Coming soon</p>
-    </article>
+    <Card>
+      <CardContent className="pt-4">
+        <EmptyState
+          icon={BarChart3}
+          title="Insights are still learning"
+          description="Once you've logged enough entries, patterns based on your real data will show up here."
+        />
+      </CardContent>
+    </Card>
   );
 }

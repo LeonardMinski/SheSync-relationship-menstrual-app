@@ -66,7 +66,7 @@ export default function CyclePage() {
             role="status"
             className="rounded-2xl border border-success/20 bg-success/10 px-4 py-3 text-sm font-semibold text-success"
           >
-            Today&apos;s log saved
+            Saved to your private space
           </div>
         )}
 
