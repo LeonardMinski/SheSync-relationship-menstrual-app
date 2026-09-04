@@ -57,6 +57,8 @@ export function PartnerConnectSummary() {
           <StatusPill tone="warning">Invitation pending</StatusPill>
         ) : viewerLink?.status === "pending" ? (
           <StatusPill tone="warning">Invitation waiting on you</StatusPill>
+        ) : viewerLink?.status === "active" ? (
+          <StatusPill tone="sage">Connected</StatusPill>
         ) : (
           <StatusPill tone="muted">Not connected</StatusPill>
         )}
@@ -77,6 +79,13 @@ export function PartnerConnectSummary() {
         {viewerLink?.status === "pending" && (
           <p className="text-sm text-muted-foreground">
             {viewerLink.personName} invited you to connect — review it on the Partner page.
+          </p>
+        )}
+        {viewerLink?.status === "active" && (
+          <p className="text-sm text-muted-foreground">
+            You&apos;re connected to {viewerLink.personName}.
+            <br />
+            You&apos;ll only see what they choose to share with you.
           </p>
         )}
         <Link href="/partner">
