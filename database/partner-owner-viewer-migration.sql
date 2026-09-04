@@ -9,7 +9,9 @@
 --            once OWNER has invited them and VIEWER has accepted.
 --
 -- This revision responds to a security review of the first version of this
--- migration. Nothing in this file has been run against a live database.
+-- migration, and a subsequent hardening pass that made the whole migration
+-- transactional and its data-safety checks automated (see sections 1 and
+-- 1a below). Nothing in this file has been run against a live database.
 --
 -- ---------------------------------------------------------------
 -- SHARING TRUTH TABLE (authoritative — implemented in
@@ -29,6 +31,65 @@
 -- entirely inside this function — nothing upstream of the database is
 -- trusted to repair an unsafe row.
 -- =====================================================
+
+-- ---------------------------------------------------------------
+-- LEGACY ROW-DIRECTION WARNING — read before running, do not skip.
+-- ---------------------------------------------------------------
+-- The previous partner implementation had historically confused
+-- relationship direction (see the security-review note in section 7).
+-- Section 1 below renames user_id -> owner_user_id and partner_user_id ->
+-- viewer_user_id. That rename is purely a column-name change: it does NOT
+-- inspect or alter which identity is stored in which column. If
+-- public.partner_links already contains rows, the operator MUST manually
+-- verify, before running this migration, that for every existing row:
+--   * user_id genuinely identifies the intended OWNER (the person whose
+--     wellness/cycle data may be shared), and
+--   * partner_user_id genuinely identifies the intended VIEWER (the
+--     invited partner).
+-- This migration does not — and cannot safely — guess or swap existing
+-- rows to correct a mismatched direction. If any row's direction is
+-- wrong, fix it manually (or delete the row and have the connection
+-- re-created through the app) before proceeding; running this migration
+-- over a misdirected row will simply carry the same mistake forward under
+-- the new column names.
+--
+-- As of this review, the live development database has zero rows in
+-- public.partner_links (total_partner_links = 0), so this particular risk
+-- does not currently apply there. It remains documented here because this
+-- migration is idempotent-by-design (see section 1) and may be run again
+-- later, or against another environment, after real rows exist.
+-- ---------------------------------------------------------------
+
+-- ---------------------------------------------------------------
+-- OPTIONAL PRE-FLIGHT AWARENESS QUERIES (informational only, current
+-- CURRENT schema — run these manually, if you want an early look, using
+-- today's pre-rename column names BEFORE starting the transaction below).
+-- These are not authoritative and not required: section 1a inside the
+-- transaction below re-runs the equivalent checks automatically, under
+-- the canonical post-rename names, and will abort the whole migration if
+-- any of them fail. Nothing here blocks or replaces that automated check.
+--
+--   -- current-schema status sanity check:
+--   SELECT status, count(*) FROM public.partner_links
+--   WHERE status NOT IN ('pending','active','inactive','declined')
+--   GROUP BY status;
+--
+--   -- current-schema self-link sanity check:
+--   SELECT count(*) FROM public.partner_links WHERE user_id = partner_user_id;
+--
+--   -- current-schema cardinality sanity check:
+--   SELECT user_id, count(*) FROM public.partner_links
+--   WHERE status IN ('pending','active') GROUP BY user_id HAVING count(*) > 1;
+--   SELECT partner_user_id, count(*) FROM public.partner_links
+--   WHERE status IN ('pending','active') GROUP BY partner_user_id HAVING count(*) > 1;
+-- ---------------------------------------------------------------
+
+-- ---------------------------------------------------------------
+-- Everything below runs as one atomic transaction: if any statement
+-- fails — including the automated validation in section 1a — the entire
+-- migration rolls back and the database is left exactly as it was found.
+-- ---------------------------------------------------------------
+BEGIN;
 
 -- ---------------------------------------------------
 -- 1. Rename columns (idempotent — safe to run once or many times)
@@ -51,13 +112,108 @@ BEGIN
 END $$;
 
 -- ---------------------------------------------------
+-- 1a. Automated data-safety validation (runs after the rename above, so
+-- it can use the canonical owner_user_id/viewer_user_id names; runs
+-- before any constraint, index, policy, or function is touched below).
+-- ---------------------------------------------------
+-- Every check here fails loudly (RAISE EXCEPTION) and does nothing else —
+-- no automatic delete, deactivate, or coercion of any row. A failure here
+-- aborts this entire transaction, including the rename in section 1, so
+-- the database is left untouched. Resolve the flagged rows manually, then
+-- re-run this whole file from the top.
+DO $$
+DECLARE
+    v_bad_status_count integer;
+    v_self_link_count integer;
+    v_null_identity_count integer;
+    v_owner_duplicate_count integer;
+    v_viewer_duplicate_count integer;
+BEGIN
+    -- 1. status must be one of the four values this migration's CHECK
+    -- constraint (section 3) is about to enforce.
+    SELECT count(*) INTO v_bad_status_count
+    FROM public.partner_links
+    WHERE status NOT IN ('pending', 'active', 'inactive', 'declined');
+
+    IF v_bad_status_count > 0 THEN
+        RAISE EXCEPTION
+            'partner-owner-viewer-migration aborted: % row(s) in partner_links have a status outside pending/active/inactive/declined. Resolve manually — this migration will not coerce them — then re-run.',
+            v_bad_status_count;
+    END IF;
+
+    -- 2. owner_user_id must never equal viewer_user_id, matching the
+    -- self-link CHECK constraint this migration is about to add (3b).
+    SELECT count(*) INTO v_self_link_count
+    FROM public.partner_links
+    WHERE owner_user_id = viewer_user_id;
+
+    IF v_self_link_count > 0 THEN
+        RAISE EXCEPTION
+            'partner-owner-viewer-migration aborted: % row(s) in partner_links have owner_user_id = viewer_user_id. Resolve manually, then re-run.',
+            v_self_link_count;
+    END IF;
+
+    -- 3. Both identities are expected to always be present on every row —
+    -- a partner_links row that is missing either side is not a valid
+    -- relationship and every function below assumes both are non-NULL.
+    SELECT count(*) INTO v_null_identity_count
+    FROM public.partner_links
+    WHERE owner_user_id IS NULL OR viewer_user_id IS NULL;
+
+    IF v_null_identity_count > 0 THEN
+        RAISE EXCEPTION
+            'partner-owner-viewer-migration aborted: % row(s) in partner_links have a NULL owner_user_id or viewer_user_id. This migration assumes both identities are always present. Resolve manually, then re-run.',
+            v_null_identity_count;
+    END IF;
+
+    -- 4. At most one pending/active row per owner, matching the partial
+    -- unique index this migration is about to add (3c).
+    SELECT count(*) INTO v_owner_duplicate_count
+    FROM (
+        SELECT owner_user_id
+        FROM public.partner_links
+        WHERE status IN ('pending', 'active')
+        GROUP BY owner_user_id
+        HAVING count(*) > 1
+    ) dupes;
+
+    IF v_owner_duplicate_count > 0 THEN
+        RAISE EXCEPTION
+            'partner-owner-viewer-migration aborted: % owner(s) have more than one pending/active partner_links row. Resolve manually — this migration will not deactivate "extra" rows for you — then re-run.',
+            v_owner_duplicate_count;
+    END IF;
+
+    -- 5. At most one pending/active row per viewer, matching the partial
+    -- unique index this migration is about to add (3c).
+    SELECT count(*) INTO v_viewer_duplicate_count
+    FROM (
+        SELECT viewer_user_id
+        FROM public.partner_links
+        WHERE status IN ('pending', 'active')
+        GROUP BY viewer_user_id
+        HAVING count(*) > 1
+    ) dupes;
+
+    IF v_viewer_duplicate_count > 0 THEN
+        RAISE EXCEPTION
+            'partner-owner-viewer-migration aborted: % viewer(s) have more than one pending/active partner_links row. Resolve manually — this migration will not deactivate "extra" rows for you — then re-run.',
+            v_viewer_duplicate_count;
+    END IF;
+END $$;
+
+-- ---------------------------------------------------
 -- 1b. Denormalized identity snapshot, captured once at invite time.
 -- ---------------------------------------------------
 -- users.email/name cannot be read cross-user under the owner-only RLS
 -- policy on public.users, so the display name/email each side needs is
--- captured once when the invite is created (from data the inviter already
--- legitimately has: their own identity, and the email they typed in) rather
--- than requiring a cross-user table read later.
+-- captured once when the invite is created, rather than requiring a
+-- cross-user table read later. owner_name/owner_email are the inviting
+-- owner's own canonical public.users row, loaded server-side inside
+-- create_partner_invite() via auth.uid() — never the caller-supplied
+-- p_owner_name/p_owner_email arguments (see section 7, trust-boundary
+-- hardening note). viewer_email is the matched viewer account's own
+-- canonical public.users.email, not necessarily the exact string the
+-- caller typed (see the case-insensitive match in section 7).
 ALTER TABLE public.partner_links ADD COLUMN IF NOT EXISTS owner_name text;
 ALTER TABLE public.partner_links ADD COLUMN IF NOT EXISTS owner_email text;
 ALTER TABLE public.partner_links ADD COLUMN IF NOT EXISTS viewer_email text;
@@ -70,13 +226,9 @@ ALTER TABLE public.partner_links ALTER COLUMN status SET DEFAULT 'pending';
 -- ---------------------------------------------------
 -- 3. Status CHECK constraint
 -- ---------------------------------------------------
--- PRE-FLIGHT CHECK (run manually before applying, do not skip):
---   SELECT status, count(*) FROM public.partner_links
---   WHERE status NOT IN ('pending','active','inactive','declined')
---   GROUP BY status;
--- If this returns any rows, ADD CONSTRAINT below will fail loudly rather
--- than silently discarding or coercing data — resolve those rows manually
--- first (this migration deliberately does not auto-correct existing rows).
+-- Data safety for this constraint was already verified automatically in
+-- section 1a above (check 1) — if any existing row violated this, the
+-- transaction already aborted before reaching this line.
 ALTER TABLE public.partner_links DROP CONSTRAINT IF EXISTS partner_links_status_check;
 ALTER TABLE public.partner_links
     ADD CONSTRAINT partner_links_status_check
@@ -85,6 +237,8 @@ ALTER TABLE public.partner_links
 -- ---------------------------------------------------
 -- 3b. Self-relationship prevention (database-enforced, not just API-checked)
 -- ---------------------------------------------------
+-- Data safety for this constraint was already verified automatically in
+-- section 1a above (check 2).
 ALTER TABLE public.partner_links DROP CONSTRAINT IF EXISTS partner_links_not_self_check;
 ALTER TABLE public.partner_links
     ADD CONSTRAINT partner_links_not_self_check
@@ -100,14 +254,8 @@ ALTER TABLE public.partner_links
 -- once, which is what made get_partner_shared_data()'s "pick one active
 -- row" behavior arbitrary rather than provably safe.
 --
--- PRE-FLIGHT CHECK (run manually before applying, do not skip):
---   SELECT owner_user_id, count(*) FROM public.partner_links
---   WHERE status IN ('pending','active') GROUP BY owner_user_id HAVING count(*) > 1;
---   SELECT viewer_user_id, count(*) FROM public.partner_links
---   WHERE status IN ('pending','active') GROUP BY viewer_user_id HAVING count(*) > 1;
--- If either returns rows, CREATE UNIQUE INDEX below will fail rather than
--- silently deactivating "extra" rows — resolve manually first. This
--- migration does not delete or deactivate any existing row.
+-- Data safety for these two indexes was already verified automatically in
+-- section 1a above (checks 4 and 5).
 --
 -- Phase 2 note: multi-partner support can be reintroduced later simply by
 -- dropping these two indexes — no data migration is required either way.
@@ -390,16 +538,36 @@ GRANT EXECUTE ON FUNCTION public.revoke_partner_link(uuid) TO authenticated;
 -- a single SECURITY DEFINER function, create_partner_invite(), which
 -- performs the lookup and the insert atomically and returns only the
 -- fields the inviting owner's own UI needs (id/status/created_at/the
--- email they themselves typed in) — it never returns the matched
--- account's real uuid. A caller who successfully sends an invite still
--- learns "an account exists at this email" from a successful call (and
--- "no account found" from the error case below) — that narrower,
--- account-existence-only oracle is a known residual exposure, documented
--- here rather than silently left unaddressed; removing it fully would
--- require changing the product behavior (e.g. always returning success
--- and emailing non-users a signup prompt instead), which is a product
--- decision, not a migration-safety fix, and is out of scope for this
--- revision.
+-- resolved viewer email) — the RETURNING clause below never surfaces the
+-- matched account's real uuid. That said, once the invite row exists, the
+-- section-4 SELECT policy already lets both relationship participants
+-- read the full partner_links row, including owner_user_id and
+-- viewer_user_id — so the owner legitimately learns the viewer's uuid
+-- that way once they are actually connected. That is expected (they are a
+-- real participant in that specific relationship) and is not a new leak;
+-- it just means "this RPC's return value omits the uuid" should not be
+-- read as "the uuid is never observable by the caller" more broadly. A
+-- caller who successfully sends an invite still learns "an account exists
+-- at this email" from a successful call (and "no account found" from the
+-- error case below) — that narrower, account-existence-only oracle is a
+-- known residual exposure, documented here rather than silently left
+-- unaddressed; removing it fully would require changing the product
+-- behavior (e.g. always returning success and emailing non-users a
+-- signup prompt instead), which is a product decision, not a
+-- migration-safety fix, and is out of scope for this revision. This
+-- migration does not reintroduce find_user_id_by_email().
+--
+-- Trust-boundary hardening: this function is GRANTed directly to every
+-- authenticated Supabase user, not just requests that happen to go
+-- through our Next.js route — so it must never trust caller-supplied
+-- values for the authenticated owner's own identity. p_owner_name and
+-- p_owner_email are kept as parameters only for compatibility with the
+-- existing Next.js route's call shape; neither is read for any decision
+-- or stored anywhere below. Canonical owner_name/owner_email are loaded
+-- here from public.users using auth.uid(), which the caller cannot spoof.
+-- The viewer is likewise resolved to a canonical public.users row, and it
+-- is that row's uuid — never a caller-supplied email string — that is
+-- compared for self-invite protection.
 DROP FUNCTION IF EXISTS public.find_user_id_by_email(text);
 
 CREATE OR REPLACE FUNCTION public.create_partner_invite(
@@ -419,7 +587,11 @@ SET search_path = pg_catalog, public
 AS $$
 DECLARE
     v_owner uuid := auth.uid();
+    v_owner_name text;
+    v_owner_email text;
+    v_viewer_email_input text;
     v_viewer_id uuid;
+    v_viewer_email_canonical text;
 BEGIN
     IF v_owner IS NULL THEN
         RAISE EXCEPTION 'not authenticated';
@@ -429,19 +601,34 @@ BEGIN
         RAISE EXCEPTION 'an email address is required';
     END IF;
 
-    IF lower(p_viewer_email) = lower(COALESCE(p_owner_email, '')) THEN
-        RAISE EXCEPTION 'cannot invite yourself';
+    v_viewer_email_input := lower(trim(p_viewer_email));
+
+    -- Canonical owner identity only — p_owner_name/p_owner_email are never
+    -- read past this point in the function.
+    SELECT u.name, u.email INTO v_owner_name, v_owner_email
+    FROM public.users u
+    WHERE u.id = v_owner;
+
+    IF NOT FOUND THEN
+        RAISE EXCEPTION 'owner profile not found for the authenticated user';
     END IF;
 
-    SELECT u.id INTO v_viewer_id
+    -- Case-insensitive, whitespace-trimmed match, so a typo in casing or
+    -- spacing doesn't produce a false "no account found" — but the value
+    -- actually persisted below is always the matched row's own canonical
+    -- email, never the caller's original spelling.
+    SELECT u.id, u.email INTO v_viewer_id, v_viewer_email_canonical
     FROM public.users u
-    WHERE u.email = p_viewer_email
+    WHERE lower(trim(u.email)) = v_viewer_email_input
     LIMIT 1;
 
     IF v_viewer_id IS NULL THEN
         RAISE EXCEPTION 'no account found for that email';
     END IF;
 
+    -- Authoritative self-invite check: resolved uuids only. Caller-
+    -- supplied owner/viewer email strings are never compared for this
+    -- security decision.
     IF v_viewer_id = v_owner THEN
         RAISE EXCEPTION 'cannot invite yourself';
     END IF;
@@ -450,7 +637,7 @@ BEGIN
     INSERT INTO public.partner_links (
         owner_user_id, viewer_user_id, status, owner_name, owner_email, viewer_email
     )
-    VALUES (v_owner, v_viewer_id, 'pending', p_owner_name, p_owner_email, p_viewer_email)
+    VALUES (v_owner, v_viewer_id, 'pending', v_owner_name, v_owner_email, v_viewer_email_canonical)
     RETURNING partner_links.id, partner_links.status, partner_links.viewer_email, partner_links.created_at;
 EXCEPTION
     WHEN unique_violation THEN
@@ -460,3 +647,5 @@ $$;
 
 REVOKE ALL ON FUNCTION public.create_partner_invite(text, text, text) FROM PUBLIC;
 GRANT EXECUTE ON FUNCTION public.create_partner_invite(text, text, text) TO authenticated;
+
+COMMIT;
