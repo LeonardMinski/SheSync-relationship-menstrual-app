@@ -1,6 +1,3 @@
--- Fix RLS policies for intimacy_cards to allow seeding
--- This allows authenticated users to insert intimacy cards (for seeding purposes)
-
 -- Add INSERT policy for intimacy_cards
 CREATE POLICY "cards_authenticated_insert"
     ON public.intimacy_cards FOR INSERT 

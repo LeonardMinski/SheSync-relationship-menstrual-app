@@ -1,9 +1,3 @@
--- =====================================================
--- SheSync+ Intimacy Feature Database Schema
--- =====================================================
--- This SQL creates the required tables for the intimacy feature
--- IMPORTANT: If an older public.intimacy_cards table exists, rename it first
-
 -- Rename existing intimacy_cards table if it exists
 DO $$ 
 BEGIN
