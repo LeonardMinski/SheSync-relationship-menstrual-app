@@ -39,9 +39,16 @@ export default function PartnerPortal() {
     return <PartnerAccessRequired />;
   }
 
-  const yourConnectionSection = (() => {
+  // OwnerConnectedState is already an understated inline card in every
+  // context, so it doesn't need a compact variant. NoPartnerState and
+  // PendingOutgoingState default to a full hero-style treatment, which is
+  // only appropriate when one of them IS the whole page (the `!viewerLink`
+  // branch below) — everywhere else they're a secondary aside next to the
+  // real content of the page, so `compact` renders them as a modest card
+  // instead, matching OwnerConnectedState's weight.
+  const renderConnectionSection = (compact: boolean) => {
     if (!ownerLink) {
-      return <NoPartnerState onInvite={invitePartner} />;
+      return <NoPartnerState onInvite={invitePartner} compact={compact} />;
     }
     if (ownerLink.status === "pending") {
       return (
@@ -49,6 +56,7 @@ export default function PartnerPortal() {
           invitedEmail={ownerLink.personEmail}
           cancelling={refreshing}
           onCancel={revokeConnection}
+          compact={compact}
         />
       );
     }
@@ -59,13 +67,21 @@ export default function PartnerPortal() {
         onRevoke={revokeConnection}
       />
     );
-  })();
+  };
 
-  // No one has invited this user to view anyone else's data.
+  // No one has invited this user to view anyone else's data — this state
+  // IS the whole page, so it gets the full, non-compact treatment.
   if (!viewerLink) {
+    const subtitle = !ownerLink
+      ? "Invite a trusted partner"
+      : ownerLink.status === "pending"
+        ? "Invitation pending"
+        : "Sharing active";
+
     return (
       <div className="min-h-screen bg-bg pb-10">
-        {yourConnectionSection}
+        <TopNavbar title="Partner" subtitle={subtitle} />
+        <main className="px-4 py-16">{renderConnectionSection(false)}</main>
       </div>
     );
   }
@@ -73,15 +89,14 @@ export default function PartnerPortal() {
   if (viewerLink.status === "pending") {
     return (
       <div className="min-h-screen bg-bg pb-10">
-        <IncomingInvitationState
-          inviterName={viewerLink.personName}
-          onRespond={(action) => respondToIncomingInvite(viewerLink.id, action)}
-        />
-        {ownerLink && (
-          <main className="mx-auto w-full max-w-xl px-4 pb-10">
-            {yourConnectionSection}
-          </main>
-        )}
+        <TopNavbar title="Partner" subtitle="Invitation received" />
+        <main className="mx-auto w-full max-w-xl space-y-6 px-4 py-16">
+          <IncomingInvitationState
+            inviterName={viewerLink.personName}
+            onRespond={(action) => respondToIncomingInvite(viewerLink.id, action)}
+          />
+          {ownerLink && renderConnectionSection(true)}
+        </main>
       </div>
     );
   }
@@ -103,7 +118,7 @@ export default function PartnerPortal() {
         <PartnerPortalHero partnerName={partnerData?.partnerName} />
         <PartnerSharedSummary partnerData={partnerData} />
         <RecentActivitySection partnerData={partnerData} />
-        {yourConnectionSection}
+        {renderConnectionSection(true)}
         <SupportiveActions />
       </main>
     </div>
