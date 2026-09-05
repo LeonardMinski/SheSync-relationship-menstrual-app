@@ -9,7 +9,7 @@ export function RelationshipTranslationTeaser() {
   return (
     <Link
       href="/coach"
-      className="flex min-h-[44px] flex-col gap-3 rounded-[2rem] border border-border bg-bg-surface p-6 shadow-md transition-colors hover:border-cta-start focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cta-start"
+      className="flex min-h-[44px] flex-col gap-3 rounded-[2rem] border border-border bg-bg-surface p-6 transition-colors hover:border-cta-start focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cta-start"
     >
       <span className="flex h-10 w-10 items-center justify-center rounded-full bg-[color:var(--accent-amber-soft)] text-[color:var(--accent-amber)]">
         <MessageCircleHeart className="h-5 w-5" aria-hidden="true" />
