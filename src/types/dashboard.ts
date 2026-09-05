@@ -3,6 +3,7 @@ export interface DashboardCycleLog {
   phase?: string | null;
   mood?: number | null;
   energy?: number | null;
+  sleep?: number | null;
   stress?: number | null;
   /** Displayed as "Desire" on screen — DB/domain field name stays `libido`. */
   libido?: number | null;

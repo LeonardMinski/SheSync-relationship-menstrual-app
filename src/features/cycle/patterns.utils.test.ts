@@ -17,6 +17,7 @@ function entry(date: string, overrides: Partial<CycleEntry> = {}): CycleEntry {
     phase: "luteal",
     mood: 5,
     energy: 5,
+    sleep: 5,
     libido: 5,
     stress: 5,
     symptoms: [],

@@ -40,6 +40,13 @@ export function YourStateCard({ todaysLog }: YourStateCardProps) {
               caption={typeof todaysLog.energy === "number" ? `${todaysLog.energy}/10` : "Not logged"}
             />
             <MetricScale
+              label="Sleep"
+              value={todaysLog.sleep ?? 0}
+              max={10}
+              tone="sage"
+              caption={typeof todaysLog.sleep === "number" ? `${todaysLog.sleep}/10` : "Not logged"}
+            />
+            <MetricScale
               label="Stress"
               value={todaysLog.stress ?? 0}
               max={10}

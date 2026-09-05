@@ -35,7 +35,7 @@ export function CycleLogDialog({
     >
       <div className="space-y-6">
         <p className="text-sm text-muted-foreground">
-          Track your mood, energy, and symptoms
+          Track your mood, energy, sleep, and symptoms
         </p>
 
         {error && (
@@ -82,6 +82,12 @@ export function CycleLogDialog({
           value={formState.energy}
           tone="amber"
           onChange={(energy) => onUpdate({ energy })}
+        />
+        <RangeField
+          label="Sleep"
+          value={formState.sleep}
+          tone="sage"
+          onChange={(sleep) => onUpdate({ sleep })}
         />
         <RangeField
           label="Desire"

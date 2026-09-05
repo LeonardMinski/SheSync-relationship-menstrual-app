@@ -1,5 +1,5 @@
 import type { ComponentType } from "react";
-import { Brain, Droplet, Heart, Zap } from "lucide-react";
+import { Brain, Droplet, Heart, Moon, Zap } from "lucide-react";
 
 import { Card, CardContent } from "@/components/ui/Card";
 import type { CycleEntry } from "@/types";
@@ -17,6 +17,13 @@ export function CycleStatsGrid({
         icon={Heart}
         iconClassName="text-[color:var(--accent-peach)]"
         iconBgClassName="bg-bg-elevated"
+      />
+      <StatCard
+        label="Sleep"
+        value={selectedData?.sleep}
+        icon={Moon}
+        iconClassName="text-[color:var(--accent-sage)]"
+        iconBgClassName="bg-[color:var(--accent-sage-soft)]"
       />
       <StatCard
         label="Libido"

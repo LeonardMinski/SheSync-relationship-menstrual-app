@@ -476,6 +476,7 @@ export const cycles = {
           phase: data.phase,
           mood: data.mood,
           energy: 5,
+          sleep: 5,
           libido: 5,
           stress: 5,
           symptoms: data.symptoms,

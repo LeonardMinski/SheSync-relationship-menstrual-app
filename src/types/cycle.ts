@@ -7,6 +7,7 @@ export interface CycleEntry {
   phase: CyclePhase;
   mood: number;
   energy: number;
+  sleep: number;
   libido: number;
   stress: number;
   symptoms: string[];
@@ -19,6 +20,7 @@ export interface LogCycleData {
   phase: CyclePhase;
   mood: number;
   energy?: number;
+  sleep?: number;
   libido?: number;
   stress?: number;
   symptoms: string[];
@@ -29,6 +31,7 @@ export interface CycleLogFormState {
   phase: CyclePhase | "";
   mood: number;
   energy: number;
+  sleep: number;
   libido: number;
   stress: number;
   symptoms: string[];

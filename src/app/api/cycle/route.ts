@@ -20,6 +20,7 @@ type CyclePayload = {
   periodFlow?: unknown
   mood?: unknown
   energy?: unknown
+  sleep?: unknown
   libido?: unknown
   stress?: unknown
   symptoms?: unknown
@@ -193,6 +194,7 @@ export async function POST(request: NextRequest) {
     const scoreError =
       validateScore(payload.mood, 'Mood') ||
       validateScore(payload.energy, 'Energy') ||
+      validateScore(payload.sleep, 'Sleep') ||
       validateScore(payload.libido, 'Libido') ||
       validateScore(payload.stress, 'Stress')
 
@@ -242,6 +244,7 @@ export async function POST(request: NextRequest) {
       period_flow: periodFlow,
       mood: payload.mood,
       energy: payload.energy ?? 5,
+      sleep: payload.sleep ?? 5,
       libido: payload.libido ?? 5,
       stress: payload.stress ?? 5,
       symptoms,
@@ -323,6 +326,7 @@ export async function PUT(request: NextRequest) {
     const scoreError =
       validateScore(payload.mood, 'Mood') ||
       validateScore(payload.energy, 'Energy') ||
+      validateScore(payload.sleep, 'Sleep') ||
       validateScore(payload.libido, 'Libido') ||
       validateScore(payload.stress, 'Stress')
 
@@ -332,6 +336,7 @@ export async function PUT(request: NextRequest) {
 
     if (payload.mood !== undefined) updates.mood = payload.mood
     if (payload.energy !== undefined) updates.energy = payload.energy
+    if (payload.sleep !== undefined) updates.sleep = payload.sleep
     if (payload.libido !== undefined) updates.libido = payload.libido
     if (payload.stress !== undefined) updates.stress = payload.stress
 
