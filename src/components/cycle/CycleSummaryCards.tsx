@@ -20,16 +20,23 @@ export function CycleSummaryCards({
   onLog,
   onSelectCycle,
 }: CycleSummaryCardsProps) {
+  if (!selectedData) {
+    return <RecentEntries cycles={cycles} onSelectCycle={onSelectCycle} />;
+  }
+
   return (
-    <>
-      <SelectedDateCard
-        selectedData={selectedData}
-        selectedDate={selectedDate}
-        onLog={onLog}
-      />
-      <CycleStatsGrid selectedData={selectedData} />
-      <CycleDetailsCards selectedData={selectedData} />
+    <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_360px]">
+      <div className="space-y-6">
+        <SelectedDateCard
+          selectedData={selectedData}
+          selectedDate={selectedDate}
+          onLog={onLog}
+        />
+        <CycleStatsGrid selectedData={selectedData} />
+        <CycleDetailsCards selectedData={selectedData} />
+      </div>
+
       <RecentEntries cycles={cycles} onSelectCycle={onSelectCycle} />
-    </>
+    </div>
   );
 }

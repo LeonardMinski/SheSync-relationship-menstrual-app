@@ -1,7 +1,7 @@
 import type { ComponentType } from "react";
-import { Brain, Droplet, Heart, Moon, Zap } from "lucide-react";
+import { Brain, Droplet, Gauge, Heart, ListChecks, Moon } from "lucide-react";
 
-import { Card, CardContent } from "@/components/ui/Card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/Card";
 import type { CycleEntry } from "@/types";
 
 export function CycleStatsGrid({
@@ -10,78 +10,100 @@ export function CycleStatsGrid({
   selectedData?: CycleEntry;
 }) {
   return (
-    <div className="grid grid-cols-2 gap-4">
-      <StatCard
-        label="Energy"
-        value={selectedData?.energy}
-        icon={Heart}
-        iconClassName="text-[color:var(--accent-peach)]"
-        iconBgClassName="bg-bg-elevated"
-      />
-      <StatCard
-        label="Sleep"
-        value={selectedData?.sleep}
-        icon={Moon}
-        iconClassName="text-[color:var(--accent-sage)]"
-        iconBgClassName="bg-[color:var(--accent-sage-soft)]"
-      />
-      <StatCard
-        label="Libido"
-        value={selectedData?.libido}
-        icon={Zap}
-        iconClassName="text-accent-purple"
-        iconBgClassName="bg-accent-purple/10"
-      />
-      <StatCard
-        label="Stress"
-        value={selectedData?.stress}
-        icon={Brain}
-        iconClassName="text-warning"
-        iconBgClassName="bg-warning/10"
-      />
-      <StatCard
-        label="Symptoms"
-        value={selectedData ? selectedData.symptoms.length : undefined}
-        icon={Droplet}
-        iconClassName="text-info"
-        iconBgClassName="bg-info/10"
-        suffix=""
-      />
-    </div>
+    <Card>
+      <CardHeader>
+        <CardTitle as="h2" className="font-display text-xl">
+          Today&apos;s Stats
+        </CardTitle>
+      </CardHeader>
+      <CardContent>
+        {!selectedData ? (
+          <p className="py-2 text-sm text-muted-foreground">
+            No entry logged for this date yet.
+          </p>
+        ) : (
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            <StatTile
+              label="Mood"
+              value={selectedData.mood}
+              icon={Heart}
+              tone="text-[color:var(--accent-rose)]"
+              toneBg="bg-[color:var(--accent-rose)]/15"
+            />
+            <StatTile
+              label="Energy"
+              value={selectedData.energy}
+              icon={Gauge}
+              tone="text-[color:var(--accent-amber)]"
+              toneBg="bg-[color:var(--accent-amber-soft)]"
+            />
+            <StatTile
+              label="Sleep"
+              value={selectedData.sleep}
+              icon={Moon}
+              tone="text-[color:var(--accent-sage)]"
+              toneBg="bg-[color:var(--accent-sage-soft)]"
+            />
+            <StatTile
+              label="Libido"
+              value={selectedData.libido}
+              icon={Droplet}
+              tone="text-[color:var(--accent-purple)]"
+              toneBg="bg-[color:var(--accent-purple)]/15"
+            />
+            <StatTile
+              label="Stress"
+              value={selectedData.stress}
+              icon={Brain}
+              tone="text-[color:var(--accent-blue)]"
+              toneBg="bg-[color:var(--accent-blue)]/15"
+            />
+            <StatTile
+              label="Symptoms"
+              value={selectedData.symptoms.length}
+              suffix=""
+              icon={ListChecks}
+              tone="text-warning"
+              toneBg="bg-warning/10"
+            />
+          </div>
+        )}
+      </CardContent>
+    </Card>
   );
 }
 
-function StatCard({
+function StatTile({
   label,
   value,
   icon: Icon,
-  iconClassName,
-  iconBgClassName,
+  tone,
+  toneBg,
   suffix = "/10",
 }: {
   label: string;
   value?: number;
   icon: ComponentType<{ className?: string }>;
-  iconClassName: string;
-  iconBgClassName: string;
+  tone: string;
+  toneBg: string;
   suffix?: string;
 }) {
   return (
-    <Card>
-      <CardContent className="p-4">
-        <div className="flex items-center gap-3">
-          <div className={`rounded-lg p-2 ${iconBgClassName}`}>
-            <Icon className={`h-5 w-5 ${iconClassName}`} aria-hidden="true" />
-          </div>
-          <div>
-            <div className="text-sm text-muted-foreground">{label}</div>
-            <div className="text-lg font-semibold text-foreground">
-              {value ?? "—"}
-              {suffix}
-            </div>
-          </div>
-        </div>
-      </CardContent>
-    </Card>
+    <div className="flex items-center gap-3 rounded-2xl border border-border bg-bg-surface p-4">
+      <span
+        className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-full ${toneBg}`}
+      >
+        <Icon className={`h-5 w-5 ${tone}`} aria-hidden="true" />
+      </span>
+      <div>
+        <p className="text-xs font-bold uppercase tracking-wide text-muted-foreground">
+          {label}
+        </p>
+        <p className="text-lg font-bold text-foreground">
+          {value ?? "—"}
+          {suffix}
+        </p>
+      </div>
+    </div>
   );
 }

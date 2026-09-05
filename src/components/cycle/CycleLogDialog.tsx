@@ -32,6 +32,8 @@ export function CycleLogDialog({
     <Modal
       title={`Log Entry for ${format(selectedDate, "MMM d")}`}
       onClose={onCancel}
+      overlayClassName="bg-[color:var(--bg)]/95"
+      contentClassName="border border-border bg-bg-surface shadow-lg"
     >
       <div className="space-y-6">
         <p className="text-sm text-muted-foreground">

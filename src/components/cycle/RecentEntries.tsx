@@ -11,10 +11,8 @@ import {
 import { EmptyState } from "@/components/ui/EmptyState";
 import { MetricScale } from "@/components/ui/MetricScale";
 import type { CycleEntry } from "@/types";
-import {
-  getPhaseMarker,
-  getRecentCycleEntries,
-} from "@/features/cycle/cycle.utils";
+import { getRecentCycleEntries } from "@/features/cycle/cycle.utils";
+import { PhaseIcon } from "./PhaseIcon";
 
 interface RecentEntriesProps {
   cycles: CycleEntry[];
@@ -47,10 +45,8 @@ export function RecentEntries({ cycles, onSelectCycle }: RecentEntriesProps) {
                 onClick={() => onSelectCycle(cycle)}
               >
                 <div className="flex items-center justify-between gap-3">
-                  <div className="flex items-center gap-2">
-                    <span className="text-lg" aria-hidden="true">
-                      {getPhaseMarker(cycle.phase)}
-                    </span>
+                  <div className="flex items-center gap-3">
+                    <PhaseIcon phase={cycle.phase} size="sm" />
                     <div>
                       <div className="font-semibold text-foreground">
                         {format(new Date(cycle.date), "MMM d")}
