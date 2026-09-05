@@ -7,12 +7,20 @@ interface ModalProps {
   onClose: () => void;
   children: React.ReactNode;
   describedBy?: string;
+  /** Defaults to "max-w-md" — pass a wider class for multi-column dialogs. */
+  maxWidthClassName?: string;
 }
 
 const FOCUSABLE_SELECTOR =
   'a[href], button:not([disabled]), textarea:not([disabled]), input:not([disabled]), select:not([disabled]), [tabindex]:not([tabindex="-1"])';
 
-export function Modal({ title, onClose, children, describedBy }: ModalProps) {
+export function Modal({
+  title,
+  onClose,
+  children,
+  describedBy,
+  maxWidthClassName = "max-w-md",
+}: ModalProps) {
   const titleId = useId();
   const containerRef = useRef<HTMLDivElement>(null);
   const triggerRef = useRef<Element | null>(null);
@@ -73,7 +81,7 @@ export function Modal({ title, onClose, children, describedBy }: ModalProps) {
         aria-modal="true"
         aria-labelledby={titleId}
         aria-describedby={describedBy}
-        className="max-h-[90vh] w-full max-w-md overflow-y-auto rounded-[2rem] border border-border bg-bg-surface p-6 shadow-lg"
+        className={`max-h-[90vh] w-full ${maxWidthClassName} overflow-y-auto rounded-[2rem] border border-border bg-bg-surface p-6 shadow-lg`}
       >
         <h2 id={titleId} className="mb-4 text-xl font-bold text-foreground">
           {title}
