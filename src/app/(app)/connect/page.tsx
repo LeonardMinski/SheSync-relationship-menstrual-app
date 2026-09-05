@@ -2,11 +2,19 @@
 
 import { useState, type KeyboardEvent } from "react";
 
-import { SectionHeading } from "@/components/ui/SectionHeading";
 import { BoundariesTab } from "@/components/connect/BoundariesTab";
-import { ExploreTab } from "@/components/connect/ExploreTab";
+import {
+  EXPLORE_CATEGORIES,
+  ExploreTab,
+  TODAYS_SUGGESTION,
+  type CardCategory,
+  type IntimacyCard,
+} from "@/components/connect/ExploreTab";
 import { PartnerConnectSummary } from "@/components/connect/PartnerConnectSummary";
 import { ReflectionsTab } from "@/components/connect/ReflectionsTab";
+import { SupportiveActions } from "@/components/connect/SupportiveActions";
+import { TodaysIntimacySuggestion } from "@/components/connect/TodaysIntimacySuggestion";
+import { usePartnerPortalData } from "@/hooks/usePartnerPortalData";
 
 type ConnectTab = "explore" | "boundaries" | "reflections";
 
@@ -18,6 +26,9 @@ const TABS: { id: ConnectTab; label: string }[] = [
 
 export default function ConnectPage() {
   const [activeTab, setActiveTab] = useState<ConnectTab>("explore");
+  const [activeCategory, setActiveCategory] = useState<CardCategory | "All">("All");
+  const [activeCard, setActiveCard] = useState<IntimacyCard | null>(null);
+  const { partnerData } = usePartnerPortalData();
 
   function handleTabKeyDown(event: KeyboardEvent<HTMLButtonElement>) {
     if (event.key !== "ArrowRight" && event.key !== "ArrowLeft") return;
@@ -32,12 +43,54 @@ export default function ConnectPage() {
 
   return (
     <div className="mx-auto max-w-6xl space-y-6 px-4 py-8 sm:px-6">
-      <SectionHeading
-        title="Connect"
-        description="Share what matters, build understanding, and explore intimacy on your terms."
-      />
+      <div>
+        <p className="flex items-center gap-1.5 text-xs font-black uppercase tracking-[0.16em] text-[color:var(--accent-rose)]">
+          <span className="h-1.5 w-1.5 rounded-full bg-current" aria-hidden="true" />
+          Your Intimate Space
+        </p>
+        <h1 className="font-display mt-2 text-4xl font-black tracking-tight text-foreground sm:text-5xl">
+          Connect
+        </h1>
+        <p className="mt-3 max-w-2xl text-base text-muted-foreground">
+          Share what matters, build understanding, and explore intimacy on your terms.
+        </p>
+      </div>
 
-      <PartnerConnectSummary />
+      <div className="grid gap-5 lg:grid-cols-2">
+        <div className="space-y-4">
+          <PartnerConnectSummary />
+          {activeTab === "explore" && (
+            <div
+              className="flex flex-wrap gap-2"
+              role="group"
+              aria-label="Filter cards by category"
+            >
+              {EXPLORE_CATEGORIES.map((category) => (
+                <button
+                  key={category}
+                  type="button"
+                  aria-pressed={activeCategory === category}
+                  onClick={() => setActiveCategory(category)}
+                  className={`min-h-[44px] rounded-full border px-3 py-1.5 text-sm font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cta-start ${
+                    activeCategory === category
+                      ? "border-cta-start bg-cta-start text-[color:var(--cta-foreground)]"
+                      : "border-border bg-bg-surface text-muted-foreground hover:text-foreground"
+                  }`}
+                >
+                  {category}
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
+
+        {activeTab === "explore" && (
+          <TodaysIntimacySuggestion
+            prompt={TODAYS_SUGGESTION.prompt}
+            onExplore={() => setActiveCard(TODAYS_SUGGESTION)}
+          />
+        )}
+      </div>
 
       <div
         role="tablist"
@@ -72,10 +125,21 @@ export default function ConnectPage() {
         aria-labelledby={`connect-tab-${activeTab}`}
         tabIndex={0}
       >
-        {activeTab === "explore" && <ExploreTab />}
+        {activeTab === "explore" && (
+          <ExploreTab
+            activeCategory={activeCategory}
+            activeCard={activeCard}
+            onSelectCard={setActiveCard}
+            onCloseCard={() => setActiveCard(null)}
+          />
+        )}
         {activeTab === "boundaries" && <BoundariesTab />}
         {activeTab === "reflections" && <ReflectionsTab />}
       </div>
+
+      <SupportiveActions
+        partnerIsSharing={partnerData?.privacySettings.shareWithPartner === true}
+      />
     </div>
   );
 }

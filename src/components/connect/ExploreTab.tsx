@@ -11,18 +11,17 @@ import { Modal } from "@/components/ui/Modal";
 import { StatusPill } from "@/components/ui/StatusPill";
 import { Textarea } from "@/components/ui/Input";
 import { MutualReveal } from "@/components/connect/MutualReveal";
-import { OrganicArtwork } from "@/components/ui/OrganicArtwork";
 
-type CardCategory = "Talk" | "Connect" | "Affection" | "Play" | "Reflect";
+export type CardCategory = "Talk" | "Connect" | "Affection" | "Play" | "Reflect";
 
-interface IntimacyCard {
+export interface IntimacyCard {
   id: string;
   category: CardCategory;
   prompt: string;
 }
 
 // Static conversation-prompt catalog — app-provided content, not user data.
-const CARDS: IntimacyCard[] = [
+export const EXPLORE_CARDS: IntimacyCard[] = [
   {
     id: "memory",
     category: "Talk",
@@ -55,25 +54,42 @@ const CARDS: IntimacyCard[] = [
   },
 ];
 
-const CATEGORIES: (CardCategory | "All")[] = ["All", "Talk", "Connect", "Affection", "Play", "Reflect"];
+export const EXPLORE_CATEGORIES: (CardCategory | "All")[] = [
+  "All",
+  "Talk",
+  "Connect",
+  "Affection",
+  "Play",
+  "Reflect",
+];
 
 // A fixed, curated highlight from the catalog above — app-provided content,
 // not user data, so it's safe to feature deterministically.
-const TODAYS_SUGGESTION = CARDS[3];
+export const TODAYS_SUGGESTION = EXPLORE_CARDS[3];
 
-export function ExploreTab() {
-  const [activeCategory, setActiveCategory] = useState<CardCategory | "All">("All");
-  const [activeCard, setActiveCard] = useState<IntimacyCard | null>(null);
+export function ExploreTab({
+  activeCategory,
+  activeCard,
+  onSelectCard,
+  onCloseCard,
+}: {
+  activeCategory: CardCategory | "All";
+  activeCard: IntimacyCard | null;
+  onSelectCard: (card: IntimacyCard) => void;
+  onCloseCard: () => void;
+}) {
   const [response, setResponse] = useState("");
   const [saved, setSaved] = useState(false);
   const [savedForLater, setSavedForLater] = useState(false);
   const [showMutualReveal, setShowMutualReveal] = useState(false);
 
   const visibleCards =
-    activeCategory === "All" ? CARDS : CARDS.filter((card) => card.category === activeCategory);
+    activeCategory === "All"
+      ? EXPLORE_CARDS
+      : EXPLORE_CARDS.filter((card) => card.category === activeCategory);
 
   function closeCard() {
-    setActiveCard(null);
+    onCloseCard();
     setResponse("");
     setSaved(false);
     setSavedForLater(false);
@@ -82,39 +98,6 @@ export function ExploreTab() {
 
   return (
     <div className="space-y-6">
-      <Card className="relative overflow-hidden">
-        <div className="absolute inset-0 -z-0 opacity-60" aria-hidden="true">
-          <OrganicArtwork variant="trio" />
-        </div>
-        <CardContent className="relative space-y-3 pt-4">
-          <StatusPill tone="rose">TODAY&apos;S INTIMACY SUGGESTION</StatusPill>
-          <p className="font-display text-xl font-semibold leading-snug text-foreground">
-            &ldquo;{TODAYS_SUGGESTION.prompt}&rdquo;
-          </p>
-          <Button variant="cta" onClick={() => setActiveCard(TODAYS_SUGGESTION)}>
-            Explore Prompt
-          </Button>
-        </CardContent>
-      </Card>
-
-      <div className="flex flex-wrap gap-2" role="group" aria-label="Filter cards by category">
-        {CATEGORIES.map((category) => (
-          <button
-            key={category}
-            type="button"
-            aria-pressed={activeCategory === category}
-            onClick={() => setActiveCategory(category)}
-            className={`min-h-[44px] rounded-full border px-3 py-1.5 text-sm font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cta-start ${
-              activeCategory === category
-                ? "border-cta-start bg-cta-start text-[color:var(--cta-foreground)]"
-                : "border-border bg-bg-surface text-muted-foreground hover:text-foreground"
-            }`}
-          >
-            {category}
-          </button>
-        ))}
-      </div>
-
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
         {visibleCards.map((card) => (
           <Card key={card.id} className="flex flex-col justify-between">
@@ -123,7 +106,7 @@ export function ExploreTab() {
               <p className="font-display text-lg font-semibold leading-snug text-foreground">
                 &ldquo;{card.prompt}&rdquo;
               </p>
-              <Button variant="ghost" className="px-0 text-[color:var(--accent-rose)]" onClick={() => setActiveCard(card)}>
+              <Button variant="ghost" className="px-0 text-[color:var(--accent-rose)]" onClick={() => onSelectCard(card)}>
                 Begin card →
               </Button>
             </CardContent>
