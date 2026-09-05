@@ -42,10 +42,19 @@ export function ActivePeriodView({
           </p>
         </div>
         <div className="flex flex-wrap gap-3">
-          <Button variant="outline" onClick={onEndPeriod} loading={ending}>
+          <Button
+            variant="outline"
+            className="border-[color:var(--accent-rose)] bg-[color:var(--accent-rose-soft)] text-[color:var(--accent-rose)] hover:bg-[color:var(--accent-rose)]/20"
+            onClick={onEndPeriod}
+            loading={ending}
+          >
             End Period
           </Button>
-          <Button variant="cta" onClick={onLogToday}>
+          <Button
+            variant="cta"
+            className="![background:var(--accent-purple)] text-white shadow-cta-purple hover:opacity-90"
+            onClick={onLogToday}
+          >
             {todayLog ? "Update Today's State" : "Log Today's State"}
           </Button>
         </div>
@@ -92,11 +101,15 @@ export function ActivePeriodView({
                   key={day}
                   className={`min-w-[64px] rounded-xl border px-3 py-2 text-center ${
                     day === periodDay
-                      ? "border-[color:var(--accent-rose)] bg-[color:var(--accent-rose)]/10"
-                      : "border-border bg-bg-elevated"
+                      ? "border-[color:var(--accent-rose)] bg-[color:var(--accent-rose)]"
+                      : "border-transparent bg-[color:var(--accent-rose-soft)]"
                   }`}
                 >
-                  <p className="text-xs font-bold text-foreground">
+                  <p
+                    className={`text-xs font-bold ${
+                      day === periodDay ? "text-white" : "text-foreground"
+                    }`}
+                  >
                     Day {day}
                     {day === periodDay ? " (Today)" : ""}
                   </p>
@@ -110,7 +123,7 @@ export function ActivePeriodView({
           <div className="flex items-center justify-between">
             <h2 className="text-lg font-bold text-foreground">Today&apos;s Snapshot</h2>
             {todayLog && (
-              <span className="rounded-full bg-[color:var(--accent-sage-soft)] px-2.5 py-1 text-[11px] font-bold uppercase tracking-wide text-[color:var(--accent-sage)]">
+              <span className="rounded-full bg-[color:var(--accent-purple-soft)] px-2.5 py-1 text-[11px] font-bold uppercase tracking-wide text-[color:var(--accent-purple)]">
                 Logged
               </span>
             )}
@@ -118,12 +131,25 @@ export function ActivePeriodView({
 
           {todayLog ? (
             <div className="mt-4 space-y-3">
-              <SnapshotRow label="Bleeding Level" value={BLEEDING_LABEL[todayLog.bleeding_level]} />
-              <SnapshotRow label="Cramps" value={`${todayLog.cramps}/10`} />
+              <SnapshotRow
+                label="Bleeding Level"
+                value={BLEEDING_LABEL[todayLog.bleeding_level]}
+                tone="rose"
+              />
+              <SnapshotRow
+                label="Cramps"
+                value={`${todayLog.cramps}/10`}
+                tone="amber"
+                barFraction={todayLog.cramps / 10}
+              />
               {todayLog.sleep_quality !== null && (
-                <SnapshotRow label="Sleep Quality" value={`${todayLog.sleep_quality}/5`} />
+                <SnapshotRow
+                  label="Sleep Quality"
+                  value={`${todayLog.sleep_quality}/5`}
+                  tone="blue"
+                />
               )}
-              <SnapshotRow label="Mood Today" value={`${todayLog.mood}/10`} />
+              <SnapshotRow label="Mood Today" value={`${todayLog.mood}/10`} tone="sage" />
             </div>
           ) : (
             <p className="mt-4 text-sm text-muted-foreground">
@@ -136,11 +162,48 @@ export function ActivePeriodView({
   );
 }
 
-function SnapshotRow({ label, value }: { label: string; value: string }) {
+const SNAPSHOT_TONE_TEXT: Record<"rose" | "amber" | "sage" | "blue", string> = {
+  rose: "text-[color:var(--accent-rose)]",
+  amber: "text-[color:var(--accent-amber)]",
+  sage: "text-[color:var(--accent-sage)]",
+  blue: "text-[color:var(--accent-blue)]",
+};
+
+const SNAPSHOT_TONE_BAR: Record<"rose" | "amber" | "sage" | "blue", string> = {
+  rose: "bg-[color:var(--accent-rose)]",
+  amber: "bg-[color:var(--accent-amber)]",
+  sage: "bg-[color:var(--accent-sage)]",
+  blue: "bg-[color:var(--accent-blue)]",
+};
+
+function SnapshotRow({
+  label,
+  value,
+  tone,
+  barFraction,
+}: {
+  label: string;
+  value: string;
+  tone?: "rose" | "amber" | "sage" | "blue";
+  /** 0–1 fill fraction. When provided, renders a thin progress bar under the row. */
+  barFraction?: number;
+}) {
   return (
-    <div className="flex items-center justify-between border-b border-border pb-2 text-sm last:border-b-0 last:pb-0">
-      <span className="text-muted-foreground">{label}</span>
-      <span className="font-bold text-foreground">{value}</span>
+    <div className="border-b border-border pb-2 text-sm last:border-b-0 last:pb-0">
+      <div className="flex items-center justify-between">
+        <span className="text-muted-foreground">{label}</span>
+        <span className={`font-bold ${tone ? SNAPSHOT_TONE_TEXT[tone] : "text-foreground"}`}>
+          {value}
+        </span>
+      </div>
+      {barFraction !== undefined && tone && (
+        <div className="mt-2 h-1.5 w-full rounded-full bg-bg-elevated" aria-hidden="true">
+          <div
+            className={`h-1.5 rounded-full ${SNAPSHOT_TONE_BAR[tone]}`}
+            style={{ width: `${Math.round(barFraction * 100)}%` }}
+          />
+        </div>
+      )}
     </div>
   );
 }

@@ -36,7 +36,12 @@ export function NoActivePeriodView({
             Track your period whenever it starts.
           </p>
         </div>
-        <Button variant="cta" onClick={onStartPeriod} loading={starting}>
+        <Button
+          variant="cta"
+          className="shadow-cta-rose"
+          onClick={onStartPeriod}
+          loading={starting}
+        >
           Start Period
         </Button>
       </div>
