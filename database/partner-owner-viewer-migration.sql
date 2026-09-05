@@ -413,6 +413,7 @@ END;
 $$;
 
 REVOKE ALL ON FUNCTION public.get_partner_shared_data() FROM PUBLIC;
+REVOKE EXECUTE ON FUNCTION public.get_partner_shared_data() FROM anon;
 GRANT EXECUTE ON FUNCTION public.get_partner_shared_data() TO authenticated;
 
 -- ---------------------------------------------------
@@ -516,58 +517,14 @@ $$;
 REVOKE ALL ON FUNCTION public.accept_partner_invite(uuid) FROM PUBLIC;
 REVOKE ALL ON FUNCTION public.decline_partner_invite(uuid) FROM PUBLIC;
 REVOKE ALL ON FUNCTION public.revoke_partner_link(uuid) FROM PUBLIC;
+REVOKE EXECUTE ON FUNCTION public.accept_partner_invite(uuid) FROM anon;
+REVOKE EXECUTE ON FUNCTION public.decline_partner_invite(uuid) FROM anon;
+REVOKE EXECUTE ON FUNCTION public.revoke_partner_link(uuid) FROM anon;
 GRANT EXECUTE ON FUNCTION public.accept_partner_invite(uuid) TO authenticated;
 GRANT EXECUTE ON FUNCTION public.decline_partner_invite(uuid) TO authenticated;
 GRANT EXECUTE ON FUNCTION public.revoke_partner_link(uuid) TO authenticated;
 
--- ---------------------------------------------------
--- 7. Invite creation — atomic, and never returns the resolved viewer's id.
--- ---------------------------------------------------
--- Email-enumeration review: the previous version of this migration
--- exposed find_user_id_by_email(text) directly to every authenticated
--- client (GRANT EXECUTE ... TO authenticated). That is a genuine
--- account-existence-and-UUID lookup primitive: ANY authenticated Supabase
--- session — not just requests that happen to go through our Next.js
--- route — could call it directly against the Supabase REST/RPC endpoint
--- and enumerate arbitrary emails to real user ids and names. Routing the
--- call through our own API route does not fix this, because our route
--- uses the same RLS-scoped, non-privileged client as the browser; the
--- exposure is at the GRANT, not at our app's routing.
---
--- Fix: find_user_id_by_email() is removed. The lookup now happens INSIDE
--- a single SECURITY DEFINER function, create_partner_invite(), which
--- performs the lookup and the insert atomically and returns only the
--- fields the inviting owner's own UI needs (id/status/created_at/the
--- resolved viewer email) — the RETURNING clause below never surfaces the
--- matched account's real uuid. That said, once the invite row exists, the
--- section-4 SELECT policy already lets both relationship participants
--- read the full partner_links row, including owner_user_id and
--- viewer_user_id — so the owner legitimately learns the viewer's uuid
--- that way once they are actually connected. That is expected (they are a
--- real participant in that specific relationship) and is not a new leak;
--- it just means "this RPC's return value omits the uuid" should not be
--- read as "the uuid is never observable by the caller" more broadly. A
--- caller who successfully sends an invite still learns "an account exists
--- at this email" from a successful call (and "no account found" from the
--- error case below) — that narrower, account-existence-only oracle is a
--- known residual exposure, documented here rather than silently left
--- unaddressed; removing it fully would require changing the product
--- behavior (e.g. always returning success and emailing non-users a
--- signup prompt instead), which is a product decision, not a
--- migration-safety fix, and is out of scope for this revision. This
--- migration does not reintroduce find_user_id_by_email().
---
--- Trust-boundary hardening: this function is GRANTed directly to every
--- authenticated Supabase user, not just requests that happen to go
--- through our Next.js route — so it must never trust caller-supplied
--- values for the authenticated owner's own identity. p_owner_name and
--- p_owner_email are kept as parameters only for compatibility with the
--- existing Next.js route's call shape; neither is read for any decision
--- or stored anywhere below. Canonical owner_name/owner_email are loaded
--- here from public.users using auth.uid(), which the caller cannot spoof.
--- The viewer is likewise resolved to a canonical public.users row, and it
--- is that row's uuid — never a caller-supplied email string — that is
--- compared for self-invite protection.
+
 DROP FUNCTION IF EXISTS public.find_user_id_by_email(text);
 
 CREATE OR REPLACE FUNCTION public.create_partner_invite(
@@ -646,6 +603,7 @@ END;
 $$;
 
 REVOKE ALL ON FUNCTION public.create_partner_invite(text, text, text) FROM PUBLIC;
+REVOKE EXECUTE ON FUNCTION public.create_partner_invite(text, text, text) FROM anon;
 GRANT EXECUTE ON FUNCTION public.create_partner_invite(text, text, text) TO authenticated;
 
 COMMIT;
