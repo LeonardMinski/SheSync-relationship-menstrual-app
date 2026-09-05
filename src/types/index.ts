@@ -22,6 +22,16 @@ export interface User {
    * mapDbUser (the real value).
    */
   onboardingCompletedAt?: string | null;
+  /**
+   * Whether this account can use self-tracking features (Cycle, Coach,
+   * Vault) — independent of whether it is also a partner/viewer of someone
+   * else's shared data. `undefined` specifically means "not yet loaded
+   * from the real profile," mirroring onboardingCompletedAt above: callers
+   * that gate access on this must treat `undefined` as "wait, don't decide
+   * yet," never as either granted or denied. See
+   * src/features/account/capabilities.ts.
+   */
+  trackingEnabled?: boolean;
 }
 
 export interface PrivacySettings {

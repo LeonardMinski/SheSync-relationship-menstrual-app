@@ -150,3 +150,44 @@ describe("PUT /api/user — onboarding completion trust boundary", () => {
     expect(supabase.update).not.toHaveBeenCalled();
   });
 });
+
+describe("PUT /api/user — trackingEnabled (account capabilities)", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    vi.spyOn(console, "error").mockImplementation(() => {});
+    vi.spyOn(console, "log").mockImplementation(() => {});
+  });
+
+  it("allows the authenticated caller to set their own tracking_enabled", async () => {
+    const supabase = makeSupabaseMock({
+      data: { id: "user-1", tracking_enabled: true },
+      error: null,
+    });
+    authenticateRequestMock.mockResolvedValue({
+      user: { id: "user-1", email: "person@example.com", name: "Person" },
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      supabase: supabase as any,
+    });
+
+    const response = await PUT(makeRequest({ trackingEnabled: true }));
+
+    expect(response.status).toBe(200);
+    expect(supabase.eq).toHaveBeenCalledWith("id", "user-1");
+    const updatePayload = supabase.update.mock.calls[0][0];
+    expect(updatePayload).toEqual({ tracking_enabled: true });
+  });
+
+  it("rejects a non-boolean trackingEnabled value", async () => {
+    const supabase = makeSupabaseMock({ data: {}, error: null });
+    authenticateRequestMock.mockResolvedValue({
+      user: { id: "user-1", email: "person@example.com", name: "Person" },
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      supabase: supabase as any,
+    });
+
+    const response = await PUT(makeRequest({ trackingEnabled: "true" }));
+
+    expect(response.status).toBe(400);
+    expect(supabase.update).not.toHaveBeenCalled();
+  });
+});

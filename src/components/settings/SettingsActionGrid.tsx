@@ -2,15 +2,17 @@ import type { ComponentType } from "react";
 import Link from "next/link";
 import { ShieldCheck, Users } from "lucide-react";
 
-export function SettingsActionGrid() {
+export function SettingsActionGrid({ canTrack }: { canTrack: boolean }) {
   return (
     <section className="grid gap-6 md:grid-cols-2">
-      <SettingsAction
-        href="/settings/privacy"
-        icon={ShieldCheck}
-        title="Privacy & Partner"
-        description="Choose exactly what your partner can see."
-      />
+      {canTrack && (
+        <SettingsAction
+          href="/settings/privacy"
+          icon={ShieldCheck}
+          title="Privacy & Partner"
+          description="Choose exactly what your partner can see."
+        />
+      )}
       <SettingsAction
         href="/partner"
         icon={Users}

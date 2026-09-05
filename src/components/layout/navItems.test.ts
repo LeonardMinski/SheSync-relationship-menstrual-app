@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { isItemActive, navItems } from "./navItems";
+import { getVisibleNavItems, isItemActive, navItems } from "./navItems";
 
 describe("navigation items", () => {
   it("matches exact routes", () => {
@@ -43,5 +43,29 @@ describe("navigation items", () => {
 
   it("marks no item as 'soon'", () => {
     expect(navItems.every((item) => item.status === undefined)).toBe(true);
+  });
+});
+
+describe("getVisibleNavItems", () => {
+  it("returns every destination for a tracking-enabled account", () => {
+    expect(getVisibleNavItems(true)).toEqual(navItems);
+  });
+
+  it("hides Cycle, Coach, and Vault for a partner-only account", () => {
+    const hrefs = getVisibleNavItems(false).map((item) => item.href);
+
+    expect(hrefs).toEqual(["/dashboard", "/connect"]);
+  });
+
+  it("does not mutate the shared navItems array", () => {
+    getVisibleNavItems(false);
+
+    expect(navItems.map((item) => item.href)).toEqual([
+      "/dashboard",
+      "/cycle",
+      "/coach",
+      "/connect",
+      "/vault",
+    ]);
   });
 });

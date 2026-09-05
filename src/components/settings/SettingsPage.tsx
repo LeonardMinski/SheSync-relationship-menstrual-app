@@ -3,6 +3,7 @@
 import { TopNavbar } from "@/components/layout/TopNavbar";
 import { LogoutButton } from "@/components/layout/LogoutButton";
 import LoadingSpinner from "@/components/ui/LoadingSpinner";
+import { canUseTracking } from "@/features/account/capabilities";
 import { useSettingsPageState } from "@/hooks/useSettingsPageState";
 
 import { AccountCard } from "./AccountCard";
@@ -14,6 +15,7 @@ import { ThemeCard } from "./ThemeCard";
 export default function SettingsPage() {
   const { authUser, exportData, isDarkMode, isLoading, toggleTheme } =
     useSettingsPageState();
+  const canTrack = canUseTracking(authUser);
 
   if (isLoading) {
     return (
@@ -36,9 +38,9 @@ export default function SettingsPage() {
           <ThemeCard isDarkMode={isDarkMode} onToggle={toggleTheme} />
         </section>
 
-        <SettingsActionGrid />
+        <SettingsActionGrid canTrack={canTrack} />
 
-        <CoachDataCard />
+        {canTrack && <CoachDataCard />}
 
         <DataManagementCard onExport={exportData} />
 

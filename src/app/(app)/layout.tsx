@@ -13,6 +13,11 @@ import {
   isWaitingForOnboardingStatus,
   shouldRedirectToOnboarding,
 } from "@/features/onboarding/onboarding.utils";
+import {
+  isTrackedOnlyRoute,
+  isWaitingForTrackingStatus,
+  shouldBlockTrackedRoute,
+} from "@/features/account/capabilities";
 
 const AuthLoadingState = ({ text }: { text: string }) => (
   <div className="min-h-screen bg-bg text-foreground">
@@ -35,6 +40,11 @@ function AuthenticatedAppLayout({ children }: { children: React.ReactNode }) {
 
     if (session && shouldRedirectToOnboarding(user)) {
       router.replace("/onboarding");
+      return;
+    }
+
+    if (session && shouldBlockTrackedRoute(user, pathname)) {
+      router.replace("/dashboard");
     }
   }, [loading, pathname, router, session, user]);
 
@@ -58,6 +68,14 @@ function AuthenticatedAppLayout({ children }: { children: React.ReactNode }) {
 
   if (shouldRedirectToOnboarding(user)) {
     return <AuthLoadingState text="Taking you to onboarding..." />;
+  }
+
+  if (isTrackedOnlyRoute(pathname) && isWaitingForTrackingStatus(user, profileError)) {
+    return <AuthLoadingState text="Loading..." />;
+  }
+
+  if (shouldBlockTrackedRoute(user, pathname)) {
+    return <AuthLoadingState text="Redirecting..." />;
   }
 
   return (

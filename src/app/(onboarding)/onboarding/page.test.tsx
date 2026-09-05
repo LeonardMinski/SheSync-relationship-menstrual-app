@@ -31,6 +31,7 @@ describe("OnboardingPage", () => {
       replace,
     } as unknown as ReturnType<typeof useRouter>);
     vi.mocked(useAuth).mockReturnValue({
+      user: { trackingEnabled: true },
       refreshUser,
     } as unknown as ReturnType<typeof useAuth>);
   });
@@ -105,5 +106,40 @@ describe("OnboardingPage", () => {
       onboardingCompletedAt: "2026-09-03T00:00:00.000Z",
     });
     await waitFor(() => expect(replace).toHaveBeenCalledWith("/dashboard"));
+  });
+
+  describe("partner-oriented account (tracking_enabled = false)", () => {
+    beforeEach(() => {
+      vi.mocked(useAuth).mockReturnValue({
+        user: { trackingEnabled: false },
+        refreshUser,
+      } as unknown as ReturnType<typeof useAuth>);
+    });
+
+    it("does not walk a partner-only account through cycle-tracking framing", async () => {
+      render(<OnboardingPage />);
+
+      await userEvent.click(screen.getByRole("button", { name: "Continue" }));
+
+      expect(screen.queryByText("Your cycle, your pace")).not.toBeInTheDocument();
+      expect(
+        screen.getByText("You'll see what they choose to share"),
+      ).toBeInTheDocument();
+    });
+
+    it("still completes onboarding through the same endpoint", async () => {
+      vi.mocked(completeOnboarding).mockResolvedValue({
+        success: true,
+        onboardingCompletedAt: "2026-09-03T00:00:00.000Z",
+      });
+
+      render(<OnboardingPage />);
+      await goToLastStep();
+
+      await userEvent.click(screen.getByRole("button", { name: "Start using SheSync+" }));
+
+      await waitFor(() => expect(completeOnboarding).toHaveBeenCalledTimes(1));
+      await waitFor(() => expect(replace).toHaveBeenCalledWith("/dashboard"));
+    });
   });
 });

@@ -3,12 +3,16 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
+import { useAuth } from "@/context/AuthContext";
+import { canUseTracking } from "@/features/account/capabilities";
 import { cn } from "@/utils/cn";
 
-import { isItemActive, navItems } from "./navItems";
+import { getVisibleNavItems, isItemActive } from "./navItems";
 
 export function BottomTabBar() {
   const pathname = usePathname();
+  const { user } = useAuth();
+  const visibleNavItems = getVisibleNavItems(canUseTracking(user));
 
   return (
     <nav
@@ -16,7 +20,7 @@ export function BottomTabBar() {
       className="fixed inset-x-0 bottom-0 z-40 flex items-stretch justify-around border-t border-border bg-[var(--bg-surface)] pb-[env(safe-area-inset-bottom)] shadow-[0_-4px_16px_rgba(0,0,0,0.06)] md:hidden"
       data-testid="mobile-bottom-nav"
     >
-      {navItems.map((item) => {
+      {visibleNavItems.map((item) => {
         const active = isItemActive(pathname, item.href);
         const Icon = item.icon;
         return (

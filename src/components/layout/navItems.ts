@@ -32,6 +32,17 @@ export const navItems: NavItem[] = [
   },
 ];
 
+// Partner-only accounts (tracking_enabled = false) get a deliberately
+// simplified nav — everything that assumes self-tracking data is hidden,
+// not just route-guarded. Home already carries their relationship/shared
+// content (see (app)/dashboard/page.tsx), and Connect is universal.
+const TRACKED_ONLY_HREFS = new Set(["/cycle", "/coach", "/vault"]);
+
+export function getVisibleNavItems(canTrack: boolean): NavItem[] {
+  if (canTrack) return navItems;
+  return navItems.filter((item) => !TRACKED_ONLY_HREFS.has(item.href));
+}
+
 export function isItemActive(pathname: string, href: string) {
   const itemPath = href.split("#")[0];
   const isHashLink = href.includes("#");

@@ -133,3 +133,93 @@ describe("(app) layout onboarding guard", () => {
     expect(replace).not.toHaveBeenCalledWith("/onboarding");
   });
 });
+
+describe("(app) layout tracking capability guard", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    vi.mocked(useRouter).mockReturnValue({ replace } as unknown as ReturnType<typeof useRouter>);
+  });
+
+  const trackedUser = {
+    ...baseUser,
+    onboardingCompletedAt: "2026-09-01T00:00:00.000Z",
+    trackingEnabled: true,
+  };
+  const partnerOnlyUser = {
+    ...baseUser,
+    onboardingCompletedAt: "2026-09-01T00:00:00.000Z",
+    trackingEnabled: false,
+  };
+
+  it("redirects a partner-only account away from /cycle to /dashboard", async () => {
+    vi.mocked(usePathname).mockReturnValue("/cycle");
+    setAuth({ session, user: partnerOnlyUser, loading: false });
+
+    render(<AppLayout>tracked content</AppLayout>);
+
+    await waitFor(() => expect(replace).toHaveBeenCalledWith("/dashboard"));
+    expect(screen.queryByText("tracked content")).not.toBeInTheDocument();
+  });
+
+  it("redirects a partner-only account away from nested tracked routes (/cycle/patterns, /coach, /vault/new)", async () => {
+    for (const pathname of ["/cycle/patterns", "/coach", "/vault/new"]) {
+      vi.clearAllMocks();
+      vi.mocked(useRouter).mockReturnValue({ replace } as unknown as ReturnType<typeof useRouter>);
+      vi.mocked(usePathname).mockReturnValue(pathname);
+      setAuth({ session, user: partnerOnlyUser, loading: false });
+
+      const { unmount } = render(<AppLayout>tracked content</AppLayout>);
+      await waitFor(() => expect(replace).toHaveBeenCalledWith("/dashboard"));
+      unmount();
+    }
+  });
+
+  it("allows a tracking-enabled account to reach /cycle", async () => {
+    vi.mocked(usePathname).mockReturnValue("/cycle");
+    setAuth({ session, user: trackedUser, loading: false });
+
+    render(<AppLayout>tracked content</AppLayout>);
+
+    await screen.findByText("tracked content");
+    expect(replace).not.toHaveBeenCalled();
+  });
+
+  it("does not gate a non-tracked-only route (/dashboard) for a partner-only account", async () => {
+    vi.mocked(usePathname).mockReturnValue("/dashboard");
+    setAuth({ session, user: partnerOnlyUser, loading: false });
+
+    render(<AppLayout>home content</AppLayout>);
+
+    await screen.findByText("home content");
+    expect(replace).not.toHaveBeenCalled();
+  });
+
+  it("does not redirect from a tracked-only route while capability status is still unresolved", async () => {
+    vi.mocked(usePathname).mockReturnValue("/cycle");
+    setAuth({
+      session,
+      user: { ...baseUser, onboardingCompletedAt: "2026-09-01T00:00:00.000Z", trackingEnabled: undefined },
+      loading: false,
+    });
+
+    render(<AppLayout>content</AppLayout>);
+
+    expect(screen.queryByText("content")).not.toBeInTheDocument();
+    expect(replace).not.toHaveBeenCalled();
+  });
+
+  it("fails open (renders, does not redirect) from a tracked-only route when the profile load itself failed", async () => {
+    vi.mocked(usePathname).mockReturnValue("/cycle");
+    setAuth({
+      session,
+      user: { ...baseUser, onboardingCompletedAt: "2026-09-01T00:00:00.000Z", trackingEnabled: undefined },
+      loading: false,
+      profileError: true,
+    });
+
+    render(<AppLayout>content</AppLayout>);
+
+    await screen.findByText("content");
+    expect(replace).not.toHaveBeenCalled();
+  });
+});

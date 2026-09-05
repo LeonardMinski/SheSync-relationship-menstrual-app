@@ -98,6 +98,8 @@ const mapDbUser = (rawUser: UserRecord | null | undefined): User | null => {
     created_at: rawUser.created_at,
 
     onboardingCompletedAt: rawUser.onboarding_completed_at ?? null,
+
+    trackingEnabled: Boolean(rawUser.tracking_enabled),
   };
 };
 

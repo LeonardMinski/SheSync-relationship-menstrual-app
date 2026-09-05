@@ -21,6 +21,7 @@ export default function SignupPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
+  const [trackingEnabled, setTrackingEnabled] = useState(true);
   const [error, setError] = useState("");
   const [fieldErrors, setFieldErrors] = useState<SignupFieldErrors>({});
   const [loading, setLoading] = useState(false);
@@ -61,6 +62,7 @@ export default function SignupPage() {
         email: parsed.data.email,
         password: parsed.data.password,
         name: parsed.data.name,
+        trackingEnabled,
       });
 
       if (!result.success) {
@@ -114,6 +116,52 @@ export default function SignupPage() {
                   {error}
                 </div>
               )}
+
+              <fieldset className="space-y-2">
+                <legend className="text-sm font-semibold text-foreground">
+                  What brings you to SheSync+?
+                </legend>
+                <div className="grid gap-2 sm:grid-cols-2">
+                  <label
+                    className={`min-h-[44px] cursor-pointer rounded-lg border p-3 text-sm transition-colors ${
+                      trackingEnabled
+                        ? "border-cta-start bg-cta-start/10 font-semibold text-foreground"
+                        : "border-border text-muted-foreground hover:text-foreground"
+                    }`}
+                  >
+                    <input
+                      type="radio"
+                      name="account-purpose"
+                      className="sr-only"
+                      checked={trackingEnabled}
+                      onChange={() => setTrackingEnabled(true)}
+                    />
+                    Track my own cycle
+                  </label>
+                  <label
+                    className={`min-h-[44px] cursor-pointer rounded-lg border p-3 text-sm transition-colors ${
+                      !trackingEnabled
+                        ? "border-cta-start bg-cta-start/10 font-semibold text-foreground"
+                        : "border-border text-muted-foreground hover:text-foreground"
+                    }`}
+                  >
+                    <input
+                      type="radio"
+                      name="account-purpose"
+                      className="sr-only"
+                      checked={!trackingEnabled}
+                      onChange={() => setTrackingEnabled(false)}
+                    />
+                    I&apos;m here to support a partner
+                  </label>
+                </div>
+                {!trackingEnabled && (
+                  <p className="text-xs text-muted-foreground">
+                    You can connect with a partner and see what they choose to share. You
+                    won&apos;t be asked to log your own cycle.
+                  </p>
+                )}
+              </fieldset>
 
               <div className="space-y-4">
                 <Input

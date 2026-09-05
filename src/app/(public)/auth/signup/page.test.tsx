@@ -63,6 +63,49 @@ describe("SignupPage", () => {
     expect(replace).not.toHaveBeenCalled();
   });
 
+  async function fillRequiredFields() {
+    await userEvent.type(screen.getByLabelText("Full Name"), "Person");
+    await userEvent.type(
+      screen.getByLabelText("Email Address"),
+      "person@example.com",
+    );
+    await userEvent.type(screen.getByLabelText("Password"), "password-1");
+    await userEvent.type(
+      screen.getByLabelText("Confirm Password"),
+      "password-1",
+    );
+    await userEvent.click(screen.getByLabelText(/I agree to the/i));
+  }
+
+  it("defaults to a tracking-oriented signup", async () => {
+    signUp.mockResolvedValue({ success: true, user: null, error: null });
+    render(<SignupPage />);
+
+    await fillRequiredFields();
+    await userEvent.click(screen.getByRole("button", { name: "Create Account" }));
+
+    await waitFor(() => expect(signUp).toHaveBeenCalledTimes(1));
+    expect(signUp).toHaveBeenCalledWith(
+      expect.objectContaining({ trackingEnabled: true }),
+    );
+  });
+
+  it("passes trackingEnabled: false when the visitor chooses the partner-oriented option", async () => {
+    signUp.mockResolvedValue({ success: true, user: null, error: null });
+    render(<SignupPage />);
+
+    await userEvent.click(
+      screen.getByLabelText("I'm here to support a partner"),
+    );
+    await fillRequiredFields();
+    await userEvent.click(screen.getByRole("button", { name: "Create Account" }));
+
+    await waitFor(() => expect(signUp).toHaveBeenCalledTimes(1));
+    expect(signUp).toHaveBeenCalledWith(
+      expect.objectContaining({ trackingEnabled: false }),
+    );
+  });
+
   it("redirects already-authenticated users away from signup", async () => {
     setAuth({
       session: {

@@ -55,6 +55,7 @@ export async function PUT(request: NextRequest) {
         share_intimacy_deck: boolean
       }
       onboarding_completed_at?: string
+      tracking_enabled?: boolean
     } = {}
     
     if (updateData.name !== undefined) {
@@ -99,6 +100,17 @@ export async function PUT(request: NextRequest) {
         return createErrorResponse('Invalid completeOnboarding value', 400)
       }
       allowedUpdates.onboarding_completed_at = new Date().toISOString()
+    }
+
+    // Not yet exposed through any UI — this V1 slice doesn't build a
+    // tracking-conversion journey — but the endpoint itself supports a
+    // partner-only account later enabling tracking for herself, so that
+    // path isn't blocked on new backend work when it's built.
+    if (updateData.trackingEnabled !== undefined) {
+      if (typeof updateData.trackingEnabled !== 'boolean') {
+        return createErrorResponse('Invalid trackingEnabled value', 400)
+      }
+      allowedUpdates.tracking_enabled = updateData.trackingEnabled
     }
 
     if (Object.keys(allowedUpdates).length === 0) {

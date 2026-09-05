@@ -6,16 +6,18 @@ import { Moon, Settings as SettingsIcon, Sun } from "lucide-react";
 
 import { useApp } from "@/context/AppContext";
 import { useAuth } from "@/context/AuthContext";
+import { canUseTracking } from "@/features/account/capabilities";
 import { PrivacyBadge } from "@/components/ui/PrivacyBadge";
 import { cn } from "@/utils/cn";
 
 import { LogoutButton } from "./LogoutButton";
-import { isItemActive, navItems } from "./navItems";
+import { getVisibleNavItems, isItemActive } from "./navItems";
 
 export function TopNav() {
   const pathname = usePathname();
   const { user } = useAuth();
   const { state, toggleTheme } = useApp();
+  const visibleNavItems = getVisibleNavItems(canUseTracking(user));
 
   return (
     <header
@@ -34,7 +36,7 @@ export function TopNav() {
           aria-label="Primary navigation"
           className="flex min-w-0 items-center justify-center gap-1"
         >
-          {navItems.map((item) => {
+          {visibleNavItems.map((item) => {
             const active = isItemActive(pathname, item.href);
             return (
               <Link

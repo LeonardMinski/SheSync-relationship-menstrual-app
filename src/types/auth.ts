@@ -21,6 +21,8 @@ export type UserRecord = {
   privacy_settings: PrivacySettingsRecord;
   /** NULL = onboarding not completed; ISO timestamp = completed at that time. */
   onboarding_completed_at?: string | null;
+  /** Whether this account can use self-tracking features. See User.trackingEnabled. */
+  tracking_enabled: boolean;
 };
 
 export type CreateUserData = {
@@ -40,6 +42,13 @@ export type SignUpInput = {
   email: string;
   password: string;
   name: string;
+  /**
+   * Whether the new account should start with self-tracking enabled.
+   * Defaults to true (the normal signup path) — pass false only for a
+   * deliberately partner-oriented signup. See
+   * src/features/account/capabilities.ts.
+   */
+  trackingEnabled?: boolean;
 };
 
 export type SignInInput = {

@@ -134,10 +134,16 @@ const getDisplayName = (user: SupabaseAuthUser) => {
   return user.email?.split("@")[0] || "User";
 };
 
+const getTrackingEnabledMetadata = (user: SupabaseAuthUser): boolean =>
+  user.user_metadata?.tracking_enabled !== false;
+
 const buildUserRecord = (
   user: SupabaseAuthUser,
   overrides: Partial<
-    Pick<UserRecord, "email" | "name" | "created_at" | "privacy_settings">
+    Pick<
+      UserRecord,
+      "email" | "name" | "created_at" | "privacy_settings" | "tracking_enabled"
+    >
   > = {},
 ): UserRecord => ({
   id: user.id,
@@ -150,6 +156,12 @@ const buildUserRecord = (
   privacy_settings: overrides.privacy_settings ?? {
     ...DEFAULT_PRIVACY_SETTINGS,
   },
+  // This client-side fallback profile-creation path (see
+  // loadOrCreateUserProfile) doesn't go through the DB trigger that reads
+  // signup metadata, so it must read the same auth metadata itself —
+  // otherwise a partner-oriented signup that raced this path instead of
+  // the trigger would silently come back tracking-enabled.
+  tracking_enabled: overrides.tracking_enabled ?? getTrackingEnabledMetadata(user),
 });
 
 const hasNoSignUpIdentities = (user: SupabaseAuthUser) =>
@@ -273,6 +285,11 @@ export const auth = {
         options: {
           data: {
             name: data.name,
+            // Read by public.handle_new_auth_user() via raw_user_meta_data.
+            // Omitted (undefined) means "normal signup" and defaults to
+            // tracking-enabled there; only an explicit false marks a
+            // deliberately partner-oriented signup.
+            tracking_enabled: data.trackingEnabled === false ? false : undefined,
           },
           emailRedirectTo:
             typeof window !== "undefined"
