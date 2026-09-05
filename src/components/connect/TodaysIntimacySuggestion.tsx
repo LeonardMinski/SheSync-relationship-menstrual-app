@@ -9,7 +9,7 @@ export function TodaysIntimacySuggestion({
 }) {
   return (
     <section
-      className="flex h-full flex-col justify-between rounded-[2rem] bg-gradient-to-br from-[color:var(--accent-rose)] to-[color:var(--accent-premium)] p-6 text-[color:var(--accent-premium-foreground)] shadow-lg"
+      className="flex h-full flex-col justify-between rounded-[2rem] bg-gradient-to-br from-[color:var(--accent-rose-deep)] to-[color:var(--accent-premium)] p-6 text-[color:var(--accent-premium-foreground)] shadow-lg"
       data-testid="todays-intimacy-suggestion"
     >
       <div>

@@ -9,6 +9,11 @@ interface ModalProps {
   describedBy?: string;
   /** Defaults to "max-w-md" — pass a wider class for multi-column dialogs. */
   maxWidthClassName?: string;
+  /** Defaults to "bg-black/80" — pass a different class to override the backdrop. */
+  overlayClassName?: string;
+  /** Defaults to the standard card border/background/shadow — override for a
+   *  different look (e.g. a lighter shadow against a white overlay). */
+  contentClassName?: string;
 }
 
 const FOCUSABLE_SELECTOR =
@@ -20,6 +25,8 @@ export function Modal({
   children,
   describedBy,
   maxWidthClassName = "max-w-md",
+  overlayClassName = "bg-black/80",
+  contentClassName = "border border-border-subtle bg-bg-surface shadow-2xl shadow-black/60",
 }: ModalProps) {
   const titleId = useId();
   const containerRef = useRef<HTMLDivElement>(null);
@@ -70,7 +77,7 @@ export function Modal({
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4 backdrop-blur"
+      className={`fixed inset-0 z-50 flex items-center justify-center p-4 backdrop-blur ${overlayClassName}`}
       onMouseDown={(event) => {
         if (event.target === event.currentTarget) onClose();
       }}
@@ -81,7 +88,7 @@ export function Modal({
         aria-modal="true"
         aria-labelledby={titleId}
         aria-describedby={describedBy}
-        className={`max-h-[90vh] w-full ${maxWidthClassName} overflow-y-auto rounded-[2rem] border border-border bg-bg-surface p-6 shadow-lg`}
+        className={`max-h-[90vh] w-full ${maxWidthClassName} overflow-y-auto rounded-[2rem] p-6 ${contentClassName}`}
       >
         <h2 id={titleId} className="mb-4 text-xl font-bold text-foreground">
           {title}

@@ -2,8 +2,9 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Settings as SettingsIcon } from "lucide-react";
+import { Moon, Settings as SettingsIcon, Sun } from "lucide-react";
 
+import { useApp } from "@/context/AppContext";
 import { useAuth } from "@/context/AuthContext";
 import { PrivacyBadge } from "@/components/ui/PrivacyBadge";
 import { cn } from "@/utils/cn";
@@ -14,6 +15,7 @@ import { isItemActive, navItems } from "./navItems";
 export function TopNav() {
   const pathname = usePathname();
   const { user } = useAuth();
+  const { state, toggleTheme } = useApp();
 
   return (
     <header
@@ -54,6 +56,19 @@ export function TopNav() {
 
         <div className="flex shrink-0 items-center gap-3">
           <PrivacyBadge className="hidden lg:inline-flex" />
+
+          <button
+            type="button"
+            onClick={toggleTheme}
+            aria-label={state.isDarkMode ? "Switch to light mode" : "Switch to dark mode"}
+            className="flex h-11 w-11 items-center justify-center rounded-full border border-border bg-bg-elevated text-muted-foreground transition-colors hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cta-start"
+          >
+            {state.isDarkMode ? (
+              <Sun className="h-5 w-5" aria-hidden="true" />
+            ) : (
+              <Moon className="h-5 w-5" aria-hidden="true" />
+            )}
+          </button>
 
           {user && (
             <div className="group relative">

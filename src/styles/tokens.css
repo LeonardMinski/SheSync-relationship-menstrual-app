@@ -23,26 +23,31 @@
   --cta-start: #ec2f6e;
   --cta-end: #d21b5c;
   --cta-foreground: #ffffff;
-  --accent-sage: #4b6b52;
-  --accent-sage-soft: #e3ede2;
+  --accent-sage: #16a34a;
+  --accent-sage-soft: #e2f5e7;
   --accent-clay: #ab7256;
   --accent-gold: #b68b3c;
-  --accent-amber: #c99a3f;
+  --accent-amber: #d97706;
   --accent-amber-soft: #fbf3df;
   --accent-peach: #e5ad95;
   --accent-lilac: #d9c5ff;
-  --accent-blue: #7c91b6;
+  --accent-blue: #2563eb;
+  --accent-blue-soft: #e8f0fe;
   --accent-rose: #ec2f6e;
-  --accent-purple: #75668f;
+  --accent-rose-soft: #fbe4ec;
+  --accent-rose-deep: #b8265a;
+  --accent-rose-deepest: #8f1d46;
+  --accent-purple: #7c3aed;
+  --accent-purple-soft: #efe9fe;
   --accent-secondary: #e5ad95;
   --accent-tertiary: #75668f;
   --accent-premium: #2b1a3d;
   --accent-premium-foreground: #f6f1ff;
 
-  --success: #4b6b52;
-  --warning: #c99a3f;
+  --success: #16a34a;
+  --warning: #d97706;
   --error: #c84654;
-  --info: #7c91b6;
+  --info: #2563eb;
 
   --ring: #ec2f6e;
   --ring-offset: #f5f4f7;
@@ -70,14 +75,19 @@
   --spacing-xl: 2rem;
   --spacing-2xl: 3rem;
   
+  --radius-xs: 0.2rem;
   --radius-sm: 0.375rem;
   --radius-md: 0.5rem;
-  --radius-lg: 0.75rem;
-  --radius-xl: 1rem;
-  --radius-2xl: 1.5rem;
+  --radius-lg: 0.625rem;
+  --radius-xl: 0.75rem;
+  --radius-2xl: 1rem;
+  --radius-pill: 1.25rem;
 
-  --font-family: 'Inter', system-ui, -apple-system, sans-serif;
-  /* --font-display is set on <html> by next/font (Playfair Display) in src/app/layout.tsx */
+  /* --font-inter is set on <html> by next/font (src/app/layout.tsx). Both
+     body and heading fonts point at it — Inter, exclusively, per the
+     SheSync Cycle design system. */
+  --font-family: var(--font-inter), 'Inter', system-ui, -apple-system, sans-serif;
+  --font-display: var(--font-inter), 'Inter', system-ui, -apple-system, sans-serif;
   --font-size-xs: 0.75rem;
   --font-size-sm: 0.875rem;
   --font-size-base: 1rem;
@@ -89,49 +99,58 @@
 }
 
 .dark {
-  --bg: #16121e;
-  --bg-surface: #201a2b;
-  --bg-elevated: #271f34;
-  --bg-muted: #2e2540;
-  --bg-secondary: #362c49;
-  --bg-tertiary: #423653;
+  /* SheSync Cycle design system, September 2026. Values below are taken
+     directly from that spec's dark-mode reference. The light-mode
+     equivalents (:root, above) come from a separate light-mode mockup
+     supplied later, not from this same source document. */
+  --bg: #080810;
+  --bg-surface: #110d1a;
+  --bg-elevated: #1f153f;
+  --bg-muted: #1f1522;
+  --bg-secondary: #2e1128;
+  --bg-tertiary: #10152b;
 
-  --text-foreground: #f5f2fa;
-  --text-muted: #b8b2c6;
-  --text-help: #9a94ab;
-  --text-secondary: #ddd8e6;
-  --text-tertiary: #8a8399;
+  --text-foreground: #ffffff;
+  --text-muted: #6b6b8a;
+  --text-help: #9a9ab0;
+  --text-secondary: #9a9ab0;
+  --text-tertiary: #6b6b8a;
 
-  --border: #392f4a;
-  --border-subtle: #2c2438;
-  --border-secondary: #4a3d5e;
+  --border: #1e1e32;
+  --border-subtle: #2a1e35;
+  --border-secondary: #2a1e35;
 
-  --cta-start: #f0578c;
-  --cta-end: #d1356e;
-  --cta-foreground: #2a0f1c;
-  --accent-sage: #8fb497;
-  --accent-sage-soft: #263329;
+  --cta-start: #e05a88;
+  --cta-end: #c4547a;
+  --cta-foreground: #ffffff;
+  --accent-sage: #22c55e;
+  --accent-sage-soft: #0f1a14;
   --accent-clay: #c99872;
-  --accent-gold: #d8ad5c;
-  --accent-amber: #d8ad5c;
+  --accent-gold: #fbbf24;
+  --accent-amber: #fbbf24;
   --accent-amber-soft: #362c1c;
   --accent-peach: #efa88e;
   --accent-lilac: #cdb6ff;
-  --accent-blue: #7f9ac4;
-  --accent-rose: #f0578c;
-  --accent-purple: #8d7aaa;
+  --accent-blue: #5c89ff;
+  --accent-blue-soft: #10152b;
+  --accent-rose: #e05a88;
+  --accent-rose-soft: #2e1128;
+  --accent-rose-deep: #9b3b6b;
+  --accent-rose-deepest: #7c2d52;
+  --accent-purple: #8b5cf6;
+  --accent-purple-soft: #1f153f;
   --accent-secondary: #efa88e;
-  --accent-tertiary: #8d7aaa;
+  --accent-tertiary: #8b5cf6;
   --accent-premium: #17101f;
   --accent-premium-foreground: #f6f1ff;
 
-  --success: #8fb497;
-  --warning: #d8ad5c;
+  --success: #22c55e;
+  --warning: #fbbf24;
   --error: #ff6f7d;
-  --info: #86a6d8;
+  --info: #5c89ff;
 
-  --ring: #f0578c;
-  --ring-offset: #201a2b;
+  --ring: #e05a88;
+  --ring-offset: #110d1a;
 
   --shadow-sm:
     0 0 0 1px rgb(247 248 243 / 0.1),
@@ -148,6 +167,11 @@
   --shadow-glow:
     0 0 0 1px rgb(247 248 243 / 0.1),
     0 22px 44px -34px rgb(0 0 0 / 0.94);
+
+  /* CTA drop shadows — rose is the default (Save Entry, Start Period);
+     purple is used specifically for the Log Today's State CTA. */
+  --shadow-cta-rose: 0 4px 16px rgba(224, 89, 135, 0.19);
+  --shadow-cta-purple: 0 4px 16px rgba(139, 92, 246, 0.25);
 }
 
 /* Global dark mode styles */

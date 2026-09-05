@@ -39,6 +39,11 @@ module.exports = {
         'accent-gold': 'var(--accent-gold)',
         'accent-amber': 'var(--accent-amber)',
         'accent-amber-soft': 'var(--accent-amber-soft)',
+        'accent-blue-soft': 'var(--accent-blue-soft)',
+        'accent-rose-soft': 'var(--accent-rose-soft)',
+        'accent-rose-deep': 'var(--accent-rose-deep)',
+        'accent-rose-deepest': 'var(--accent-rose-deepest)',
+        'accent-purple-soft': 'var(--accent-purple-soft)',
         'accent-premium': 'var(--accent-premium)',
         'accent-premium-foreground': 'var(--accent-premium-foreground)',
 
@@ -61,17 +66,21 @@ module.exports = {
         '2xl': 'var(--spacing-2xl)',
       },
       borderRadius: {
+        xs: 'var(--radius-xs)',
         sm: 'var(--radius-sm)',
         md: 'var(--radius-md)',
         lg: 'var(--radius-lg)',
         xl: 'var(--radius-xl)',
         '2xl': 'var(--radius-2xl)',
+        pill: 'var(--radius-pill)',
       },
       boxShadow: {
         sm: 'var(--shadow-sm)',
         DEFAULT: 'var(--shadow)',
         md: 'var(--shadow-md)',
         lg: 'var(--shadow-lg)',
+        'cta-rose': 'var(--shadow-cta-rose)',
+        'cta-purple': 'var(--shadow-cta-purple)',
       },
       fontSize: {
         xs: 'var(--font-size-xs)',
