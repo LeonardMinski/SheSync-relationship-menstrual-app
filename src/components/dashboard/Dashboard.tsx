@@ -1,18 +1,18 @@
 "use client";
 
-import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { format } from "date-fns";
 
+import { CycleInsightsPanel } from "@/components/cycle/CycleInsightsPanel";
+import { CycleLogDialog } from "@/components/cycle/CycleLogDialog";
+import { RecentEntries } from "@/components/cycle/RecentEntries";
 import { TopNavbar } from "@/components/layout/TopNavbar";
 import { SectionHeading } from "@/components/ui/SectionHeading";
-import { useAuth } from "@/context/AuthContext";
 import { buildDashboardSummary } from "@/features/dashboard/dashboard.utils";
-import { useCycleLogger } from "@/hooks/useCycleLogger";
+import { useCyclePageState } from "@/hooks/useCyclePageState";
 import { usePartnerPortalData } from "@/hooks/usePartnerPortalData";
 import type { DashboardCycleLog } from "@/types/dashboard";
 
-import { CheckInCard } from "./CheckInCard";
 import { InsightCard } from "./InsightCard";
 import { PartnerCard } from "./PartnerCard";
 import { QuickExploreLinks } from "./QuickExploreLinks";
@@ -21,28 +21,32 @@ import { YourStateCard } from "./YourStateCard";
 
 export default function Dashboard() {
   const router = useRouter();
-  const { user, loading: authLoading } = useAuth();
   const {
-    cycles,
-    fetchCycles,
-    loading: cycleLoading,
-    error: cycleError,
+    apiLoading,
+    authLoading,
     clearError,
-  } = useCycleLogger();
+    closeLogForm,
+    cycleError,
+    cycleLoading,
+    cycles,
+    formError,
+    formState,
+    handleLogCycle,
+    healthInsights,
+    logging,
+    nutritionSuggestion,
+    openLogForm,
+    saveSuccess,
+    selectedData,
+    selectedDate,
+    selectCycleDate,
+    showLogForm,
+    toggleSymptom,
+    updateFormState,
+    user,
+  } = useCyclePageState();
   const { ownerLink, ownSharingSummary, invitePartner } =
     usePartnerPortalData();
-
-  useEffect(() => {
-    if (user && !authLoading) {
-      void fetchCycles();
-    }
-  }, [user, authLoading, fetchCycles]);
-
-  useEffect(() => {
-    if (!authLoading && !user) {
-      router.replace("/auth/login");
-    }
-  }, [authLoading, user, router]);
 
   if (authLoading || cycleLoading) {
     return (
@@ -89,6 +93,15 @@ export default function Dashboard() {
           />
         </section>
 
+        {saveSuccess && (
+          <div
+            role="status"
+            className="rounded-2xl border border-success/20 bg-success/10 px-4 py-3 text-sm font-semibold text-success"
+          >
+            Saved to your private space
+          </div>
+        )}
+
         {cycleError && (
           <div
             role="alert"
@@ -105,12 +118,19 @@ export default function Dashboard() {
           </div>
         )}
 
-        <section className="grid gap-6 lg:grid-cols-2">
-          <YourStateCard todaysLog={dashboardSummary.todaysLog} />
-          <CheckInCard
-            todaysLog={dashboardSummary.todaysLog}
-            onCheckIn={() => router.push("/cycle")}
-          />
+        {/* "Your State Today" and Recent Entries are connected — the same
+            check-in feeds both, and picking a past entry here re-opens it
+            for editing via the same dialog. */}
+        <section className="space-y-6">
+          <YourStateCard todaysLog={dashboardSummary.todaysLog} onCheckIn={openLogForm} />
+          <RecentEntries cycles={cycles} onSelectCycle={selectCycleDate} onLog={openLogForm} />
+          {selectedData && (
+            <CycleInsightsPanel
+              apiLoading={apiLoading}
+              healthInsights={healthInsights}
+              nutritionSuggestion={nutritionSuggestion}
+            />
+          )}
         </section>
 
         <section id="insights" className="grid gap-6">
@@ -129,6 +149,19 @@ export default function Dashboard() {
           <QuickExploreLinks />
         </section>
       </main>
+
+      {showLogForm && (
+        <CycleLogDialog
+          error={formError}
+          formState={formState}
+          logging={logging}
+          selectedDate={selectedDate}
+          onCancel={closeLogForm}
+          onSave={handleLogCycle}
+          onToggleSymptom={toggleSymptom}
+          onUpdate={updateFormState}
+        />
+      )}
     </div>
   );
 }

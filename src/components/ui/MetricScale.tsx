@@ -8,7 +8,7 @@ interface MetricScaleProps {
   max?: number;
   /** Small caption under/right of the label, e.g. "How you feel right now". */
   caption?: string;
-  tone?: "rose" | "sage" | "amber";
+  tone?: "rose" | "sage" | "amber" | "blue" | "purple";
   className?: string;
 }
 
@@ -16,6 +16,8 @@ const TONE_CLASSES: Record<NonNullable<MetricScaleProps["tone"]>, string> = {
   rose: "bg-[color:var(--accent-rose)]",
   sage: "bg-[color:var(--accent-sage)]",
   amber: "bg-[color:var(--accent-amber)]",
+  blue: "bg-[color:var(--accent-blue)]",
+  purple: "bg-[color:var(--accent-purple)]",
 };
 
 /**

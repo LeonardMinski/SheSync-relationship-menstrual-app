@@ -1,13 +1,8 @@
 import { format } from "date-fns";
-import { Calendar } from "lucide-react";
+import { Calendar, Plus } from "lucide-react";
 
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/Card";
+import { Button } from "@/components/ui/Button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/Card";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { MetricScale } from "@/components/ui/MetricScale";
 import type { CycleEntry } from "@/types";
@@ -17,16 +12,20 @@ import { PhaseIcon } from "./PhaseIcon";
 interface RecentEntriesProps {
   cycles: CycleEntry[];
   onSelectCycle: (cycle: CycleEntry) => void;
+  onLog: () => void;
 }
 
-export function RecentEntries({ cycles, onSelectCycle }: RecentEntriesProps) {
+export function RecentEntries({ cycles, onSelectCycle, onLog }: RecentEntriesProps) {
   const recent = getRecentCycleEntries(cycles);
 
   return (
     <Card>
-      <CardHeader>
+      <CardHeader className="flex-row items-center justify-between space-y-0">
         <CardTitle as="h2">Recent Entries</CardTitle>
-        <CardDescription>Your last {recent.length || 5} cycle entries</CardDescription>
+        <Button variant="secondary" size="sm" onClick={onLog}>
+          <Plus className="h-4 w-4" aria-hidden="true" />
+          Log Today
+        </Button>
       </CardHeader>
       <CardContent>
         {recent.length === 0 ? (
@@ -58,9 +57,12 @@ export function RecentEntries({ cycles, onSelectCycle }: RecentEntriesProps) {
                   </div>
                 </div>
 
-                <div className="grid gap-3 sm:grid-cols-2">
+                <div className="grid gap-3 grid-cols-2 sm:grid-cols-3">
                   <MetricScale label="Mood" value={cycle.mood} max={10} tone="rose" />
                   <MetricScale label="Energy" value={cycle.energy} max={10} tone="amber" />
+                  <MetricScale label="Sleep" value={cycle.sleep} max={10} tone="sage" />
+                  <MetricScale label="Libido" value={cycle.libido} max={10} tone="purple" />
+                  <MetricScale label="Stress" value={cycle.stress} max={10} tone="blue" />
                 </div>
 
                 {cycle.symptoms.length > 0 && (
@@ -74,6 +76,10 @@ export function RecentEntries({ cycles, onSelectCycle }: RecentEntriesProps) {
                       </span>
                     ))}
                   </div>
+                )}
+
+                {cycle.notes && (
+                  <p className="line-clamp-2 text-sm text-muted-foreground">{cycle.notes}</p>
                 )}
               </button>
             ))}

@@ -3,44 +3,16 @@
 import { useState } from "react";
 import { format } from "date-fns";
 
-import { CycleEmptyState } from "@/components/cycle/CycleEmptyState";
-import { CycleInsightsPanel } from "@/components/cycle/CycleInsightsPanel";
-import { CycleIntro } from "@/components/cycle/CycleIntro";
-import { CycleLogDialog } from "@/components/cycle/CycleLogDialog";
-import { CycleSummaryCards } from "@/components/cycle/CycleSummaryCards";
 import { TopNavbar } from "@/components/layout/TopNavbar";
 import { ActivePeriodView } from "@/components/period/ActivePeriodView";
 import { LogPeriodDayDialog } from "@/components/period/LogPeriodDayDialog";
 import { NoActivePeriodView } from "@/components/period/NoActivePeriodView";
 import { PeriodHistorySection } from "@/components/period/PeriodHistorySection";
-import { useCyclePageState } from "@/hooks/useCyclePageState";
+import { useAuth } from "@/context/AuthContext";
 import { usePeriodPageState } from "@/hooks/usePeriodPageState";
 
 export default function CyclePage() {
-  const {
-    apiLoading,
-    authLoading,
-    clearError,
-    closeLogForm,
-    cycleError,
-    cycleLoading,
-    cycles,
-    formError,
-    formState,
-    handleLogCycle,
-    healthInsights,
-    logging,
-    nutritionSuggestion,
-    openLogForm,
-    saveSuccess,
-    selectedData,
-    selectedDate,
-    selectCycleDate,
-    showLogForm,
-    toggleSymptom,
-    updateFormState,
-    user,
-  } = useCyclePageState();
+  const { user, loading: authLoading } = useAuth();
 
   const {
     loading: periodLoading,
@@ -61,7 +33,7 @@ export default function CyclePage() {
 
   const [showPeriodLogDialog, setShowPeriodLogDialog] = useState(false);
 
-  if (authLoading || cycleLoading) {
+  if (authLoading) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-bg">
         <div
@@ -78,10 +50,7 @@ export default function CyclePage() {
 
   return (
     <div className="min-h-screen bg-bg pb-10">
-      <TopNavbar
-        title={selectedData ? `${selectedData.phase} phase` : "Cycle log"}
-        subtitle={format(selectedDate, "EEEE, MMMM d")}
-      />
+      <TopNavbar title="Cycle" subtitle={format(new Date(), "EEEE, MMMM d")} />
 
       <main className="mx-auto w-full max-w-5xl space-y-10 px-4 py-6 sm:px-6 lg:px-10">
         {/* --- Period tracking (public.periods / public.period_day_logs) --- */}
@@ -139,61 +108,7 @@ export default function CyclePage() {
 
           {!periodLoading && <PeriodHistorySection history={history} />}
         </section>
-
-        <div className="border-t border-border" />
-
-        {/* --- Existing daily wellbeing log (public.cycle_data) — unchanged --- */}
-        <section className="space-y-6">
-          <h2 className="text-lg font-bold text-foreground">Daily Wellbeing Log</h2>
-
-          <CycleIntro hasEntry={Boolean(selectedData)} onLog={openLogForm} />
-
-          {saveSuccess && (
-            <div
-              role="status"
-              className="rounded-2xl border border-success/20 bg-success/10 px-4 py-3 text-sm font-semibold text-success"
-            >
-              Saved to your private space
-            </div>
-          )}
-
-          {cycleError && (
-            <div className="rounded-2xl border border-error/20 bg-error/10 px-4 py-3 text-sm text-error">
-              {cycleError}
-              <button
-                type="button"
-                onClick={clearError}
-                className="ml-2 underline"
-              >
-                Dismiss
-              </button>
-            </div>
-          )}
-
-          {cycles.length === 0 && <CycleEmptyState onLog={openLogForm} />}
-
-          <CycleSummaryCards
-            cycles={cycles}
-            selectedData={selectedData}
-            selectedDate={selectedDate}
-            onLog={openLogForm}
-            onSelectCycle={selectCycleDate}
-          />
-        </section>
       </main>
-
-      {showLogForm && (
-        <CycleLogDialog
-          error={formError}
-          formState={formState}
-          logging={logging}
-          selectedDate={selectedDate}
-          onCancel={closeLogForm}
-          onSave={handleLogCycle}
-          onToggleSymptom={toggleSymptom}
-          onUpdate={updateFormState}
-        />
-      )}
 
       {showPeriodLogDialog && (
         <LogPeriodDayDialog
@@ -208,14 +123,6 @@ export default function CyclePage() {
               setShowPeriodLogDialog(false);
             }
           }}
-        />
-      )}
-
-      {selectedData && (
-        <CycleInsightsPanel
-          apiLoading={apiLoading}
-          healthInsights={healthInsights}
-          nutritionSuggestion={nutritionSuggestion}
         />
       )}
     </div>
