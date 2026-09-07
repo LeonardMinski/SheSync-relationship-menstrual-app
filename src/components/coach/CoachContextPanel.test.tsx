@@ -4,29 +4,51 @@ import { describe, expect, it, vi } from "vitest";
 import { CoachContextPanel } from "./CoachContextPanel";
 import { DEFAULT_COACH_CONTEXT_SELECTION } from "@/types/coach";
 
-describe("CoachContextPanel — user controls enabled sources", () => {
+describe("CoachContextPanel — user controls enabled sources (staged, explicit save)", () => {
   it("renders a labelled toggle for each real source with its current state", () => {
-    render(<CoachContextPanel selection={DEFAULT_COACH_CONTEXT_SELECTION} onChange={vi.fn()} onClose={vi.fn()} />);
+    render(<CoachContextPanel selection={DEFAULT_COACH_CONTEXT_SELECTION} onSave={vi.fn()} onClose={vi.fn()} />);
 
     expect(screen.getByLabelText("Daily check-ins")).toBeChecked();
     expect(screen.getByLabelText("Cycle context")).toBeChecked();
     expect(screen.getByLabelText("Period history")).toBeChecked();
   });
 
-  it("calls onChange with the toggled source flipped when a toggle is clicked", () => {
-    const onChange = vi.fn();
-    render(<CoachContextPanel selection={DEFAULT_COACH_CONTEXT_SELECTION} onChange={onChange} onClose={vi.fn()} />);
+  it("toggling a source does not call onSave until Save Changes is clicked", () => {
+    const onSave = vi.fn();
+    render(<CoachContextPanel selection={DEFAULT_COACH_CONTEXT_SELECTION} onSave={onSave} onClose={vi.fn()} />);
 
     fireEvent.click(screen.getByLabelText("Daily check-ins"));
 
-    expect(onChange).toHaveBeenCalledWith({ ...DEFAULT_COACH_CONTEXT_SELECTION, dailyCheckIns: false });
+    expect(onSave).not.toHaveBeenCalled();
+  });
+
+  it("Save Changes commits the full draft selection and closes the panel", () => {
+    const onSave = vi.fn();
+    const onClose = vi.fn();
+    render(<CoachContextPanel selection={DEFAULT_COACH_CONTEXT_SELECTION} onSave={onSave} onClose={onClose} />);
+
+    fireEvent.click(screen.getByLabelText("Daily check-ins"));
+    fireEvent.click(screen.getByText("Save Changes"));
+
+    expect(onSave).toHaveBeenCalledWith({ ...DEFAULT_COACH_CONTEXT_SELECTION, dailyCheckIns: false });
+    expect(onClose).toHaveBeenCalledTimes(1);
+  });
+
+  it("closing without saving discards the draft — onSave is never called", () => {
+    const onSave = vi.fn();
+    render(<CoachContextPanel selection={DEFAULT_COACH_CONTEXT_SELECTION} onSave={onSave} onClose={vi.fn()} />);
+
+    fireEvent.click(screen.getByLabelText("Daily check-ins"));
+    fireEvent.keyDown(document, { key: "Escape" });
+
+    expect(onSave).not.toHaveBeenCalled();
   });
 
   it("Recent Observations is always disabled and unchecked — no Pattern Engine exists yet", () => {
     render(
       <CoachContextPanel
         selection={{ ...DEFAULT_COACH_CONTEXT_SELECTION, recentObservations: true }}
-        onChange={vi.fn()}
+        onSave={vi.fn()}
         onClose={vi.fn()}
       />,
     );
@@ -37,17 +59,18 @@ describe("CoachContextPanel — user controls enabled sources", () => {
     expect(screen.getByText(/not available yet/i)).toBeInTheDocument();
   });
 
-  it("clicking the disabled Recent Observations toggle never calls onChange", () => {
-    const onChange = vi.fn();
-    render(<CoachContextPanel selection={DEFAULT_COACH_CONTEXT_SELECTION} onChange={onChange} onClose={vi.fn()} />);
+  it("clicking the disabled Recent Observations toggle never affects the draft", () => {
+    const onSave = vi.fn();
+    render(<CoachContextPanel selection={DEFAULT_COACH_CONTEXT_SELECTION} onSave={onSave} onClose={vi.fn()} />);
 
     fireEvent.click(screen.getByLabelText("Recent observations"));
+    fireEvent.click(screen.getByText("Save Changes"));
 
-    expect(onChange).not.toHaveBeenCalled();
+    expect(onSave).toHaveBeenCalledWith(DEFAULT_COACH_CONTEXT_SELECTION);
   });
 
   it("lists Vault, partner messages, and private relationship reflections as not accessible", () => {
-    render(<CoachContextPanel selection={DEFAULT_COACH_CONTEXT_SELECTION} onChange={vi.fn()} onClose={vi.fn()} />);
+    render(<CoachContextPanel selection={DEFAULT_COACH_CONTEXT_SELECTION} onSave={vi.fn()} onClose={vi.fn()} />);
 
     expect(screen.getByText("Vault entries")).toBeInTheDocument();
     expect(screen.getByText("Partner messages and replies")).toBeInTheDocument();
@@ -58,7 +81,7 @@ describe("CoachContextPanel — user controls enabled sources", () => {
   });
 
   it("does not claim end-to-end encryption or any unverified security guarantee", () => {
-    render(<CoachContextPanel selection={DEFAULT_COACH_CONTEXT_SELECTION} onChange={vi.fn()} onClose={vi.fn()} />);
+    render(<CoachContextPanel selection={DEFAULT_COACH_CONTEXT_SELECTION} onSave={vi.fn()} onClose={vi.fn()} />);
 
     const text = document.body.textContent ?? "";
     expect(text).not.toMatch(/end-to-end encrypted/i);
@@ -68,7 +91,7 @@ describe("CoachContextPanel — user controls enabled sources", () => {
 
   it("closes via Escape (Modal's built-in focus/keyboard handling)", () => {
     const onClose = vi.fn();
-    render(<CoachContextPanel selection={DEFAULT_COACH_CONTEXT_SELECTION} onChange={vi.fn()} onClose={onClose} />);
+    render(<CoachContextPanel selection={DEFAULT_COACH_CONTEXT_SELECTION} onSave={vi.fn()} onClose={onClose} />);
 
     fireEvent.keyDown(document, { key: "Escape" });
 

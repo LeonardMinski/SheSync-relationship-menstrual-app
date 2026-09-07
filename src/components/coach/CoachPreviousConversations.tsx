@@ -10,7 +10,8 @@ import type { CoachConversationSummary } from "@/types/coach";
 /**
  * Real conversation titles/previews only — no hardcoded example history.
  * An empty list is simply empty; nothing here is ever fabricated to look
- * populated.
+ * populated. Rendered inside a titled Modal drawer (see CoachView), so
+ * this component owns only the "New" action and the list itself.
  */
 export function CoachPreviousConversations({
   conversations,
@@ -30,14 +31,11 @@ export function CoachPreviousConversations({
   const [confirmingId, setConfirmingId] = useState<string | null>(null);
 
   return (
-    <div className="rounded-[1.5rem] border border-border bg-bg-surface p-4">
-      <div className="flex items-center justify-between gap-2">
-        <h2 className="text-sm font-bold uppercase tracking-wide text-muted-foreground">Previous Conversations</h2>
-        <Button variant="secondary" size="sm" onClick={onNew}>
-          <Plus className="h-4 w-4" aria-hidden="true" />
-          New
-        </Button>
-      </div>
+    <div>
+      <Button variant="secondary" size="sm" onClick={onNew}>
+        <Plus className="h-4 w-4" aria-hidden="true" />
+        New
+      </Button>
 
       <div className="mt-3 space-y-2">
         {loading ? (

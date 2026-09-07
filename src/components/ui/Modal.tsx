@@ -14,6 +14,8 @@ interface ModalProps {
   /** Defaults to the standard card border/background/shadow — override for a
    *  different look (e.g. a lighter shadow against a white overlay). */
   contentClassName?: string;
+  /** "center" (default) is a centered dialog; "right" is a full-height drawer anchored to the right edge — same focus trap/Escape/return-focus behaviour either way. */
+  placement?: "center" | "right";
 }
 
 const FOCUSABLE_SELECTOR =
@@ -27,6 +29,7 @@ export function Modal({
   maxWidthClassName = "max-w-md",
   overlayClassName = "bg-black/80",
   contentClassName = "border border-border-subtle bg-bg-surface shadow-2xl shadow-black/60",
+  placement = "center",
 }: ModalProps) {
   const titleId = useId();
   const containerRef = useRef<HTMLDivElement>(null);
@@ -75,9 +78,11 @@ export function Modal({
     };
   }, [onClose]);
 
+  const isRight = placement === "right";
+
   return (
     <div
-      className={`fixed inset-0 z-50 flex items-center justify-center p-4 backdrop-blur ${overlayClassName}`}
+      className={`fixed inset-0 z-50 flex p-4 backdrop-blur ${isRight ? "items-stretch justify-end p-0 sm:p-4" : "items-center justify-center"} ${overlayClassName}`}
       onMouseDown={(event) => {
         if (event.target === event.currentTarget) onClose();
       }}
@@ -88,7 +93,11 @@ export function Modal({
         aria-modal="true"
         aria-labelledby={titleId}
         aria-describedby={describedBy}
-        className={`max-h-[90vh] w-full ${maxWidthClassName} overflow-y-auto rounded-[2rem] p-6 ${contentClassName}`}
+        className={
+          isRight
+            ? `h-full w-full ${maxWidthClassName} overflow-y-auto rounded-none p-6 sm:rounded-l-[2rem] ${contentClassName}`
+            : `max-h-[90vh] w-full ${maxWidthClassName} overflow-y-auto rounded-[2rem] p-6 ${contentClassName}`
+        }
       >
         <h2 id={titleId} className="mb-4 text-xl font-bold text-foreground">
           {title}

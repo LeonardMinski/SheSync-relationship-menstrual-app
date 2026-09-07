@@ -1,34 +1,44 @@
+import { useState } from "react";
 import { Check, X } from "lucide-react";
 
+import { Button } from "@/components/ui/Button";
 import { Modal } from "@/components/ui/Modal";
 import { Toggle } from "@/components/ui/Toggle";
 import {
   COACH_CONTEXT_NOT_ACCESSIBLE,
   COACH_CONTEXT_SOURCES,
+  COACH_MANAGE_CONTEXT_SAVE_LABEL,
   COACH_PRIVACY_EXPLANATION,
   COACH_RECENT_OBSERVATIONS_UNAVAILABLE_TEXT,
 } from "./coach.constants";
 import type { CoachContextSelection } from "@/types/coach";
 
 /**
- * "Manage Context" — the user's explicit control over which permitted
- * sources Coach may reference, plus an honest list of what it can never
- * see. Recent Observations is always shown disabled: there is no real
- * Pattern Engine yet, so it is never toggleable and never silently
- * enabled — see features/coach/context.ts, which enforces this
- * server-side too, independent of whatever this panel shows.
+ * "Manage Context" — a right-side drawer, staged: toggles only affect a
+ * local draft until "Save Changes" commits it (and closes the drawer).
+ * Recent Observations is always shown disabled: there is no real Pattern
+ * Engine yet, so it is never toggleable and never silently enabled — see
+ * features/coach/context.ts, which enforces this server-side too,
+ * independent of whatever this panel shows.
  */
 export function CoachContextPanel({
   selection,
-  onChange,
+  onSave,
   onClose,
 }: {
   selection: CoachContextSelection;
-  onChange: (next: CoachContextSelection) => void;
+  onSave: (next: CoachContextSelection) => void;
   onClose: () => void;
 }) {
+  const [draft, setDraft] = useState<CoachContextSelection>(selection);
+
+  function handleSave() {
+    onSave(draft);
+    onClose();
+  }
+
   return (
-    <Modal title="Manage Context" onClose={onClose} maxWidthClassName="max-w-lg">
+    <Modal title="Coach Context" onClose={onClose} maxWidthClassName="max-w-md" placement="right">
       <div className="space-y-6">
         <p className="text-sm leading-6 text-muted-foreground">{COACH_PRIVACY_EXPLANATION}</p>
 
@@ -48,9 +58,9 @@ export function CoachContextPanel({
                 </div>
                 <Toggle
                   id={toggleId}
-                  checked={isAvailable && selection[source.key]}
+                  checked={isAvailable && draft[source.key]}
                   disabled={!isAvailable}
-                  onChange={(checked) => onChange({ ...selection, [source.key]: checked })}
+                  onChange={(checked) => setDraft((current) => ({ ...current, [source.key]: checked }))}
                 />
               </div>
             );
@@ -78,6 +88,10 @@ export function CoachContextPanel({
             Turn any source above off at any time — future messages in this conversation won&apos;t include it.
           </p>
         </div>
+
+        <Button variant="cta" className="w-full" onClick={handleSave}>
+          {COACH_MANAGE_CONTEXT_SAVE_LABEL}
+        </Button>
       </div>
     </Modal>
   );

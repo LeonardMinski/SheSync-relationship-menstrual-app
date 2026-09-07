@@ -6,13 +6,24 @@
  * description, not this comment, for the full list that was removed.
  */
 
+export const COACH_AI_ACTIVE_PILL_TEXT = "AI Coach Active";
+
 export const COACH_HEADER_SUBTITLE =
   "A private space to understand what you're noticing, talk something through, or prepare something to share.";
 
 export const COACH_EMPTY_STATE_PROMPT = "What would you like to talk through?";
 
+export const COACH_EMPTY_STATE_SUBDESCRIPTION =
+  "I'm your private guide — here to help you understand what you're noticing and find ways to express it, using only the context you allow.";
+
+export const COACH_STARTERS_EYEBROW = "Conversation starters";
+
 export const COACH_COMPOSER_PLACEHOLDER =
   "Ask Coach anything about how you're feeling, something you've noticed, or something you'd like help expressing...";
+
+export const COACH_COMPOSER_FOLLOW_UP_PLACEHOLDER = "Ask a follow up question...";
+
+export const COACH_COMPOSER_THINKING_PLACEHOLDER = "Coach is thinking...";
 
 export const COACH_PRIVACY_CHIP_TEXT = "Private to you · Not shared with your partner";
 
@@ -23,6 +34,11 @@ export const COACH_THINKING_TEXT = "Coach is thinking through your question and 
 
 export const COACH_ERROR_TITLE = "Coach couldn't generate a response.";
 export const COACH_ERROR_BODY = "This may be temporary. You can try again.";
+export const COACH_DRAFT_SAVED_TEXT = "Your current draft was saved";
+
+export const COACH_CONTEXT_STRIP_MANAGE_LABEL = "Manage context";
+export const COACH_CONTEXT_STRIP_EMPTY_TEXT = "No context sources enabled";
+export const COACH_MANAGE_CONTEXT_SAVE_LABEL = "Save Changes";
 
 export type CoachTileTone = "sage" | "rose" | "amber" | "muted";
 
@@ -97,14 +113,14 @@ export const COACH_CONTEXT_SOURCES: CoachContextSourceCopy[] = [
     description: "Known cycle state and current period context",
   },
   {
-    key: "periodHistory",
-    label: "Period history",
-    description: "Past period dates and recorded period information",
-  },
-  {
     key: "recentObservations",
     label: "Recent observations",
     description: "Patterns calculated from your logged history",
+  },
+  {
+    key: "periodHistory",
+    label: "Period history",
+    description: "Past period dates and recorded period information",
   },
 ];
 

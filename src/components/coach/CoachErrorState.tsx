@@ -1,9 +1,14 @@
 import { AlertCircle } from "lucide-react";
 
 import { Button } from "@/components/ui/Button";
-import { COACH_ERROR_BODY, COACH_ERROR_TITLE } from "./coach.constants";
+import { COACH_DRAFT_SAVED_TEXT, COACH_ERROR_BODY, COACH_ERROR_TITLE } from "./coach.constants";
 
-/** Safe, generic copy only — never the raw provider/API error (see the route's error mapping). The failed question is preserved by the caller for Retry, not retyped here. */
+/**
+ * Safe, generic copy only — never the raw provider/API error (see the
+ * route's error mapping). The failed question is preserved by the caller
+ * for Retry (useCoachWorkspace's pendingContent), never lost or requiring
+ * retyping — the draft-saved note here just makes that fact visible.
+ */
 export function CoachErrorState({ onRetry }: { onRetry: () => void }) {
   return (
     <div
@@ -17,9 +22,12 @@ export function CoachErrorState({ onRetry }: { onRetry: () => void }) {
           <p className="mt-1 text-error/90">{COACH_ERROR_BODY}</p>
         </div>
       </div>
-      <Button variant="outline" size="sm" onClick={onRetry} className="shrink-0 self-start sm:self-auto">
-        Retry
-      </Button>
+      <div className="flex shrink-0 items-center gap-3 self-start sm:self-auto">
+        <Button variant="outline" size="sm" onClick={onRetry}>
+          Retry
+        </Button>
+        <span className="text-xs text-error/80">{COACH_DRAFT_SAVED_TEXT}</span>
+      </div>
     </div>
   );
 }

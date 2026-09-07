@@ -14,10 +14,12 @@ export function CoachComposer({
   onSend,
   disabled,
   autoFocus,
+  placeholder = COACH_COMPOSER_PLACEHOLDER,
 }: {
   onSend: (content: string) => void;
   disabled: boolean;
   autoFocus?: boolean;
+  placeholder?: string;
 }) {
   const [value, setValue] = useState("");
 
@@ -45,7 +47,7 @@ export function CoachComposer({
         value={value}
         onChange={(event) => setValue(event.target.value)}
         onKeyDown={handleKeyDown}
-        placeholder={COACH_COMPOSER_PLACEHOLDER}
+        placeholder={placeholder}
         rows={2}
         disabled={disabled}
         autoFocus={autoFocus}

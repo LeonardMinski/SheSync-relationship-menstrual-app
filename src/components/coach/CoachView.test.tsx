@@ -54,12 +54,20 @@ describe("CoachView — first visit / empty conversation", () => {
     expect(screen.queryByText(/^continue$/i)).not.toBeInTheDocument();
   });
 
-  it("shows the private-to-you privacy chip", () => {
+  it("shows both the AI-active pill and the private-to-you privacy chip", () => {
     mockWorkspace();
     render(<CoachView />);
 
+    expect(screen.getByText("AI Coach Active")).toBeInTheDocument();
     expect(screen.getByText(/private to you/i)).toBeInTheDocument();
     expect(screen.getByText(/not shared with your partner/i)).toBeInTheDocument();
+  });
+
+  it("shows the context strip with a Manage context entry point above the composer", () => {
+    mockWorkspace();
+    render(<CoachView />);
+
+    expect(screen.getByText("Manage context")).toBeInTheDocument();
   });
 
   it("clicking a starter card sends its associated prompt", () => {
@@ -131,6 +139,41 @@ describe("CoachView — active conversation", () => {
     fireEvent.click(screen.getByText(/turn this into partner context/i));
 
     expect(pushMock).toHaveBeenCalledWith(expect.stringContaining("/connect/translate?insight="));
+  });
+
+  it("shows a distinct 'thinking' composer placeholder while sending", () => {
+    mockWorkspace({ activeConversationId: "c1", messages: [USER_MSG], sending: true });
+    render(<CoachView />);
+
+    expect(screen.getByPlaceholderText("Coach is thinking...")).toBeInTheDocument();
+  });
+});
+
+describe("CoachView — Previous Conversations panel", () => {
+  it("opens the history panel and reopens a real conversation from it", () => {
+    const openConversation = vi.fn();
+    mockWorkspace({
+      conversations: [
+        { id: "c1", title: "Earlier chat", createdAt: "2026-09-01T00:00:00.000Z", updatedAt: "2026-09-01T00:00:00.000Z", preview: null },
+      ],
+      openConversation,
+    });
+    render(<CoachView />);
+
+    fireEvent.click(screen.getByLabelText("Previous conversations"));
+    expect(screen.getByText("Earlier chat")).toBeInTheDocument();
+
+    fireEvent.click(screen.getByText("Earlier chat"));
+    expect(openConversation).toHaveBeenCalledWith("c1");
+  });
+
+  it("shows an honest empty list rather than fabricated example history", () => {
+    mockWorkspace({ conversations: [] });
+    render(<CoachView />);
+
+    fireEvent.click(screen.getByLabelText("Previous conversations"));
+
+    expect(screen.getByText("No conversations yet.")).toBeInTheDocument();
   });
 });
 

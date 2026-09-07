@@ -105,7 +105,13 @@ CREATE POLICY "Owner can delete own coach messages" ON public.coach_messages
 -- every write path already goes through the authenticated API route).
 -- ----------------------------------------------------------------------------
 
-REVOKE ALL ON public.coach_conversations FROM PUBLIC;
-REVOKE ALL ON public.coach_messages FROM PUBLIC;
+-- Explicit REVOKE FROM anon (not just PUBLIC): this project's schema
+-- appears to grant new public-schema tables to anon/authenticated by
+-- default (e.g. via ALTER DEFAULT PRIVILEGES), which REVOKE ... FROM
+-- PUBLIC alone does not undo. RLS already returns zero rows for anon
+-- either way (no row has owner_user_id = null), so this is defense in
+-- depth, not a fix for a live data exposure.
+REVOKE ALL ON public.coach_conversations FROM PUBLIC, anon;
+REVOKE ALL ON public.coach_messages FROM PUBLIC, anon;
 GRANT SELECT, INSERT, UPDATE, DELETE ON public.coach_conversations TO authenticated;
 GRANT SELECT, INSERT, DELETE ON public.coach_messages TO authenticated;
