@@ -93,9 +93,12 @@ export async function POST(request: NextRequest) {
 
     const startDate = parsed.data.startDate ?? todayDateKey();
 
+    // endDate present -> "Add past period": insert a completed historical
+    // period directly (end_date already set), so it never becomes active
+    // and never collides with the one-active-period constraint below.
     const { data, error } = await supabase
       .from("periods")
-      .insert({ user_id: user.id, start_date: startDate })
+      .insert({ user_id: user.id, start_date: startDate, end_date: parsed.data.endDate ?? null })
       .select()
       .single();
 
@@ -103,7 +106,7 @@ export async function POST(request: NextRequest) {
       return periodErrorResponse("start period", error);
     }
 
-    return createSuccessResponse(data, "Period started");
+    return createSuccessResponse(data, parsed.data.endDate ? "Past period added" : "Period started");
   } catch (error) {
     console.error("[periods] unexpected POST error", error);
     return createErrorResponse("Internal server error", 500);

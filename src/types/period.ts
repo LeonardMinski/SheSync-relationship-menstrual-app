@@ -64,6 +64,12 @@ export interface StartPeriodInput {
   startDate?: string;
 }
 
+/** Creates a completed historical period directly — never briefly "active". */
+export interface AddPastPeriodInput {
+  startDate: string;
+  endDate: string;
+}
+
 export interface EndPeriodInput {
   endDate?: string;
 }

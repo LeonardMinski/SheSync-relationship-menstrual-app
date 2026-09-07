@@ -18,11 +18,19 @@ const timeStringSchema = z
 // Client never supplies user_id — the server always derives it from the
 // authenticated session. Neither schema below has a user_id field.
 
+// endDate is only for the "Add past period" flow — a completed historical
+// period created directly with its end date already set, so it is never
+// briefly "active". Omitting it is the normal Start Period path.
 export const StartPeriodInputSchema = z
   .object({
     startDate: dateStringSchema.optional(),
+    endDate: dateStringSchema.optional(),
   })
   .strict()
+  .refine((data) => !data.endDate || !data.startDate || data.endDate >= data.startDate, {
+    message: 'End date cannot be before the start date',
+    path: ['endDate'],
+  })
 
 export const EndPeriodInputSchema = z
   .object({

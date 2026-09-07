@@ -1,5 +1,6 @@
 import { supabase } from "@/lib/supabase/client";
 import type {
+  AddPastPeriodInput,
   EndPeriodInput,
   Period,
   PeriodDayLog,
@@ -70,6 +71,16 @@ async function request<T>(
 
 export async function startPeriod(
   input: StartPeriodInput = {},
+): Promise<ApiResult<Period>> {
+  return request<Period>("/api/periods", {
+    method: "POST",
+    body: JSON.stringify(input),
+  });
+}
+
+/** Adds a completed historical period (start + end date). Never creates an active period. */
+export async function addPastPeriod(
+  input: AddPastPeriodInput,
 ): Promise<ApiResult<Period>> {
   return request<Period>("/api/periods", {
     method: "POST",

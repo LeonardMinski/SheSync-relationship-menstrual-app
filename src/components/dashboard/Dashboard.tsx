@@ -2,52 +2,33 @@
 
 import { format } from "date-fns";
 
-import { CycleInsightsPanel } from "@/components/cycle/CycleInsightsPanel";
-import { CycleLogDialog } from "@/components/cycle/CycleLogDialog";
-import { RecentEntries } from "@/components/cycle/RecentEntries";
+import { CurrentCycleContext } from "@/components/home/CurrentCycleContext";
+import { DailyCheckIn } from "@/components/home/DailyCheckIn";
 import { HomeGreeting } from "@/components/home/HomeGreeting";
 import { HomeObservationCard } from "@/components/home/HomeObservationCard";
 import { HomeRelationshipCard } from "@/components/home/HomeRelationshipCard";
 import { IncomingSharedContextCard } from "@/components/home/IncomingSharedContextCard";
-import { QuickCheckIn } from "@/components/home/QuickCheckIn";
+import { YourWeek } from "@/components/home/YourWeek";
 import { TopNavbar } from "@/components/layout/TopNavbar";
-import { buildDashboardSummary } from "@/features/dashboard/dashboard.utils";
+import { findCycleForDate, toCycleDateKey } from "@/features/cycle/cycle.utils";
 import { deriveHomeState, deriveObservation } from "@/features/home/homeState";
-import { useCyclePageState } from "@/hooks/useCyclePageState";
+import { useAuth } from "@/context/AuthContext";
+import { useCycleLogger } from "@/hooks/useCycleLogger";
 import { usePartnerPortalData } from "@/hooks/usePartnerPortalData";
 import { usePeriodPageState } from "@/hooks/usePeriodPageState";
-import type { DashboardCycleLog } from "@/types/dashboard";
 
 import { QuickExploreLinks } from "./QuickExploreLinks";
-import { YourStateCard } from "./YourStateCard";
 
 export default function Dashboard() {
-  const {
-    apiLoading,
-    authLoading,
-    clearError,
-    closeLogForm,
-    cycleError,
-    cycleLoading,
-    cycles,
-    formError,
-    formState,
-    handleLogCycle,
-    healthInsights,
-    logging,
-    nutritionSuggestion,
-    openLogForm,
-    saveSuccess,
-    selectedData,
-    selectedDate,
-    selectCycleDate,
-    showLogForm,
-    toggleSymptom,
-    updateFormState,
-    user,
-  } = useCyclePageState();
+  const { user, loading: authLoading } = useAuth();
+  const { cycles, loading: cycleLoading, error: cycleError, fetchCycles, clearError } = useCycleLogger();
   const { ownerLink, viewerLink, invitePartner } = usePartnerPortalData();
-  const { loading: periodLoading, activePeriod, history } = usePeriodPageState();
+  const {
+    loading: periodLoading,
+    activePeriod,
+    todayLog,
+    history,
+  } = usePeriodPageState();
 
   if (authLoading || cycleLoading) {
     return (
@@ -64,18 +45,14 @@ export default function Dashboard() {
     return null;
   }
 
-  const today = format(new Date(), "yyyy-MM-dd");
-  const dashboardCycles = cycles satisfies DashboardCycleLog[];
-  const dashboardSummary = buildDashboardSummary(dashboardCycles, today);
+  const today = new Date();
+  const todayKey = toCycleDateKey(today);
   const firstName = user.name?.split(" ")[0] || user.name || "there";
 
   const homeState = deriveHomeState({ activePeriod, periodHistory: history });
   const observation = deriveObservation(homeState);
+  const todaysEntry = findCycleForDate(cycles, today) ?? null;
 
-  // No phase-name pill outside an active period — there's no real phase
-  // detection model, and a "Day N" pill without period context would read
-  // as a predicted cycle day. See deriveObservation for the honest
-  // between_periods/new copy instead.
   const dayPillLabel =
     homeState.variant === "active_period" ? `Day ${homeState.periodDay} · Period active` : undefined;
 
@@ -90,19 +67,10 @@ export default function Dashboard() {
 
   return (
     <div className="min-h-screen bg-bg pb-10">
-      <TopNavbar title="Home" subtitle={format(new Date(), "EEEE, MMMM d")} />
+      <TopNavbar title="Home" subtitle={format(today, "EEEE, MMMM d")} />
 
       <main className="mx-auto w-full max-w-7xl space-y-7 px-4 py-6 sm:px-6 lg:px-10">
         <HomeGreeting firstName={firstName} subtitle={subtitle} dayPillLabel={dayPillLabel} />
-
-        {saveSuccess && (
-          <div
-            role="status"
-            className="rounded-2xl border border-success/20 bg-success/10 px-4 py-3 text-sm font-semibold text-success"
-          >
-            Saved to your private space
-          </div>
-        )}
 
         {cycleError && (
           <div
@@ -122,47 +90,38 @@ export default function Dashboard() {
 
         <div className="grid gap-6 lg:grid-cols-[1fr_320px]">
           <div className="space-y-6">
-            {!periodLoading && <QuickCheckIn onCheckIn={openLogForm} seed={homeState.loggedPeriodCount} />}
+            {/* 1. Today / current cycle context — read-only */}
+            {!periodLoading && <CurrentCycleContext homeState={homeState} todayLog={todayLog} />}
+
+            {/* 2. How's your day been? — lightweight daily check-in */}
+            <DailyCheckIn
+              date={todayKey}
+              hasActivePeriodToday={Boolean(activePeriod)}
+              todaysEntry={todaysEntry}
+              onSaved={() => void fetchCycles()}
+            />
+
+            {/* 3. What we're noticing — derived, evidence-gated observation */}
             <HomeObservationCard title={observation.title} body={observation.body} />
+
+            {/* 4. Your week — compact visual recent-days strip */}
+            <YourWeek cycles={cycles} activePeriod={activePeriod} periodHistory={history} />
           </div>
-          <HomeRelationshipCard ownerLink={ownerLink} onInvite={invitePartner} />
+
+          {/* 5. Relationship context / action */}
+          <div className="space-y-6">
+            <HomeRelationshipCard ownerLink={ownerLink} onInvite={invitePartner} />
+            {viewerLink?.status === "active" && (
+              <IncomingSharedContextCard
+                partnerId={viewerLink.owner_user_id}
+                partnerName={viewerLink.personName}
+              />
+            )}
+          </div>
         </div>
 
-        {viewerLink?.status === "active" && (
-          <IncomingSharedContextCard
-            partnerId={viewerLink.owner_user_id}
-            partnerName={viewerLink.personName}
-          />
-        )}
-
-        {/* Secondary content: full wellbeing history and detail, below the
-            primary Home experience — see Phase 10's priority ordering. */}
-        <section className="space-y-6">
-          <YourStateCard todaysLog={dashboardSummary.todaysLog} onCheckIn={openLogForm} />
-          <RecentEntries cycles={cycles} onSelectCycle={selectCycleDate} onLog={openLogForm} />
-          {selectedData && (
-            <CycleInsightsPanel
-              apiLoading={apiLoading}
-              healthInsights={healthInsights}
-              nutritionSuggestion={nutritionSuggestion}
-            />
-          )}
-          <QuickExploreLinks />
-        </section>
+        <QuickExploreLinks />
       </main>
-
-      {showLogForm && (
-        <CycleLogDialog
-          error={formError}
-          formState={formState}
-          logging={logging}
-          selectedDate={selectedDate}
-          onCancel={closeLogForm}
-          onSave={handleLogCycle}
-          onToggleSymptom={toggleSymptom}
-          onUpdate={updateFormState}
-        />
-      )}
     </div>
   );
 }

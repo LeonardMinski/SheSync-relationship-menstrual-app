@@ -134,7 +134,15 @@ interface FormState {
   notes: string;
 }
 
-function toFormState(existing?: PeriodDayLog | null): FormState {
+/**
+ * canonicalMood (today's cycle_data mood, when it exists) takes priority
+ * over this log's own historical mood value — see
+ * services/cycle/dailyMood.ts for why cycle_data is the canonical daily
+ * mood source. Falling back to the period log's own value when there is no
+ * canonical entry yet preserves old data exactly as logged; nothing here
+ * ever overwrites a stored value, this only decides what to show first.
+ */
+function toFormState(existing?: PeriodDayLog | null, canonicalMood?: number | null): FormState {
   const knownMedication = existing?.pain_relief_medication;
   const painReliefOption: FormState["painReliefOption"] = !existing?.pain_relief_used
     ? "None"
@@ -154,7 +162,7 @@ function toFormState(existing?: PeriodDayLog | null): FormState {
     nausea: existing?.nausea ?? "none",
     bowelChanges: existing?.bowel_changes ?? "normal",
     sleepQuality: existing?.sleep_quality ?? null,
-    mood: existing?.mood ?? 5,
+    mood: canonicalMood ?? existing?.mood ?? 5,
     painReliefOption,
     painReliefOtherText: painReliefOption === "Other" ? knownMedication ?? "" : "",
     painReliefTime: existing?.pain_relief_time ?? "",
@@ -166,6 +174,7 @@ function toFormState(existing?: PeriodDayLog | null): FormState {
 export function LogPeriodDayDialog({
   selectedDate,
   existingLog,
+  canonicalMood,
   saving,
   error,
   onCancel,
@@ -173,12 +182,14 @@ export function LogPeriodDayDialog({
 }: {
   selectedDate: Date;
   existingLog?: PeriodDayLog | null;
+  /** Today's canonical daily mood (from cycle_data), when it already exists. */
+  canonicalMood?: number | null;
   saving: boolean;
   error?: string | null;
   onCancel: () => void;
   onSave: (input: UpsertPeriodDayLogInput) => void;
 }) {
-  const [form, setForm] = useState<FormState>(() => toFormState(existingLog));
+  const [form, setForm] = useState<FormState>(() => toFormState(existingLog, canonicalMood));
   const isUpdate = Boolean(existingLog);
 
   function update(updates: Partial<FormState>) {

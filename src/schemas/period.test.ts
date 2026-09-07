@@ -44,6 +44,30 @@ describe("StartPeriodInputSchema / EndPeriodInputSchema", () => {
   });
 });
 
+describe("StartPeriodInputSchema — Add Past Period (startDate + endDate)", () => {
+  it("accepts a startDate/endDate pair for a completed historical period", () => {
+    const result = StartPeriodInputSchema.safeParse({ startDate: "2026-08-01", endDate: "2026-08-05" });
+    expect(result.success).toBe(true);
+  });
+
+  it("accepts endDate equal to startDate (a one-day period)", () => {
+    expect(
+      StartPeriodInputSchema.safeParse({ startDate: "2026-08-01", endDate: "2026-08-01" }).success,
+    ).toBe(true);
+  });
+
+  it("rejects an endDate before the startDate", () => {
+    const result = StartPeriodInputSchema.safeParse({ startDate: "2026-08-05", endDate: "2026-08-01" });
+    expect(result.success).toBe(false);
+  });
+
+  it("rejects a malformed endDate", () => {
+    expect(
+      StartPeriodInputSchema.safeParse({ startDate: "2026-08-01", endDate: "08/05/2026" }).success,
+    ).toBe(false);
+  });
+});
+
 describe("UpsertPeriodDayLogInputSchema enums", () => {
   it("accepts every valid bleeding level", () => {
     for (const level of ["spotting", "light", "medium", "heavy"]) {

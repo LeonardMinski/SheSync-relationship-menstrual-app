@@ -135,6 +135,63 @@ describe("POST /api/periods (start period)", () => {
     expect(body.data.id).toBe("period-1");
   });
 
+  it("rejects an endDate before the startDate", async () => {
+    authenticateRequestMock.mockResolvedValue({
+      user: { id: "user-1", email: "a@example.com", name: "A" },
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      supabase: {} as any,
+    });
+
+    const response = await POST(
+      makePostRequest({ startDate: "2026-08-05", endDate: "2026-08-01" }),
+    );
+    expect(response.status).toBe(400);
+  });
+
+  it("adds a past period — end_date is set on the insert, so it is never briefly active", async () => {
+    const supabase = makePostSupabaseMock({
+      data: { id: "period-2", user_id: "user-1", start_date: "2026-08-01", end_date: "2026-08-05" },
+      error: null,
+    });
+    authenticateRequestMock.mockResolvedValue({
+      user: { id: "user-1", email: "a@example.com", name: "A" },
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      supabase: supabase as any,
+    });
+
+    const response = await POST(
+      makePostRequest({ startDate: "2026-08-01", endDate: "2026-08-05" }),
+    );
+    const body = await response.json();
+
+    expect(response.status).toBe(200);
+    expect(supabase.insert).toHaveBeenCalledWith({
+      user_id: "user-1",
+      start_date: "2026-08-01",
+      end_date: "2026-08-05",
+    });
+    expect(body.data.end_date).toBe("2026-08-05");
+    expect(body.message).toBe("Past period added");
+  });
+
+  it("does not set end_date on the normal Start Period path (no endDate supplied)", async () => {
+    const supabase = makePostSupabaseMock({
+      data: { id: "period-1", user_id: "user-1", start_date: "2026-09-05", end_date: null },
+      error: null,
+    });
+    authenticateRequestMock.mockResolvedValue({
+      user: { id: "user-1", email: "a@example.com", name: "A" },
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      supabase: supabase as any,
+    });
+
+    await POST(makePostRequest({}));
+
+    expect(supabase.insert).toHaveBeenCalledWith(
+      expect.objectContaining({ end_date: null }),
+    );
+  });
+
   it("translates a duplicate-active-period DB error into a safe 409, not a raw Postgres error", async () => {
     const supabase = makePostSupabaseMock({
       data: null,

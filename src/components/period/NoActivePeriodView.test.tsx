@@ -84,6 +84,44 @@ describe("NoActivePeriodView evidence-gated average cycle length", () => {
   });
 });
 
+describe("NoActivePeriodView primary/secondary actions", () => {
+  it("uses 'Start Period' as the primary CTA, not a generic logging label", () => {
+    render(<NoActivePeriodView history={[]} onStartPeriod={vi.fn()} starting={false} />);
+
+    expect(screen.getByText("Start Period")).toBeInTheDocument();
+    expect(screen.queryByText(/log today.?s state/i)).not.toBeInTheDocument();
+  });
+
+  it("never renders a 'No period this month' primary action", () => {
+    render(
+      <NoActivePeriodView history={[summary()]} onStartPeriod={vi.fn()} starting={false} />,
+    );
+
+    expect(screen.queryByText(/no period this month/i)).not.toBeInTheDocument();
+  });
+
+  it("hides 'Add Past Period' when no handler is supplied", () => {
+    render(<NoActivePeriodView history={[]} onStartPeriod={vi.fn()} starting={false} />);
+
+    expect(screen.queryByText("Add Past Period")).not.toBeInTheDocument();
+  });
+
+  it("shows 'Add Past Period' as a secondary action and invokes the handler on click", () => {
+    const onAddPastPeriod = vi.fn();
+    render(
+      <NoActivePeriodView
+        history={[]}
+        onStartPeriod={vi.fn()}
+        starting={false}
+        onAddPastPeriod={onAddPastPeriod}
+      />,
+    );
+
+    screen.getByText("Add Past Period").click();
+    expect(onAddPastPeriod).toHaveBeenCalledTimes(1);
+  });
+});
+
 describe("NoActivePeriodView empty state", () => {
   it("shows an honest empty state with zero period history", () => {
     render(

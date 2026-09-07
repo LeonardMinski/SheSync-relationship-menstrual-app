@@ -4,13 +4,16 @@ import { useCallback, useEffect, useState } from "react";
 
 import { useAuth } from "@/context/AuthContext";
 import {
+  addPastPeriod as addPastPeriodRequest,
   endPeriod as endPeriodRequest,
   getActivePeriod,
   getPeriodHistory,
   startPeriod as startPeriodRequest,
   upsertPeriodDayLog,
 } from "@/services/period";
+import { upsertDailyMood } from "@/services/cycle/dailyMood";
 import type {
+  AddPastPeriodInput,
   Period,
   PeriodDayLog,
   PeriodSummary,
@@ -125,18 +128,54 @@ export function usePeriodPageState() {
       setSuccessMessage(null);
 
       const result = await upsertPeriodDayLog(input);
+
+      if (!result.success) {
+        setSavingLog(false);
+        setActionError(result.error);
+        return false;
+      }
+
+      // Keep the canonical daily mood (cycle_data) in sync with the period
+      // log's mood field — see services/cycle/dailyMood.ts. This is a
+      // best-effort sync: the period day log itself is already saved
+      // successfully above, so a sync failure here is logged, not surfaced
+      // as if the whole save failed.
+      const moodSync = await upsertDailyMood({
+        date: result.data.date,
+        mood: input.mood,
+        hasActivePeriodToday: true,
+      });
+      if (!moodSync.success) {
+        console.error("[period-page-state] failed to sync canonical daily mood", moodSync.error);
+      }
+
       setSavingLog(false);
+      setSuccessMessage(isUpdate ? "Day updated" : "Day saved");
+      await loadAll();
+      return true;
+    },
+    [loadAll, todayLog],
+  );
+
+  const addPastPeriod = useCallback(
+    async (input: AddPastPeriodInput) => {
+      setStarting(true);
+      setActionError(null);
+      setSuccessMessage(null);
+
+      const result = await addPastPeriodRequest(input);
+      setStarting(false);
 
       if (!result.success) {
         setActionError(result.error);
         return false;
       }
 
-      setSuccessMessage(isUpdate ? "Day updated" : "Day saved");
+      setSuccessMessage("Past period added");
       await loadAll();
       return true;
     },
-    [loadAll, todayLog],
+    [loadAll],
   );
 
   const clearActionError = useCallback(() => setActionError(null), []);
@@ -158,6 +197,7 @@ export function usePeriodPageState() {
     startPeriod,
     endPeriod,
     saveDayLog,
+    addPastPeriod,
     clearActionError,
     clearSuccessMessage,
     refresh: loadAll,

@@ -157,7 +157,6 @@ export interface AppSettings {
 export * from "./auth";
 export * from "./app";
 export * from "./cycle";
-export * from "./dashboard";
 export * from "./navigation";
 export * from "./partner";
 export * from "./period";

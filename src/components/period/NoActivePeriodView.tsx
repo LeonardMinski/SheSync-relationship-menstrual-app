@@ -17,10 +17,13 @@ export function NoActivePeriodView({
   history,
   onStartPeriod,
   starting,
+  onAddPastPeriod,
 }: {
   history: PeriodSummary[];
   onStartPeriod: () => void;
   starting: boolean;
+  /** Omit to hide the secondary "Add past period" action. */
+  onAddPastPeriod?: () => void;
 }) {
   const lastPeriod = history[0] ?? null;
   const averageCycleLength = getAverageCycleLength(history);
@@ -36,14 +39,21 @@ export function NoActivePeriodView({
             Track your period whenever it starts.
           </p>
         </div>
-        <Button
-          variant="cta"
-          className="shadow-cta-rose"
-          onClick={onStartPeriod}
-          loading={starting}
-        >
-          Start Period
-        </Button>
+        <div className="flex flex-wrap items-center gap-3">
+          {onAddPastPeriod && (
+            <Button variant="secondary" onClick={onAddPastPeriod}>
+              Add Past Period
+            </Button>
+          )}
+          <Button
+            variant="cta"
+            className="shadow-cta-rose"
+            onClick={onStartPeriod}
+            loading={starting}
+          >
+            Start Period
+          </Button>
+        </div>
       </div>
 
       {history.length === 0 ? (
