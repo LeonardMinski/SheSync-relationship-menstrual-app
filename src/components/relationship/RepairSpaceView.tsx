@@ -127,6 +127,7 @@ export function RepairSpaceView({ partnerName }: { partnerName: string }) {
               {index + 1}. {prompt.text}
             </p>
             <textarea
+              aria-label={`Your answer to: ${prompt.text}`}
               value={drafts[prompt.key] ?? ""}
               onChange={(event) => setDrafts((current) => ({ ...current, [prompt.key]: event.target.value }))}
               onBlur={() => {

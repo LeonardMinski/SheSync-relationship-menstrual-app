@@ -102,7 +102,7 @@ export async function POST(request: NextRequest) {
           ? 404
           : 500
       console.error('[relationship-sessions] failed to start', error)
-      return createErrorResponse(error.message, status)
+      return createErrorResponse(status === 500 ? 'Failed to start session' : error.message, status)
     }
 
     const { data: sessionRow, error: fetchError } = await supabase

@@ -158,6 +158,7 @@ export function MutualRevealView({ partnerName }: { partnerName: string }) {
         </StatusPill>
         <p className="mt-3 font-display text-xl italic text-foreground">&quot;{prompt.text}&quot;</p>
         <textarea
+          aria-label={`Your answer to: ${prompt.text}`}
           value={draft}
           onChange={(event) => setDraft(event.target.value)}
           onBlur={() => draft.trim() && void answer(prompt.key, draft.trim())}

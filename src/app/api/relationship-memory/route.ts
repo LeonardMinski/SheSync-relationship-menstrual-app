@@ -80,7 +80,7 @@ export async function POST(request: NextRequest) {
           : error.message.includes('not found or not accessible')
             ? 403
             : 500
-      return createErrorResponse(error.message, status)
+      return createErrorResponse(status === 500 ? 'Failed to save relationship memory' : error.message, status)
     }
 
     const { data: row, error: fetchError } = await supabase

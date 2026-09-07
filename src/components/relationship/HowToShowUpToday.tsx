@@ -105,7 +105,11 @@ export function HowToShowUpToday({ ownerId, ownerName }: { ownerId: string; owne
           <div className="mt-5 flex flex-wrap items-center gap-3 border-t border-border pt-4">
             {!sent ? (
               <>
+                <label htmlFor="show-up-today-reply" className="sr-only">
+                  Reply to {ownerName}
+                </label>
                 <input
+                  id="show-up-today-reply"
                   type="text"
                   value={reply}
                   onChange={(event) => setReply(event.target.value)}

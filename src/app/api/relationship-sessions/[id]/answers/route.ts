@@ -37,7 +37,8 @@ export async function POST(
 
     if (error) {
       console.error('[relationship-sessions/:id/answers] failed to submit', error)
-      return createErrorResponse(error.message, statusForSessionRpcError(error.message))
+      const status = statusForSessionRpcError(error.message)
+      return createErrorResponse(status === 500 ? 'Failed to save answer' : error.message, status)
     }
 
     return createSuccessResponse(null, 'Answer saved')
