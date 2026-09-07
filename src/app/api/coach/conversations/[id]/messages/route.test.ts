@@ -1,14 +1,15 @@
 import { NextRequest } from "next/server";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-import { authenticateRequest } from "@/lib/api/authentication";
+import { authenticateRequest, requireTrackingEnabled } from "@/lib/api/authentication";
+import { createErrorResponse } from "@/lib/api/responses";
 import { buildCoachContext } from "@/features/coach/context";
 import { generateCoachReply } from "@/features/coach/openaiClient";
 import { DEFAULT_COACH_CONTEXT_SELECTION } from "@/types/coach";
 
 import { POST } from "./route";
 
-vi.mock("@/lib/api/authentication", () => ({ authenticateRequest: vi.fn() }));
+vi.mock("@/lib/api/authentication", () => ({ authenticateRequest: vi.fn(), requireTrackingEnabled: vi.fn(() => null) }));
 vi.mock("@/features/coach/context", () => ({ buildCoachContext: vi.fn() }));
 vi.mock("@/features/coach/openaiClient", () => ({ generateCoachReply: vi.fn() }));
 
@@ -251,5 +252,21 @@ describe("POST /api/coach/conversations/[id]/messages", () => {
 
     const historyArg = vi.mocked(generateCoachReply).mock.calls[0][0].history;
     expect(historyArg).toEqual([{ role: "user", content: "earlier turn" }]);
+  });
+
+  it("blocks a tracking-disabled (partner-only) account server-side — not just hidden navigation", async () => {
+    const { from } = makeSupabase({ conversation: { id: "c1", title: null } });
+    authenticateRequestMock.mockResolvedValue({
+      user: CALLER,
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      supabase: { from } as any,
+    });
+    vi.mocked(requireTrackingEnabled).mockReturnValueOnce(createErrorResponse("Blocked", 403));
+
+    const response = await POST(makeRequest("/x", { body: { content: "hi" } }), makeParams("c1"));
+
+    expect(response.status).toBe(403);
+    expect(from).not.toHaveBeenCalled();
+    expect(generateCoachReply).not.toHaveBeenCalled();
   });
 });

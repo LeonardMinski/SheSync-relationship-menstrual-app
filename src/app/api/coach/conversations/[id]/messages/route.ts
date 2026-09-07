@@ -1,5 +1,5 @@
 import { NextRequest } from "next/server";
-import { authenticateRequest } from "@/lib/api/authentication";
+import { authenticateRequest, requireTrackingEnabled } from "@/lib/api/authentication";
 import { createErrorResponse, createSuccessResponse } from "@/lib/api/responses";
 import { buildCoachContext } from "@/features/coach/context";
 import { generateCoachReply, type CoachHistoryTurn } from "@/features/coach/openaiClient";
@@ -58,6 +58,8 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
     if (!user || !supabase) {
       return createErrorResponse("Authentication required", 401);
     }
+    const trackingBlocked = requireTrackingEnabled(user);
+    if (trackingBlocked) return trackingBlocked;
 
     const { id: conversationId } = await params;
 

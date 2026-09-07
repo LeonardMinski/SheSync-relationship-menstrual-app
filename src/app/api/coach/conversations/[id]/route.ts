@@ -1,5 +1,5 @@
 import { NextRequest } from "next/server";
-import { authenticateRequest } from "@/lib/api/authentication";
+import { authenticateRequest, requireTrackingEnabled } from "@/lib/api/authentication";
 import { createErrorResponse, createSuccessResponse } from "@/lib/api/responses";
 import type { CoachMessage } from "@/types/coach";
 
@@ -38,6 +38,8 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
     if (!user || !supabase) {
       return createErrorResponse("Authentication required", 401);
     }
+    const trackingBlocked = requireTrackingEnabled(user);
+    if (trackingBlocked) return trackingBlocked;
 
     const { id } = await params;
 
@@ -90,6 +92,8 @@ export async function DELETE(request: NextRequest, { params }: { params: Promise
     if (!user || !supabase) {
       return createErrorResponse("Authentication required", 401);
     }
+    const trackingBlocked = requireTrackingEnabled(user);
+    if (trackingBlocked) return trackingBlocked;
 
     const { id } = await params;
 

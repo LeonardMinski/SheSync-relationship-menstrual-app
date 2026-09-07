@@ -1,5 +1,5 @@
 import { NextRequest } from "next/server";
-import { authenticateRequest } from "@/lib/api/authentication";
+import { authenticateRequest, requireTrackingEnabled } from "@/lib/api/authentication";
 import { createErrorResponse, createSuccessResponse } from "@/lib/api/responses";
 import type { CoachConversationSummary } from "@/types/coach";
 
@@ -23,6 +23,8 @@ export async function GET(request: NextRequest) {
     if (!user || !supabase) {
       return createErrorResponse("Authentication required", 401);
     }
+    const trackingBlocked = requireTrackingEnabled(user);
+    if (trackingBlocked) return trackingBlocked;
 
     const { data: conversations, error } = await supabase
       .from("coach_conversations")
@@ -75,6 +77,8 @@ export async function POST(request: NextRequest) {
     if (!user || !supabase) {
       return createErrorResponse("Authentication required", 401);
     }
+    const trackingBlocked = requireTrackingEnabled(user);
+    if (trackingBlocked) return trackingBlocked;
 
     const { data, error } = await supabase
       .from("coach_conversations")

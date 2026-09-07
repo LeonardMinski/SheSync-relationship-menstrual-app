@@ -1,12 +1,14 @@
 import { NextRequest } from "next/server";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-import { authenticateRequest } from "@/lib/api/authentication";
+import { authenticateRequest, requireTrackingEnabled } from "@/lib/api/authentication";
+import { createErrorResponse } from "@/lib/api/responses";
 
 import { GET } from "./route";
 
 vi.mock("@/lib/api/authentication", () => ({
   authenticateRequest: vi.fn(),
+  requireTrackingEnabled: vi.fn(() => null),
 }));
 
 const authenticateRequestMock = vi.mocked(authenticateRequest);
@@ -36,7 +38,7 @@ function makeSupabase(periodsResult: { data: unknown; error: unknown }, cycleRes
     throw new Error(`unexpected table ${table}`);
   });
 
-  return { from, periodsEq, cycleEq };
+  return { from, periodsEq, cycleEq, periodsSelect, cycleSelect };
 }
 
 beforeEach(() => {
@@ -178,5 +180,39 @@ describe("GET /api/patterns", () => {
     expect(queriedTables).not.toContain("coach_messages");
     expect(queriedTables).not.toContain("vault_entries");
     expect(queriedTables).not.toContain("partner_links");
+  });
+
+  it("embeds exactly the period_day_logs nested relation — no other table can silently ride along on the periods select", async () => {
+    const { from, periodsSelect, cycleSelect } = makeSupabase({ data: [], error: null }, { data: [], error: null });
+    authenticateRequestMock.mockResolvedValue({
+      user: CALLER,
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      supabase: { from } as any,
+    });
+
+    await GET(makeRequest());
+
+    // The "periods and cycle_data only" claim is about from() calls; this
+    // asserts the actual wire shape of what those calls fetch, since the
+    // periods select embeds period_day_logs as a nested relation rather
+    // than a separate query. See docs/pattern-engine-v1.md "Actual query
+    // shape".
+    expect(periodsSelect).toHaveBeenCalledWith("*, period_day_logs(*)");
+    expect(cycleSelect).toHaveBeenCalledWith("date, mood");
+  });
+
+  it("blocks a tracking-disabled (partner-only) account server-side — not just hidden navigation", async () => {
+    const { from } = makeSupabase({ data: [], error: null }, { data: [], error: null });
+    authenticateRequestMock.mockResolvedValue({
+      user: CALLER,
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      supabase: { from } as any,
+    });
+    vi.mocked(requireTrackingEnabled).mockReturnValueOnce(createErrorResponse("Blocked", 403));
+
+    const response = await GET(makeRequest());
+
+    expect(response.status).toBe(403);
+    expect(from).not.toHaveBeenCalled();
   });
 });

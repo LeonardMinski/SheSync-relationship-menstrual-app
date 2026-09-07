@@ -1,6 +1,6 @@
 import { NextRequest } from "next/server";
 
-import { authenticateRequest } from "@/lib/api/authentication";
+import { authenticateRequest, requireTrackingEnabled } from "@/lib/api/authentication";
 import { createErrorResponse, createSuccessResponse } from "@/lib/api/responses";
 import { StartPeriodInputSchema } from "@/schemas/period";
 import type { Period } from "@/types/period";
@@ -39,6 +39,8 @@ export async function GET(request: NextRequest) {
     if (!user || !supabase) {
       return createErrorResponse("Authentication required", 401);
     }
+    const trackingBlocked = requireTrackingEnabled(user);
+    if (trackingBlocked) return trackingBlocked;
 
     const activeResult = await supabase
       .from("periods")
@@ -81,6 +83,8 @@ export async function POST(request: NextRequest) {
     if (!user || !supabase) {
       return createErrorResponse("Authentication required", 401);
     }
+    const trackingBlocked = requireTrackingEnabled(user);
+    if (trackingBlocked) return trackingBlocked;
 
     const rawBody = await request.json().catch(() => ({}));
     const parsed = StartPeriodInputSchema.safeParse(rawBody);
