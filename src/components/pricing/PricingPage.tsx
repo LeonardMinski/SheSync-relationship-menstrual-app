@@ -13,6 +13,7 @@ import {
 import { useApp } from "@/context/AppContext";
 import Navigation from "@/components/layout/Navigation";
 import LoadingSpinner from "@/components/ui/LoadingSpinner";
+import { createCheckoutSession } from "@/services/checkout";
 
 interface SubscriptionPlan {
   id: string;
@@ -134,24 +135,12 @@ const Pricing = () => {
     setProcessing(planId);
 
     try {
-      const response = await fetch("/api/checkout", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          priceId,
-          userId: user.id,
-          userEmail: user.email,
-        }),
-      });
+      const result = await createCheckoutSession(priceId);
 
-      const data = await response.json();
-
-      if (data.url) {
-        window.location.href = data.url;
+      if (result.success) {
+        window.location.href = result.data.url;
       } else {
-        throw new Error(data.error || "Failed to create checkout session");
+        throw new Error(result.error);
       }
     } catch (error) {
       console.error("Subscription error:", error);

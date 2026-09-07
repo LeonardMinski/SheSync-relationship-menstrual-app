@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import Stripe from 'stripe'
+import { authenticateRequest } from '@/lib/api/authentication'
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
   apiVersion: '2025-08-27.basil',
@@ -7,11 +8,20 @@ const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
 
 export async function POST(request: NextRequest) {
   try {
-    const { priceId, userId } = await request.json()
+    const { user } = await authenticateRequest(request)
+    if (!user) {
+      return NextResponse.json({ error: 'Authentication required' }, { status: 401 })
+    }
 
-    if (!priceId || !userId) {
+    const { priceId } = await request.json()
+    // userId always comes from the authenticated session, never the
+    // request body — a client-supplied id would let anyone attach a
+    // checkout session (and its resulting subscription) to any account.
+    const userId = user.id
+
+    if (!priceId) {
       return NextResponse.json(
-        { error: 'Price ID and User ID are required' },
+        { error: 'Price ID is required' },
         { status: 400 }
       )
     }
