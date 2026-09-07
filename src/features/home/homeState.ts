@@ -34,6 +34,13 @@ export interface HomeState {
   lastCompletedPeriod?: PeriodSummary;
   averageCycleLength?: number | null;
   loggedPeriodCount: number;
+  /**
+   * Days elapsed since the last logged period started (1-indexed), present
+   * whenever there's no active period but a last completed period exists.
+   * A plain fact derived from a real logged date — not a predicted phase or
+   * cycle position, see the "no real phase detection model" note above.
+   */
+  cycleDayEstimate?: number;
   /** True once there's enough evidence (>= MIN_COMPLETED_PERIODS_FOR_AVERAGE) to show a real observation instead of a learning state. */
   hasEnoughHistoryForObservation: boolean;
 }
@@ -62,6 +69,9 @@ export function deriveHomeState(input: HomeStateInput): HomeState {
     hasEnoughHistoryForObservation,
     lastCompletedPeriod,
     averageCycleLength: getAverageCycleLength(input.periodHistory),
+    cycleDayEstimate: lastCompletedPeriod
+      ? daysSince(lastCompletedPeriod.start_date, today) + 1
+      : undefined,
   };
 
   if (input.activePeriod) {

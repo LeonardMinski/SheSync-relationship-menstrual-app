@@ -1,10 +1,13 @@
 # Period Tracking V1 — UI Contract
 
 Domain: `public.periods` + `public.period_day_logs` (see
-`database/period-tracking-v1-migration.sql`). Entirely separate from
-`public.cycle_data`, the existing general daily wellbeing record — neither
-table replaces or reads from the other. `public.cycle_data.period_flow`
-compatibility is discussed at the end of this document.
+`database/period-tracking-v1-migration.sql`). Separate from
+`public.cycle_data`, the existing general daily wellbeing record, except
+for one deliberate exception: the mood field on both is kept in sync as of
+the Home/Cycle Experience Correction Pass — see
+`docs/HOME_CYCLE_MOOD_MODEL.md` for that compatibility decision.
+`public.cycle_data.period_flow` compatibility is discussed at the end of
+this document.
 
 ## Page states
 
@@ -26,7 +29,9 @@ compatibility is discussed at the end of this document.
 ### Active period (`/cycle`, `activePeriod !== null`)
 
 - Header: "Your Cycle" + "Your period is currently in progress." +
-  **End Period** and **Log/Update Today's State** buttons.
+  **End Period** and **Log/Update Today's Period** buttons (renamed from
+  "...Today's State" by the Home/Cycle Experience Correction Pass — "State"
+  was ambiguous with the separate daily wellbeing check-in on Home).
 - Primary card: "Menstrual Phase" label, real `start_date`, a circular
   **Period Day N** indicator (derived, never stored — see below), and one
   of two factual sentences: "Today's log is complete." or "You haven't

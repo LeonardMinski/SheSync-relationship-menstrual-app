@@ -103,7 +103,7 @@ describe("ActivePeriodView real data rendering", () => {
     );
 
     expect(screen.getByText(/haven't logged today yet/i)).toBeInTheDocument();
-    expect(screen.getByText("Log Today's State")).toBeInTheDocument();
+    expect(screen.getByText("Log Today's Period")).toBeInTheDocument();
   });
 
   it("shows real snapshot values once today's log exists", () => {
@@ -119,7 +119,7 @@ describe("ActivePeriodView real data rendering", () => {
 
     expect(screen.getByText("7/10")).toBeInTheDocument();
     expect(screen.getByText("8/10")).toBeInTheDocument();
-    expect(screen.getByText("Update Today's State")).toBeInTheDocument();
+    expect(screen.getByText("Update Today's Period")).toBeInTheDocument();
     expect(screen.getByText("Logged")).toBeInTheDocument();
   });
 });

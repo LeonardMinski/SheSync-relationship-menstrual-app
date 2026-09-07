@@ -1,15 +1,18 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { format } from "date-fns";
 
 import { TopNavbar } from "@/components/layout/TopNavbar";
+import { AddPastPeriodDialog } from "@/components/period/AddPastPeriodDialog";
 import { ActivePeriodView } from "@/components/period/ActivePeriodView";
 import { LogPeriodDayDialog } from "@/components/period/LogPeriodDayDialog";
 import { NoActivePeriodView } from "@/components/period/NoActivePeriodView";
 import { PeriodHistorySection } from "@/components/period/PeriodHistorySection";
 import { useAuth } from "@/context/AuthContext";
 import { usePeriodPageState } from "@/hooks/usePeriodPageState";
+import { getDailyEntry } from "@/services/cycle/dailyMood";
+import { toCycleDateKey } from "@/features/cycle/cycle.utils";
 
 export default function CyclePage() {
   const { user, loading: authLoading } = useAuth();
@@ -28,10 +31,25 @@ export default function CyclePage() {
     startPeriod,
     endPeriod,
     saveDayLog,
+    addPastPeriod,
     clearActionError: clearPeriodActionError,
   } = usePeriodPageState();
 
   const [showPeriodLogDialog, setShowPeriodLogDialog] = useState(false);
+  const [showAddPastPeriodDialog, setShowAddPastPeriodDialog] = useState(false);
+  const [savingPastPeriod, setSavingPastPeriod] = useState(false);
+  const [canonicalMood, setCanonicalMood] = useState<number | null>(null);
+
+  useEffect(() => {
+    if (!showPeriodLogDialog) return;
+    let active = true;
+    void getDailyEntry(toCycleDateKey(new Date())).then((result) => {
+      if (active && result.success) setCanonicalMood(result.data?.mood ?? null);
+    });
+    return () => {
+      active = false;
+    };
+  }, [showPeriodLogDialog]);
 
   if (authLoading) {
     return (
@@ -103,6 +121,7 @@ export default function CyclePage() {
               history={history}
               onStartPeriod={() => void startPeriod()}
               starting={starting}
+              onAddPastPeriod={() => setShowAddPastPeriodDialog(true)}
             />
           )}
 
@@ -114,6 +133,7 @@ export default function CyclePage() {
         <LogPeriodDayDialog
           selectedDate={new Date()}
           existingLog={todayLog}
+          canonicalMood={canonicalMood}
           saving={savingLog}
           error={periodActionError}
           onCancel={() => setShowPeriodLogDialog(false)}
@@ -121,6 +141,22 @@ export default function CyclePage() {
             const success = await saveDayLog(input);
             if (success) {
               setShowPeriodLogDialog(false);
+            }
+          }}
+        />
+      )}
+
+      {showAddPastPeriodDialog && (
+        <AddPastPeriodDialog
+          saving={savingPastPeriod}
+          error={periodActionError}
+          onCancel={() => setShowAddPastPeriodDialog(false)}
+          onSave={async (input) => {
+            setSavingPastPeriod(true);
+            const success = await addPastPeriod(input);
+            setSavingPastPeriod(false);
+            if (success) {
+              setShowAddPastPeriodDialog(false);
             }
           }}
         />

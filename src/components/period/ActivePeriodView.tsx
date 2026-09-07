@@ -1,15 +1,8 @@
 import { format } from "date-fns";
 
 import { Button } from "@/components/ui/Button";
-import { getPeriodDay } from "@/features/period/period.utils";
+import { BLEEDING_LEVEL_LABEL, getPeriodDay } from "@/features/period/period.utils";
 import type { Period, PeriodDayLog } from "@/types/period";
-
-const BLEEDING_LABEL: Record<string, string> = {
-  spotting: "Spotting",
-  light: "Light",
-  medium: "Medium",
-  heavy: "Heavy",
-};
 
 export function ActivePeriodView({
   period,
@@ -55,7 +48,7 @@ export function ActivePeriodView({
             className="![background:var(--accent-purple)] text-white shadow-cta-purple hover:opacity-90"
             onClick={onLogToday}
           >
-            {todayLog ? "Update Today's State" : "Log Today's State"}
+            {todayLog ? "Update Today's Period" : "Log Today's Period"}
           </Button>
         </div>
       </div>
@@ -133,7 +126,7 @@ export function ActivePeriodView({
             <div className="mt-4 space-y-3">
               <SnapshotRow
                 label="Bleeding Level"
-                value={BLEEDING_LABEL[todayLog.bleeding_level]}
+                value={BLEEDING_LEVEL_LABEL[todayLog.bleeding_level]}
                 tone="rose"
               />
               <SnapshotRow
@@ -153,7 +146,7 @@ export function ActivePeriodView({
             </div>
           ) : (
             <p className="mt-4 text-sm text-muted-foreground">
-              Not logged yet today. Log today&apos;s state to see it here.
+              Not logged yet today. Log today&apos;s period to see it here.
             </p>
           )}
         </div>

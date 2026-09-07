@@ -1,6 +1,13 @@
 import { format } from "date-fns";
 
-import type { Period, PeriodDayLog, PeriodSummary } from "@/types/period";
+import type { BleedingLevel, Period, PeriodDayLog, PeriodSummary } from "@/types/period";
+
+export const BLEEDING_LEVEL_LABEL: Record<BleedingLevel, string> = {
+  spotting: "Spotting",
+  light: "Light",
+  medium: "Medium",
+  heavy: "Heavy",
+};
 
 export function toDateKey(date: string | number | Date): string {
   return format(new Date(date), "yyyy-MM-dd");
