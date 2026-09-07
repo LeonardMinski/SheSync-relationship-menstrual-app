@@ -4,11 +4,16 @@ import { buildCoachContext } from "./context";
 import { DEFAULT_COACH_CONTEXT_SELECTION } from "@/types/coach";
 
 function makeSupabase(responses: Record<string, { data: unknown; error: unknown }>) {
+  const selectCallsByTable: Record<string, string[]> = {};
+
   const from = vi.fn((table: string) => {
     const chain: Record<string, unknown> = {};
     const terminal = () => Promise.resolve(responses[table] ?? { data: [], error: null });
 
-    chain.select = vi.fn(() => chain);
+    chain.select = vi.fn((columns: string) => {
+      (selectCallsByTable[table] ??= []).push(columns);
+      return chain;
+    });
     chain.eq = vi.fn(() => chain);
     chain.gte = vi.fn(() => chain);
     chain.not = vi.fn(() => chain);
@@ -21,7 +26,7 @@ function makeSupabase(responses: Record<string, { data: unknown; error: unknown 
   });
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  return { from } as any;
+  return { from, selectCallsByTable } as any;
 }
 
 describe("buildCoachContext — source inclusion", () => {
@@ -97,6 +102,28 @@ describe("buildCoachContext — source inclusion", () => {
     expect(result.contextText).toContain("Your recent periods have lasted between 4 and 6 days.");
     // Coach is handed a pre-computed statement, never raw per-day logs to pattern-match itself.
     expect(result.contextText).not.toContain("period_day_logs");
+  });
+
+  it("Recent Observations embeds exactly the period_day_logs nested relation on periods — no other table can silently ride along", async () => {
+    const supabase = makeSupabase({
+      periods: { data: [], error: null },
+      cycle_data: { data: [], error: null },
+    });
+
+    await buildCoachContext(supabase, "user-1", {
+      dailyCheckIns: false,
+      cycleContext: false,
+      periodHistory: false,
+      recentObservations: true,
+    });
+
+    // Same nested-embed shape as GET /api/patterns — see
+    // docs/pattern-engine-v1.md "Actual query shape". This is a single
+    // request via a real FK (period_day_logs.period_id -> periods.id), not
+    // a second query, but it does fetch every day-log field the engine
+    // uses.
+    expect(supabase.selectCallsByTable.periods).toEqual(["*, period_day_logs(*)"]);
+    expect(supabase.selectCallsByTable.cycle_data).toEqual(["date, mood"]);
   });
 
   it("still excludes Recent Observations when the caller does not request it, even though real data exists", async () => {

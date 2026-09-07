@@ -241,6 +241,44 @@ OBSERVATION → PRESENTATION) means concretely.
 5. Returns `{ observations }`. A brand-new user with no data gets a `200`
    with `observations: []` — never an error, never a fabricated example.
 
+### Actual query shape (precise, not "periods and cycle_data only")
+
+The route makes exactly two `supabase.from(...)` calls — `periods` and
+`cycle_data` — but the `periods` call is not a plain row fetch. It is:
+
+```ts
+supabase.from("periods").select("*, period_day_logs(*)")...
+```
+
+`period_day_logs(*)` is a PostgREST nested-relation embed, resolved via the
+real foreign key `period_day_logs.period_id → periods.id` (see
+`database/period-tracking-v1-migration.sql`). This is a single request that
+returns each period together with its own day logs already attached — it is
+**not** a second, separate query against `period_day_logs`, but it **does**
+genuinely fetch every field listed in observations A–K (bleeding level,
+cramps, lower-back pain, headache, bloating, fatigue, nausea, bowel
+changes, pain relief, activity impact). Saying "only `periods` and
+`cycle_data` are queried" is true at the table-call level and was not
+false, but it undersold what actually crosses the wire; this section is
+the precise version.
+
+Two independent guarantees keep this embed from ever widening into
+something it shouldn't:
+
+- **Allowlist test**: `src/app/api/patterns/route.test.ts` asserts the
+  exact `.select(...)` string passed for `periods` is
+  `"*, period_day_logs(*)"` — if a future change embeds an additional
+  nested relation (e.g. a stray `coach_messages(*)` or `partner_links(*)`),
+  this test fails immediately rather than silently shipping.
+- **RLS backstop, independent of application code**: `authenticateRequest`
+  (`src/lib/api/authentication.ts`) builds the Supabase client with the
+  anon key plus the caller's own bearer token — it is not a service-role
+  client. Both `periods` and `period_day_logs` have RLS enabled with
+  owner-only policies (`auth.uid() = user_id`) and no partner/viewer
+  policy exists on either table. So even if the route's own
+  `.eq("user_id", user.id)` filter were ever removed by mistake, the
+  database itself would still refuse to return another user's rows.
+
 No other table is ever queried by this route or by
 `src/features/patterns/**`.
 
