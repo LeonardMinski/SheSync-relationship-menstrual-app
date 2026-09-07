@@ -106,30 +106,22 @@ function getSymptoms(value: unknown): string[] | null {
   return value
 }
 
+// Full error detail (message/code/details/hint) is always logged
+// server-side above — the response body never repeats it, in any
+// environment. Matches the generic-message convention used by every other
+// route in this codebase (e.g. api/coach/conversations/[id]/messages).
 function cycleErrorResponse(action: string, error: SupabaseRouteError) {
   console.error(`[cycle] ${action}`, error)
 
   if (error.code === '42501') {
     return NextResponse.json(
-      { error: 'Cycle data access denied by Supabase RLS policy' },
+      { error: `Unable to ${action} — you don't have permission to access this data.` },
       { status: 403 },
     )
   }
 
-  if (error.code === '42P01') {
-    return NextResponse.json(
-      { error: 'Cycle data table is missing. Run the Supabase database migrations.' },
-      { status: 500 },
-    )
-  }
-
   return NextResponse.json(
-    {
-      error: `Failed to ${action}: ${error.message || 'Unknown database error'}`,
-      ...(process.env.NODE_ENV !== 'production'
-        ? { code: error.code, details: error.details, hint: error.hint }
-        : {}),
-    },
+    { error: `Unable to ${action}. Please try again.` },
     { status: 500 },
   )
 }

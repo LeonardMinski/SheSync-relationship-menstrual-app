@@ -120,3 +120,47 @@ describe("Cycle API — server-side tracking-capability enforcement", () => {
     expect(body.data).toEqual([]);
   });
 });
+
+describe("Cycle API — error responses never leak raw database detail", () => {
+  it("returns a safe generic message (never the raw Postgres error) on a query failure", async () => {
+    const order = vi.fn().mockResolvedValue({
+      data: null,
+      error: { code: "XX000", message: "relation \"cycle_data\" column \"foo\" does not exist", hint: "internal hint" },
+    });
+    const eq = vi.fn(() => ({ order }));
+    const select = vi.fn(() => ({ eq }));
+    const from = vi.fn(() => ({ select }));
+    authenticateRequestMock.mockResolvedValue({
+      user: CALLER,
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      supabase: { from } as any,
+    });
+
+    const response = await GET(makeRequest("GET"));
+    const body = await response.json();
+
+    expect(response.status).toBe(500);
+    expect(body.error).not.toMatch(/relation|column|postgres|hint|internal/i);
+    expect(body).not.toHaveProperty("code");
+    expect(body).not.toHaveProperty("hint");
+    expect(body).not.toHaveProperty("details");
+  });
+
+  it("returns a safe generic message on an RLS-denied error, without naming Supabase or RLS", async () => {
+    const order = vi.fn().mockResolvedValue({ data: null, error: { code: "42501", message: "new row violates row-level security policy" } });
+    const eq = vi.fn(() => ({ order }));
+    const select = vi.fn(() => ({ eq }));
+    const from = vi.fn(() => ({ select }));
+    authenticateRequestMock.mockResolvedValue({
+      user: CALLER,
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      supabase: { from } as any,
+    });
+
+    const response = await GET(makeRequest("GET"));
+    const body = await response.json();
+
+    expect(response.status).toBe(403);
+    expect(body.error).not.toMatch(/supabase|rls|row-level/i);
+  });
+});

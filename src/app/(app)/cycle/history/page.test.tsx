@@ -158,4 +158,53 @@ describe("Cycle history page", () => {
     expect(screen.getByText("You logged lower-back pain during 4 of your last 5 periods.")).toBeInTheDocument();
     expect(screen.getByText("Based on 5 recent periods")).toBeInTheDocument();
   });
+
+  it("shows a real error banner when daily check-ins failed to load — a fetch failure never looks like the honest 'not enough data yet' state", () => {
+    vi.mocked(useCycleLogger).mockReturnValue({
+      cycles: [],
+      loading: false,
+      error: "Unable to load your daily check-ins. Please try again.",
+      fetchCycles: vi.fn(),
+      logCycle: vi.fn(),
+      clearError: vi.fn(),
+    });
+
+    render(<CycleHistoryPage />);
+
+    expect(screen.getByRole("alert")).toHaveTextContent("Unable to load your daily check-ins. Please try again.");
+  });
+
+  it("shows a real error banner when period history failed to load", () => {
+    vi.mocked(usePeriodPageState).mockReturnValue({
+      user: { id: "user-1" },
+      authLoading: false,
+      loading: false,
+      loadError: "Unable to load your period history. Please try again.",
+      activePeriod: null,
+      todayLog: null,
+      history: [],
+      starting: false,
+      ending: false,
+      savingLog: false,
+      actionError: null,
+      successMessage: null,
+      startPeriod: vi.fn(),
+      endPeriod: vi.fn(),
+      saveDayLog: vi.fn(),
+      addPastPeriod: vi.fn(),
+      clearActionError: vi.fn(),
+      clearSuccessMessage: vi.fn(),
+      refresh: vi.fn(),
+    });
+
+    render(<CycleHistoryPage />);
+
+    expect(screen.getByRole("alert")).toHaveTextContent("Unable to load your period history. Please try again.");
+  });
+
+  it("shows no error banner when both sources load successfully", () => {
+    render(<CycleHistoryPage />);
+
+    expect(screen.queryByRole("alert")).not.toBeInTheDocument();
+  });
 });
