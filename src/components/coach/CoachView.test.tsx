@@ -3,10 +3,12 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import CoachView from "./CoachView";
 import { useCoachWorkspace } from "@/hooks/useCoachWorkspace";
+import { usePatterns } from "@/hooks/usePatterns";
 
 const pushMock = vi.fn();
 vi.mock("next/navigation", () => ({ useRouter: () => ({ push: pushMock }) }));
 vi.mock("@/hooks/useCoachWorkspace", () => ({ useCoachWorkspace: vi.fn() }));
+vi.mock("@/hooks/usePatterns", () => ({ usePatterns: vi.fn() }));
 
 const BASE_WORKSPACE = {
   conversations: [],
@@ -30,6 +32,7 @@ function mockWorkspace(overrides: Partial<typeof BASE_WORKSPACE> = {}) {
 
 beforeEach(() => {
   vi.clearAllMocks();
+  vi.mocked(usePatterns).mockReturnValue({ observations: [], loading: false, error: null });
 });
 
 describe("CoachView — first visit / empty conversation", () => {
@@ -174,6 +177,67 @@ describe("CoachView — Previous Conversations panel", () => {
     fireEvent.click(screen.getByLabelText("Previous conversations"));
 
     expect(screen.getByText("No conversations yet.")).toBeInTheDocument();
+  });
+});
+
+describe("CoachView — Recent Observations wired to real Pattern Engine data", () => {
+  const SAMPLE_OBSERVATION = {
+    id: "obs-1",
+    type: "period_duration_range",
+    title: "Period Duration",
+    statement: "Your recent periods have lasted 4 to 6 days.",
+    evidence: { periodsConsidered: 3, minDays: 4, maxDays: 6 },
+    sufficiency: "sufficient",
+    window: { description: "Last 3 logged periods" },
+    generatedAt: "2026-09-01T00:00:00.000Z",
+  } as const;
+
+  it("does not list Recent Observations in the context strip when the caller has no real observations yet", () => {
+    mockWorkspace();
+    vi.mocked(usePatterns).mockReturnValue({ observations: [], loading: false, error: null });
+    render(<CoachView />);
+
+    expect(screen.queryByText(/recent observations/i)).not.toBeInTheDocument();
+  });
+
+  it("lists Recent Observations in the context strip once real Pattern Engine data exists", () => {
+    mockWorkspace();
+    vi.mocked(usePatterns).mockReturnValue({ observations: [SAMPLE_OBSERVATION], loading: false, error: null });
+    render(<CoachView />);
+
+    expect(screen.getByText(/recent observations/i)).toBeInTheDocument();
+  });
+
+  it("keeps the Recent Observations toggle disabled in Manage Context when there is no real data yet", () => {
+    mockWorkspace();
+    vi.mocked(usePatterns).mockReturnValue({ observations: [], loading: false, error: null });
+    render(<CoachView />);
+
+    fireEvent.click(screen.getByText("Manage context"));
+
+    expect(screen.getByLabelText("Recent observations")).toBeDisabled();
+  });
+
+  it("enables the Recent Observations toggle in Manage Context once real data exists", () => {
+    mockWorkspace();
+    vi.mocked(usePatterns).mockReturnValue({ observations: [SAMPLE_OBSERVATION], loading: false, error: null });
+    render(<CoachView />);
+
+    fireEvent.click(screen.getByText("Manage context"));
+
+    expect(screen.getByLabelText("Recent observations")).not.toBeDisabled();
+  });
+
+  it("still never exposes Vault, partner messages, or private relationship reflections regardless of Pattern Engine data", () => {
+    mockWorkspace();
+    vi.mocked(usePatterns).mockReturnValue({ observations: [SAMPLE_OBSERVATION], loading: false, error: null });
+    render(<CoachView />);
+
+    fireEvent.click(screen.getByText("Manage context"));
+
+    expect(screen.getByText("Vault entries")).toBeInTheDocument();
+    expect(screen.getByText("Partner messages and replies")).toBeInTheDocument();
+    expect(screen.getByText("Private relationship reflections")).toBeInTheDocument();
   });
 });
 

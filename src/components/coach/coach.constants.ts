@@ -125,7 +125,7 @@ export const COACH_CONTEXT_SOURCES: CoachContextSourceCopy[] = [
 ];
 
 export const COACH_RECENT_OBSERVATIONS_UNAVAILABLE_TEXT =
-  "Not available yet — this will unlock once SheSync+ can calculate real patterns from your history.";
+  "Not available yet — keep logging and this will unlock once there's enough history to calculate a real pattern from.";
 
 export const COACH_CONTEXT_NOT_ACCESSIBLE: string[] = [
   "Vault entries",

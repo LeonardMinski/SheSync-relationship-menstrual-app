@@ -113,7 +113,7 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
       return createErrorResponse("Failed to send message", 500);
     }
 
-    const contextSelection = { ...DEFAULT_COACH_CONTEXT_SELECTION, ...parsed.data.context, recentObservations: false };
+    const contextSelection = { ...DEFAULT_COACH_CONTEXT_SELECTION, ...parsed.data.context };
     const { contextText } = await buildCoachContext(supabase, user.id, contextSelection);
 
     const history: CoachHistoryTurn[] = priorMessages.map((message) => ({

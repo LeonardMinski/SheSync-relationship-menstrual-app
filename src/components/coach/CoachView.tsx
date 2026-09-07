@@ -6,6 +6,7 @@ import { History, Plus } from "lucide-react";
 
 import { StatusPill } from "@/components/ui/StatusPill";
 import { useCoachWorkspace } from "@/hooks/useCoachWorkspace";
+import { usePatterns } from "@/hooks/usePatterns";
 import { DEFAULT_COACH_CONTEXT_SELECTION } from "@/types/coach";
 import type { CoachContextSelection, CoachMessage } from "@/types/coach";
 
@@ -48,6 +49,7 @@ export default function CoachView() {
     sendUserMessage,
     retry,
   } = useCoachWorkspace();
+  const { observations } = usePatterns();
 
   const [contextSelection, setContextSelection] = useState<CoachContextSelection>(DEFAULT_COACH_CONTEXT_SELECTION);
   const [showContextPanel, setShowContextPanel] = useState(false);
@@ -136,7 +138,11 @@ export default function CoachView() {
             </div>
 
             <div className="order-1 space-y-3 sm:order-2 sm:mt-6">
-              <CoachContextStrip selection={contextSelection} onManageContext={() => setShowContextPanel(true)} />
+              <CoachContextStrip
+                selection={contextSelection}
+                recentObservationsAvailable={observations.length > 0}
+                onManageContext={() => setShowContextPanel(true)}
+              />
               <CoachComposer onSend={handleSend} disabled={sending} autoFocus placeholder={composerPlaceholder} />
             </div>
           </div>
@@ -160,7 +166,11 @@ export default function CoachView() {
 
             {error && <CoachErrorState onRetry={retry} />}
 
-            <CoachContextStrip selection={contextSelection} onManageContext={() => setShowContextPanel(true)} />
+            <CoachContextStrip
+              selection={contextSelection}
+              recentObservationsAvailable={observations.length > 0}
+              onManageContext={() => setShowContextPanel(true)}
+            />
             <CoachComposer onSend={handleSend} disabled={sending} placeholder={composerPlaceholder} />
           </div>
         )}
@@ -169,6 +179,7 @@ export default function CoachView() {
       {showContextPanel && (
         <CoachContextPanel
           selection={contextSelection}
+          recentObservationsAvailable={observations.length > 0}
           onSave={setContextSelection}
           onClose={() => setShowContextPanel(false)}
         />

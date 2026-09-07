@@ -6,11 +6,13 @@ import { addMonths, format, subMonths } from "date-fns";
 import { DayDetailPanel } from "@/components/cycle/DayDetailPanel";
 import { HistoryCalendar } from "@/components/cycle/HistoryCalendar";
 import { MonthlySummary } from "@/components/cycle/MonthlySummary";
+import { PatternsSection } from "@/components/cycle/PatternsSection";
 import { TopNavbar } from "@/components/layout/TopNavbar";
 import { useAuth } from "@/context/AuthContext";
 import { findCycleForDate } from "@/features/cycle/cycle.utils";
 import { buildMonthGrid, buildMonthlySummary, type HistoryDayCell } from "@/features/cycle/history.utils";
 import { useCycleLogger } from "@/hooks/useCycleLogger";
+import { usePatterns } from "@/hooks/usePatterns";
 import { usePeriodPageState } from "@/hooks/usePeriodPageState";
 import { getPeriodById } from "@/services/period";
 import type { PeriodDayLog } from "@/types/period";
@@ -19,6 +21,7 @@ export default function CycleHistoryPage() {
   const { user, loading: authLoading } = useAuth();
   const { cycles, loading: cycleLoading } = useCycleLogger();
   const { activePeriod, history, loading: periodLoading } = usePeriodPageState();
+  const { observations } = usePatterns();
 
   const [monthDate, setMonthDate] = useState(() => new Date());
   const [selectedDateKey, setSelectedDateKey] = useState<string | null>(null);
@@ -95,6 +98,8 @@ export default function CycleHistoryPage() {
           </div>
         ) : (
           <>
+            <PatternsSection observations={observations} />
+
             <HistoryCalendar
               monthDate={monthDate}
               days={days}
