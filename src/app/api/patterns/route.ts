@@ -1,7 +1,7 @@
 import { NextRequest } from "next/server";
 import { addDays } from "date-fns";
 
-import { authenticateRequest } from "@/lib/api/authentication";
+import { authenticateRequest, requireTrackingEnabled } from "@/lib/api/authentication";
 import { createErrorResponse, createSuccessResponse } from "@/lib/api/responses";
 import { generateObservations } from "@/features/patterns/engine";
 import { PATTERN_THRESHOLDS } from "@/features/patterns/thresholds";
@@ -17,6 +17,15 @@ type CycleDataRow = { date: string; mood: number | null };
  * conversation data (none of those are queried here at all). The engine
  * itself (features/patterns/engine.ts) is pure; this route's only job is
  * fetching bounded, real, owner-scoped source data and handing it over.
+ *
+ * Exactly two tables are ever queried: `periods` and `cycle_data`. The
+ * `periods` query embeds `period_day_logs(*)` as a PostgREST nested
+ * relation (resolved via the real FK period_day_logs.period_id ->
+ * periods.id) — a single request, not a second query, but it does fetch
+ * every symptom/flow field the engine needs. See docs/pattern-engine-v1.md
+ * "Actual query shape" for the full accounting, including why the nested
+ * embed can't silently widen (allowlist test + RLS backstop on both
+ * tables).
  */
 export async function GET(request: NextRequest) {
   try {
@@ -24,6 +33,8 @@ export async function GET(request: NextRequest) {
     if (!user || !supabase) {
       return createErrorResponse("Authentication required", 401);
     }
+    const trackingBlocked = requireTrackingEnabled(user);
+    if (trackingBlocked) return trackingBlocked;
 
     const { data: periodRows, error: periodsError } = await supabase
       .from("periods")

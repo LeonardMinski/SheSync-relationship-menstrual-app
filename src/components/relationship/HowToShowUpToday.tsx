@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 
 import { Button } from "@/components/ui/Button";
 import { EmptyState } from "@/components/ui/EmptyState";
+import { InlineBanner } from "@/components/ui/InlineBanner";
 import { getPartnerContext } from "@/services/relationship/partnerContext";
 import { getSupportPreferences } from "@/services/relationship/supportPreferences";
 import { addReply } from "@/services/relationship/replies";
@@ -35,6 +36,8 @@ export function HowToShowUpToday({ ownerId, ownerName }: { ownerId: string; owne
   const [loading, setLoading] = useState(true);
   const [reply, setReply] = useState("");
   const [sent, setSent] = useState(false);
+  const [sending, setSending] = useState(false);
+  const [sendError, setSendError] = useState<string | null>(null);
 
   useEffect(() => {
     void Promise.all([getPartnerContext(ownerId), getSupportPreferences(ownerId)]).then(
@@ -102,31 +105,46 @@ export function HowToShowUpToday({ ownerId, ownerName }: { ownerId: string; owne
             </div>
           )}
 
-          <div className="mt-5 flex flex-wrap items-center gap-3 border-t border-border pt-4">
+          <div className="mt-5 border-t border-border pt-4">
             {!sent ? (
               <>
-                <label htmlFor="show-up-today-reply" className="sr-only">
-                  Reply to {ownerName}
-                </label>
-                <input
-                  id="show-up-today-reply"
-                  type="text"
-                  value={reply}
-                  onChange={(event) => setReply(event.target.value)}
-                  placeholder="Want to let them know you're on it?"
-                  className="min-w-0 flex-1 rounded-lg border border-border bg-bg-elevated p-2 text-sm text-foreground placeholder-muted-foreground focus:outline-none focus:ring-2 focus:ring-cta-start"
-                />
-                <Button
-                  variant="cta"
-                  size="sm"
-                  disabled={!reply.trim()}
-                  onClick={async () => {
-                    const result = await addReply("partner_context", context.id, reply.trim());
-                    if (result.success) setSent(true);
-                  }}
-                >
-                  Send a Supportive Note
-                </Button>
+                <div className="flex flex-wrap items-center gap-3">
+                  <label htmlFor="show-up-today-reply" className="sr-only">
+                    Reply to {ownerName}
+                  </label>
+                  <input
+                    id="show-up-today-reply"
+                    type="text"
+                    value={reply}
+                    onChange={(event) => setReply(event.target.value)}
+                    placeholder="Want to let them know you're on it?"
+                    className="min-w-0 flex-1 rounded-lg border border-border bg-bg-elevated p-2 text-sm text-foreground placeholder-muted-foreground focus:outline-none focus:ring-2 focus:ring-cta-start"
+                  />
+                  <Button
+                    variant="cta"
+                    size="sm"
+                    loading={sending}
+                    disabled={!reply.trim()}
+                    onClick={async () => {
+                      setSendError(null);
+                      setSending(true);
+                      const result = await addReply("partner_context", context.id, reply.trim());
+                      setSending(false);
+                      if (result.success) {
+                        setSent(true);
+                      } else {
+                        setSendError(result.error);
+                      }
+                    }}
+                  >
+                    Send a Supportive Note
+                  </Button>
+                </div>
+                {sendError && (
+                  <InlineBanner tone="error" className="mt-3">
+                    {sendError}
+                  </InlineBanner>
+                )}
               </>
             ) : (
               <p className="text-sm text-[color:var(--accent-sage)]">Sent.</p>

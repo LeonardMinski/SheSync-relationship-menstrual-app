@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { authenticateRequest } from '@/lib/api/authentication'
+import { authenticateRequest, requireTrackingEnabled } from '@/lib/api/authentication'
 
 export async function GET(request: NextRequest) {
   try {
@@ -7,6 +7,8 @@ export async function GET(request: NextRequest) {
     if (!user || !supabase) {
       return NextResponse.json({ error: 'Authentication required' }, { status: 401 })
     }
+    const trackingBlocked = requireTrackingEnabled(user)
+    if (trackingBlocked) return trackingBlocked
 
     const { searchParams } = new URL(request.url)
     const category = searchParams.get('category')
@@ -47,6 +49,8 @@ export async function POST(request: NextRequest) {
     if (!user || !supabase) {
       return NextResponse.json({ error: 'Authentication required' }, { status: 401 })
     }
+    const trackingBlocked = requireTrackingEnabled(user)
+    if (trackingBlocked) return trackingBlocked
 
     const { cardData } = await request.json()
 
@@ -94,6 +98,8 @@ export async function PUT(request: NextRequest) {
     if (!user || !supabase) {
       return NextResponse.json({ error: 'Authentication required' }, { status: 401 })
     }
+    const trackingBlocked = requireTrackingEnabled(user)
+    if (trackingBlocked) return trackingBlocked
 
     const { id, cardData } = await request.json()
 
@@ -150,6 +156,8 @@ export async function DELETE(request: NextRequest) {
     if (!user || !supabase) {
       return NextResponse.json({ error: 'Authentication required' }, { status: 401 })
     }
+    const trackingBlocked = requireTrackingEnabled(user)
+    if (trackingBlocked) return trackingBlocked
 
     const { searchParams } = new URL(request.url)
     const id = searchParams.get('id')

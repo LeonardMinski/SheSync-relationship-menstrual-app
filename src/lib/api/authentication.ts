@@ -1,6 +1,7 @@
 import { createClient } from "@supabase/supabase-js";
-import type { NextRequest } from "next/server";
-import type { AuthenticatedRequest } from "@/types";
+import type { NextRequest, NextResponse } from "next/server";
+import { createErrorResponse } from "@/lib/api/responses";
+import type { AuthenticatedRequest, AuthenticatedUser } from "@/types";
 
 export async function authenticateRequest(
   request: NextRequest,
@@ -72,6 +73,14 @@ export async function authenticateRequest(
         id: user.id,
         email: user.email ?? null,
         name: profile?.name || user.user_metadata?.name || "User",
+        // undefined (not false) when the profile row itself failed to load —
+        // requireTrackingEnabled treats that as unresolved and fails open,
+        // mirroring isWaitingForTrackingStatus's client-side reasoning: a
+        // transient profile lookup failure must never lock out a real
+        // tracking-enabled user. tracking_enabled is NOT NULL DEFAULT true
+        // in the database, so a successful profile fetch always yields a
+        // real boolean here.
+        trackingEnabled: profile ? Boolean(profile.tracking_enabled) : undefined,
       },
       supabase: authenticatedSupabase,
     };
@@ -79,4 +88,27 @@ export async function authenticateRequest(
     console.error(`[auth] authentication error for ${routeName}`, error);
     return { user: null, supabase: null };
   }
+}
+
+/**
+ * Server-side backstop for tracked-only routes (Cycle, Pattern Engine,
+ * Coach — see TRACKED_ONLY_ROUTE_PREFIXES in
+ * src/features/account/capabilities.ts). The app layout already redirects
+ * a partner-only account away from these pages, but that is UX routing
+ * only and never a security boundary — a direct API call bypasses it
+ * entirely. Call this immediately after authenticateRequest in any
+ * tracked-only route handler.
+ *
+ * Fails open (returns null, i.e. allowed) when trackingEnabled is
+ * undefined — that means the profile row didn't load, and blocking a real
+ * tracking-enabled user on a transient error would be worse than the
+ * narrow window this leaves open. It only ever blocks a KNOWN
+ * tracking_enabled = false account, mirroring the client-side
+ * isWaitingForTrackingStatus/shouldBlockTrackedRoute reasoning exactly.
+ */
+export function requireTrackingEnabled(user: AuthenticatedUser): NextResponse | null {
+  if (user.trackingEnabled === false) {
+    return createErrorResponse("This feature isn't available for your account.", 403);
+  }
+  return null;
 }

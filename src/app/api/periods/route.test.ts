@@ -1,12 +1,14 @@
 import { NextRequest } from "next/server";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-import { authenticateRequest } from "@/lib/api/authentication";
+import { authenticateRequest, requireTrackingEnabled } from "@/lib/api/authentication";
+import { createErrorResponse } from "@/lib/api/responses";
 
 import { GET, POST } from "./route";
 
 vi.mock("@/lib/api/authentication", () => ({
   authenticateRequest: vi.fn(),
+  requireTrackingEnabled: vi.fn(() => null),
 }));
 
 const authenticateRequestMock = vi.mocked(authenticateRequest);
@@ -75,6 +77,21 @@ describe("GET /api/periods", () => {
     expect(supabase.eqUser).toHaveBeenCalledWith("user_id", "user-1");
     expect(body.data.active).toBeNull();
     expect(body.data.todayLog).toBeNull();
+  });
+
+  it("blocks a tracking-disabled (partner-only) account server-side — not just hidden navigation", async () => {
+    const supabase = makeGetSupabaseMock({ data: null, error: null });
+    authenticateRequestMock.mockResolvedValue({
+      user: { id: "user-1", email: "a@example.com", name: "A" },
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      supabase: supabase as any,
+    });
+    vi.mocked(requireTrackingEnabled).mockReturnValueOnce(createErrorResponse("Blocked", 403));
+
+    const response = await GET(makeGetRequest());
+
+    expect(response.status).toBe(403);
+    expect(supabase.from).not.toHaveBeenCalled();
   });
 });
 

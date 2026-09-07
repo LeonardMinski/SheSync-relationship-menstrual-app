@@ -150,6 +150,40 @@ describe("useCoachWorkspace — sending a message", () => {
     await waitFor(() => expect(result.current.pendingContent).toBeNull());
     expect(sendMessage).toHaveBeenCalledWith("c1", "retry me", undefined);
   });
+
+  it("retry resends with the same context selection the original failed attempt used, not the defaults", async () => {
+    vi.mocked(createConversation).mockResolvedValue({
+      success: true,
+      data: { id: "c1", title: null, createdAt: "t0", updatedAt: "t0", preview: null },
+    });
+    vi.mocked(sendMessage).mockResolvedValueOnce({ success: false, error: "network error" });
+
+    const { result } = renderHook(() => useCoachWorkspace());
+    await waitFor(() => expect(result.current.loadingList).toBe(false));
+
+    const usedContext = { dailyCheckIns: true, cycleContext: false, periodHistory: false, recentObservations: false };
+    await act(async () => {
+      await result.current.sendUserMessage("retry me", usedContext);
+    });
+    expect(result.current.pendingContent).toBe("retry me");
+
+    vi.mocked(sendMessage).mockResolvedValueOnce({
+      success: true,
+      data: {
+        userMessage: { id: "m-user", conversationId: "c1", role: "user", content: "retry me", fromLogs: null, generalContext: null, questionToConsider: null, optionalNextStep: null, partnerTranslationAvailable: false, createdAt: "t1" },
+        assistantMessage: ASSISTANT_MESSAGE,
+        title: "retry me",
+      },
+    });
+
+    await act(async () => {
+      result.current.retry();
+      await Promise.resolve();
+    });
+
+    await waitFor(() => expect(result.current.pendingContent).toBeNull());
+    expect(sendMessage).toHaveBeenCalledWith("c1", "retry me", usedContext);
+  });
 });
 
 describe("useCoachWorkspace — conversation list management", () => {

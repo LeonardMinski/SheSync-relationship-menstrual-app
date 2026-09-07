@@ -1,6 +1,7 @@
 "use client";
 
 import { TopNavbar } from "@/components/layout/TopNavbar";
+import { InlineBanner } from "@/components/ui/InlineBanner";
 import { usePartnerPortalData } from "@/hooks/usePartnerPortalData";
 
 import { IncomingInvitationState } from "./IncomingInvitationState";
@@ -17,6 +18,7 @@ import { SupportiveActions } from "./SupportiveActions";
 
 export default function PartnerPortal() {
   const {
+    actionError,
     dataLoading,
     invitePartner,
     loading,
@@ -81,7 +83,10 @@ export default function PartnerPortal() {
     return (
       <div className="min-h-screen bg-bg pb-10">
         <TopNavbar title="Partner" subtitle={subtitle} />
-        <main className="px-4 py-16">{renderConnectionSection(false)}</main>
+        <main className="mx-auto w-full max-w-xl space-y-4 px-4 py-16">
+          {actionError && <InlineBanner tone="error">{actionError}</InlineBanner>}
+          {renderConnectionSection(false)}
+        </main>
       </div>
     );
   }
@@ -91,6 +96,7 @@ export default function PartnerPortal() {
       <div className="min-h-screen bg-bg pb-10">
         <TopNavbar title="Partner" subtitle="Invitation received" />
         <main className="mx-auto w-full max-w-xl space-y-6 px-4 py-16">
+          {actionError && <InlineBanner tone="error">{actionError}</InlineBanner>}
           <IncomingInvitationState
             inviterName={viewerLink.personName}
             onRespond={(action) => respondToIncomingInvite(viewerLink.id, action)}
@@ -115,6 +121,7 @@ export default function PartnerPortal() {
       />
 
       <main className="mx-auto w-full max-w-6xl space-y-7 px-4 py-6 sm:px-6 lg:px-10">
+        {actionError && <InlineBanner tone="error">{actionError}</InlineBanner>}
         <PartnerPortalHero partnerName={partnerData?.partnerName} />
         <PartnerSharedSummary partnerData={partnerData} />
         <RecentActivitySection partnerData={partnerData} />

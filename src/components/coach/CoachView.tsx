@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { History, Plus } from "lucide-react";
 
 import { StatusPill } from "@/components/ui/StatusPill";
+import { useAuth } from "@/context/AuthContext";
 import { useCoachWorkspace } from "@/hooks/useCoachWorkspace";
 import { usePatterns } from "@/hooks/usePatterns";
 import { DEFAULT_COACH_CONTEXT_SELECTION } from "@/types/coach";
@@ -33,8 +34,45 @@ import {
   type CoachStarterCard,
 } from "./coach.constants";
 
+const COACH_CONTEXT_STORAGE_PREFIX = "shesync-coach-context:";
+
+/**
+ * The user's Manage Context choices are a same-device UI preference, not
+ * account data — persisted client-side only, keyed per user so a shared
+ * browser can't leak one account's choice into another's session. Falls
+ * back to the documented defaults on read failure (private browsing,
+ * storage disabled, corrupt value) rather than ever throwing.
+ */
+function readStoredContextSelection(userId: string): CoachContextSelection | null {
+  try {
+    const raw = window.localStorage.getItem(`${COACH_CONTEXT_STORAGE_PREFIX}${userId}`);
+    if (!raw) return null;
+    const parsed = JSON.parse(raw) as Partial<CoachContextSelection>;
+    if (
+      typeof parsed.dailyCheckIns !== "boolean" ||
+      typeof parsed.cycleContext !== "boolean" ||
+      typeof parsed.periodHistory !== "boolean" ||
+      typeof parsed.recentObservations !== "boolean"
+    ) {
+      return null;
+    }
+    return parsed as CoachContextSelection;
+  } catch {
+    return null;
+  }
+}
+
+function writeStoredContextSelection(userId: string, selection: CoachContextSelection): void {
+  try {
+    window.localStorage.setItem(`${COACH_CONTEXT_STORAGE_PREFIX}${userId}`, JSON.stringify(selection));
+  } catch {
+    // Best-effort only — a private window or full storage just won't remember the choice next load.
+  }
+}
+
 export default function CoachView() {
   const router = useRouter();
+  const { user } = useAuth();
   const {
     conversations,
     loadingList,
@@ -51,10 +89,17 @@ export default function CoachView() {
   } = useCoachWorkspace();
   const { observations } = usePatterns();
 
-  const [contextSelection, setContextSelection] = useState<CoachContextSelection>(DEFAULT_COACH_CONTEXT_SELECTION);
+  const [contextSelection, setContextSelectionState] = useState<CoachContextSelection>(
+    () => (user ? readStoredContextSelection(user.id) : null) ?? DEFAULT_COACH_CONTEXT_SELECTION,
+  );
   const [showContextPanel, setShowContextPanel] = useState(false);
   const [showHistory, setShowHistory] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+
+  function setContextSelection(selection: CoachContextSelection) {
+    setContextSelectionState(selection);
+    if (user) writeStoredContextSelection(user.id, selection);
+  }
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });

@@ -1,12 +1,14 @@
 import { NextRequest } from "next/server";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-import { authenticateRequest } from "@/lib/api/authentication";
+import { authenticateRequest, requireTrackingEnabled } from "@/lib/api/authentication";
+import { createErrorResponse } from "@/lib/api/responses";
 
 import { GET, POST } from "./route";
 
 vi.mock("@/lib/api/authentication", () => ({
   authenticateRequest: vi.fn(),
+  requireTrackingEnabled: vi.fn(() => null),
 }));
 
 const authenticateRequestMock = vi.mocked(authenticateRequest);
@@ -83,6 +85,21 @@ describe("GET /api/coach/conversations", () => {
 
     expect(response.status).toBe(200);
     expect(body.data.conversations[0].preview).toContain("most recent message");
+  });
+
+  it("blocks a tracking-disabled (partner-only) account server-side — not just hidden navigation", async () => {
+    const from = vi.fn();
+    authenticateRequestMock.mockResolvedValue({
+      user: CALLER,
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      supabase: { from } as any,
+    });
+    vi.mocked(requireTrackingEnabled).mockReturnValueOnce(createErrorResponse("Blocked", 403));
+
+    const response = await GET(makeRequest("/api/coach/conversations"));
+
+    expect(response.status).toBe(403);
+    expect(from).not.toHaveBeenCalled();
   });
 });
 

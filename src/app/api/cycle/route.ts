@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { authenticateRequest } from '@/lib/api/authentication'
+import { authenticateRequest, requireTrackingEnabled } from '@/lib/api/authentication'
 
 const VALID_PHASES = ['menstrual', 'follicular', 'ovulation', 'luteal'] as const
 const VALID_PERIOD_FLOWS = ['light', 'medium', 'heavy'] as const
@@ -106,30 +106,22 @@ function getSymptoms(value: unknown): string[] | null {
   return value
 }
 
+// Full error detail (message/code/details/hint) is always logged
+// server-side above — the response body never repeats it, in any
+// environment. Matches the generic-message convention used by every other
+// route in this codebase (e.g. api/coach/conversations/[id]/messages).
 function cycleErrorResponse(action: string, error: SupabaseRouteError) {
   console.error(`[cycle] ${action}`, error)
 
   if (error.code === '42501') {
     return NextResponse.json(
-      { error: 'Cycle data access denied by Supabase RLS policy' },
+      { error: `Unable to ${action} — you don't have permission to access this data.` },
       { status: 403 },
     )
   }
 
-  if (error.code === '42P01') {
-    return NextResponse.json(
-      { error: 'Cycle data table is missing. Run the Supabase database migrations.' },
-      { status: 500 },
-    )
-  }
-
   return NextResponse.json(
-    {
-      error: `Failed to ${action}: ${error.message || 'Unknown database error'}`,
-      ...(process.env.NODE_ENV !== 'production'
-        ? { code: error.code, details: error.details, hint: error.hint }
-        : {}),
-    },
+    { error: `Unable to ${action}. Please try again.` },
     { status: 500 },
   )
 }
@@ -140,6 +132,8 @@ export async function GET(request: NextRequest) {
     if (!user || !supabase) {
       return NextResponse.json({ error: 'Authentication required' }, { status: 401 })
     }
+    const trackingBlocked = requireTrackingEnabled(user)
+    if (trackingBlocked) return trackingBlocked
 
     const { searchParams } = new URL(request.url)
     const startDate = searchParams.get('startDate')
@@ -177,6 +171,8 @@ export async function POST(request: NextRequest) {
     if (!user || !supabase) {
       return NextResponse.json({ error: 'Authentication required' }, { status: 401 })
     }
+    const trackingBlocked = requireTrackingEnabled(user)
+    if (trackingBlocked) return trackingBlocked
 
     const payload = getCyclePayload(await request.json())
     if (!payload) {
@@ -282,6 +278,8 @@ export async function PUT(request: NextRequest) {
     if (!user || !supabase) {
       return NextResponse.json({ error: 'Authentication required' }, { status: 401 })
     }
+    const trackingBlocked = requireTrackingEnabled(user)
+    if (trackingBlocked) return trackingBlocked
 
     const body = await request.json()
     if (!isRecord(body) || typeof body.id !== 'string') {
@@ -419,6 +417,8 @@ export async function DELETE(request: NextRequest) {
     if (!user || !supabase) {
       return NextResponse.json({ error: 'Authentication required' }, { status: 401 })
     }
+    const trackingBlocked = requireTrackingEnabled(user)
+    if (trackingBlocked) return trackingBlocked
 
     const { searchParams } = new URL(request.url)
     const id = searchParams.get('id')

@@ -111,7 +111,7 @@ function PeriodHistoryRow({
               {detail.logs.map((log) => (
                 <li
                   key={log.id}
-                  className="flex items-center justify-between rounded-xl bg-bg-elevated px-3 py-2 text-sm"
+                  className="flex flex-wrap items-center justify-between gap-x-3 gap-y-1 rounded-xl bg-bg-elevated px-3 py-2 text-sm"
                 >
                   <span className="font-semibold text-foreground">
                     Day {getPeriodDay(detail, log.date)} · {formatDate(log.date)}
