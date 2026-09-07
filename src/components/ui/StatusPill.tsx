@@ -2,7 +2,7 @@ import React from "react";
 
 import { cn } from "@/utils/cn";
 
-type PillTone = "sage" | "muted" | "warning" | "amber" | "rose" | "error";
+type PillTone = "sage" | "muted" | "warning" | "amber" | "rose" | "error" | "purple";
 
 interface StatusPillProps {
   tone: PillTone;
@@ -17,6 +17,7 @@ const TONE_CLASSES: Record<PillTone, string> = {
   amber: "bg-[color:var(--accent-amber-soft)] text-[color:var(--accent-amber)]",
   rose: "bg-[color:var(--accent-rose)]/12 text-[color:var(--accent-rose)]",
   error: "bg-[color:var(--error)]/10 text-[color:var(--error)]",
+  purple: "bg-[color:var(--accent-purple-soft)] text-[color:var(--accent-purple)]",
 };
 
 export function StatusPill({ tone, children, className }: StatusPillProps) {

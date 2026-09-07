@@ -1,140 +1,139 @@
 /**
- * Static, UI-only content for the /coach screen.
- *
- * Nothing here comes from a real AI/backend service — it exists purely to give
- * the design a believable shape to render. See CoachView.tsx for the
- * TODO(V1-COACH) marker where a real Coach service call should replace the
- * simulated response.
+ * Coach copy — see src/features/coach/systemPrompt.ts for the model-facing
+ * safety rules this must stay consistent with. Every string here has been
+ * checked against the forbidden biological/hormonal/encryption framing
+ * list from the Coach Conversation Workspace V1 correction — see the PR
+ * description, not this comment, for the full list that was removed.
  */
 
-export interface CoachPromptSuggestion {
-  question: string;
-  description: string;
-}
+export const COACH_AI_ACTIVE_PILL_TEXT = "AI Coach Active";
 
-export const PROMPT_SUGGESTIONS: CoachPromptSuggestion[] = [
-  {
-    question: "What patterns have you noticed in my energy?",
-    description: "Compares energy levels logged across cycle phases.",
-  },
-  {
-    question: "How has my mood shifted this month?",
-    description: "Looks at mood entries alongside your cycle phase.",
-  },
-  {
-    question: "What symptoms tend to show up together?",
-    description: "Reviews symptoms logged on the same days.",
-  },
-  {
-    question: "Any trends in my recent wellbeing notes?",
-    description: "Summarizes recent wellbeing log entries over time.",
-  },
-];
+export const COACH_HEADER_SUBTITLE =
+  "A private space to understand what you're noticing, talk something through, or prepare something to share.";
 
-export const FOLLOW_UP_SUGGESTIONS: string[] = [
-  "What might help on lower-energy days?",
-  "How does this compare to last cycle?",
-  "What else shows up in my recent logs?",
-];
+export const COACH_EMPTY_STATE_PROMPT = "What would you like to talk through?";
 
-/**
- * "Jobs to be done" entry tiles shown on the Coach home screen. Three of the
- * four kick off a conversation with a canned starter question; the fourth
- * ("Prepare to talk to my partner") is a navigational entry point into the
- * Partner Translation surface, which has its own placeholder-backed UI.
- */
+export const COACH_EMPTY_STATE_SUBDESCRIPTION =
+  "I'm your private guide — here to help you understand what you're noticing and find ways to express it, using only the context you allow.";
+
+export const COACH_STARTERS_EYEBROW = "Conversation starters";
+
+export const COACH_COMPOSER_PLACEHOLDER =
+  "Ask Coach anything about how you're feeling, something you've noticed, or something you'd like help expressing...";
+
+export const COACH_COMPOSER_FOLLOW_UP_PLACEHOLDER = "Ask a follow up question...";
+
+export const COACH_COMPOSER_THINKING_PLACEHOLDER = "Coach is thinking...";
+
+export const COACH_PRIVACY_CHIP_TEXT = "Private to you · Not shared with your partner";
+
+export const COACH_PRIVACY_EXPLANATION =
+  "Coach only uses the sources you enable below. Your Coach conversation isn't shared with your partner unless you choose to turn something into partner context.";
+
+export const COACH_THINKING_TEXT = "Coach is thinking through your question and the context you've allowed...";
+
+export const COACH_ERROR_TITLE = "Coach couldn't generate a response.";
+export const COACH_ERROR_BODY = "This may be temporary. You can try again.";
+export const COACH_DRAFT_SAVED_TEXT = "Your current draft was saved";
+
+export const COACH_CONTEXT_STRIP_MANAGE_LABEL = "Manage context";
+export const COACH_CONTEXT_STRIP_EMPTY_TEXT = "No context sources enabled";
+export const COACH_MANAGE_CONTEXT_SAVE_LABEL = "Save Changes";
+
 export type CoachTileTone = "sage" | "rose" | "amber" | "muted";
 
-export type CoachTileAction =
-  | { type: "prompt"; question: string }
-  | { type: "link"; href: string };
-
-export interface CoachEntryTile {
+export interface CoachStarterCard {
   id: string;
   eyebrow: string;
   eyebrowTone: CoachTileTone;
   title: string;
   description: string;
+  ctaLabel: string;
   highlighted?: boolean;
-  action: CoachTileAction;
 }
 
-export const COACH_ENTRY_TILES: CoachEntryTile[] = [
+export const COACH_STARTER_CARDS: CoachStarterCard[] = [
   {
-    id: "explore-pattern",
-    eyebrow: "Insight window",
+    id: "understand-pattern",
+    eyebrow: "Understand a pattern",
     eyebrowTone: "sage",
-    title: "Explore a pattern",
-    description: "Review patterns in your energy and mood logs.",
-    action: {
-      type: "prompt",
-      question: "What patterns have you noticed in my energy and mood?",
-    },
+    title: "Understand a pattern",
+    description: "Explore something you've noticed in your logs.",
+    ctaLabel: "Explore pattern →",
   },
   {
-    id: "reflect-today",
-    eyebrow: "Current wave",
+    id: "talk-through",
+    eyebrow: "Talk something through",
     eyebrowTone: "rose",
-    title: "Reflect on today",
-    description:
-      "Explore how you felt this morning based on your check-in.",
+    title: "Talk something through",
+    description: "Use Coach as a private space to unpack what's on your mind.",
+    ctaLabel: "Start conversation →",
     highlighted: true,
-    action: {
-      type: "prompt",
-      question: "How did I feel this morning based on my check-in?",
-    },
   },
   {
-    id: "prepare-partner",
-    eyebrow: "Connection tool",
+    id: "prepare-to-share",
+    eyebrow: "Prepare to share",
     eyebrowTone: "amber",
-    title: "Prepare to talk to my partner",
-    description: "Help your partner understand how you're feeling.",
-    action: { type: "link", href: "/coach/translate" },
+    title: "Prepare to share",
+    description: "Turn what you're feeling into clear, intentional partner context.",
+    ctaLabel: "Create partner context →",
   },
   {
-    id: "reflect-privately",
-    eyebrow: "Sovereign space",
+    id: "reflect",
+    eyebrow: "Reflect",
     eyebrowTone: "muted",
-    title: "Reflect privately",
-    description: "Draft questions about your feelings and desires.",
-    action: {
-      type: "prompt",
-      question:
-        "Help me draft some private questions about my feelings and desires.",
-    },
+    title: "Reflect",
+    description: "Take a private moment to think something through.",
+    ctaLabel: "Start reflection →",
   },
 ];
 
-// This is the load-bearing truth claim about what Coach can and can't see.
-// Keep the exact wording if you touch this file — it's referenced from
-// CoachView and CoachContextPanel.
-export const COACH_DISCLOSURE_TEXT =
-  "Coach can use your cycle and wellbeing logs. Your Vault and private intimacy content are not included unless you explicitly choose to bring something into a conversation.";
+export const COACH_STARTER_PROMPTS: Record<string, string> = {
+  "understand-pattern": "I'd like to understand a pattern in what I've been logging recently.",
+  "talk-through": "I want to talk something through.",
+  "prepare-to-share": "I want help turning something I'm feeling into partner context.",
+  reflect: "I'd like to take a private moment to reflect.",
+};
 
-export const COACH_CONTEXT_INCLUDED: string[] = [
-  "Mood Logs",
-  "Energy Metrics",
-  "Stress Indicators",
-  "Cycle History",
-];
-
-export const COACH_CONTEXT_NEVER_SHARED: string[] = [
-  "Vault Entries",
-  "Shared Reflections",
-  "Partner Messages",
-];
-
-export interface CoachSampleReply {
-  fromLogs: string;
-  general: string;
+export interface CoachContextSourceCopy {
+  key: "dailyCheckIns" | "cycleContext" | "periodHistory" | "recentObservations";
+  label: string;
+  description: string;
 }
 
-// TODO(V1-COACH): wire to authenticated Coach service — this is a static,
-// non-personalized sample reply used only to show the intended UI shape.
-export const SAMPLE_REPLY: CoachSampleReply = {
-  fromLogs:
-    "Across your last several cycle-log entries, energy ratings tend to dip slightly in the days leading up to your period and recover shortly after.",
-  general:
-    "Many people notice shifts in energy tied to hormonal changes across the cycle. This is general context, not a diagnosis, and it doesn't replace advice from a healthcare provider.",
-};
+export const COACH_CONTEXT_SOURCES: CoachContextSourceCopy[] = [
+  {
+    key: "dailyCheckIns",
+    label: "Daily check-ins",
+    description: "Mood, energy, stress and other daily entries",
+  },
+  {
+    key: "cycleContext",
+    label: "Cycle context",
+    description: "Known cycle state and current period context",
+  },
+  {
+    key: "recentObservations",
+    label: "Recent observations",
+    description: "Patterns calculated from your logged history",
+  },
+  {
+    key: "periodHistory",
+    label: "Period history",
+    description: "Past period dates and recorded period information",
+  },
+];
+
+export const COACH_RECENT_OBSERVATIONS_UNAVAILABLE_TEXT =
+  "Not available yet — this will unlock once SheSync+ can calculate real patterns from your history.";
+
+export const COACH_CONTEXT_NOT_ACCESSIBLE: string[] = [
+  "Vault entries",
+  "Partner messages and replies",
+  "Private relationship reflections",
+  "Mutual Reveal private answers",
+  "Repair private answers",
+  "Weekly Us private answers",
+];
+
+export const COACH_PARTNER_TRANSLATION_CTA = "Turn this into partner context →";
