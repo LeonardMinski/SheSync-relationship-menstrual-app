@@ -68,7 +68,11 @@ export async function GET(
 
     if (answersError) {
       console.error('[relationship-sessions/:id] failed to fetch answers', answersError)
-      return createErrorResponse(answersError.message, answersError.message.includes('not a participant') ? 403 : 500)
+      const isForbidden = answersError.message.includes('not a participant')
+      return createErrorResponse(
+        isForbidden ? answersError.message : 'Failed to load session answers',
+        isForbidden ? 403 : 500,
+      )
     }
 
     const answers: SessionAnswer[] = ((answerRows ?? []) as AnswerRow[]).map((row) => ({

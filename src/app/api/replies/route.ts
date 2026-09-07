@@ -37,7 +37,8 @@ export async function GET(request: NextRequest) {
 
     if (error) {
       console.error('[replies] failed to fetch', error)
-      return createErrorResponse(error.message, statusForReplyRpcError(error.message))
+      const status = statusForReplyRpcError(error.message)
+      return createErrorResponse(status === 500 ? 'Failed to load replies' : error.message, status)
     }
 
     return createSuccessResponse({ replies: ((data ?? []) as ReplyRow[]).map(toReply) })
@@ -68,7 +69,8 @@ export async function POST(request: NextRequest) {
 
     if (error) {
       console.error('[replies] failed to add', error)
-      return createErrorResponse(error.message, statusForReplyRpcError(error.message))
+      const status = statusForReplyRpcError(error.message)
+      return createErrorResponse(status === 500 ? 'Failed to add reply' : error.message, status)
     }
 
     const { data: row, error: fetchError } = await supabase

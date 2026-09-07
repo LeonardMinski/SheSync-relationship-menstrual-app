@@ -32,7 +32,8 @@ export async function POST(
 
     if (error) {
       console.error('[relationship-sessions/:id/ready] failed', error)
-      return createErrorResponse(error.message, statusForSessionRpcError(error.message))
+      const status = statusForSessionRpcError(error.message)
+      return createErrorResponse(status === 500 ? 'Failed to mark ready' : error.message, status)
     }
 
     return createSuccessResponse(null, 'Marked ready')
