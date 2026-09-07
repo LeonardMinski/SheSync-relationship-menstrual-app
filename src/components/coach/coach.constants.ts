@@ -138,16 +138,3 @@ export const SAMPLE_REPLY: CoachSampleReply = {
   general:
     "Many people notice shifts in energy tied to hormonal changes across the cycle. This is general context, not a diagnosis, and it doesn't replace advice from a healthcare provider.",
 };
-
-/**
- * Static content for /coach/translate (Partner Translation). Like the rest
- * of this file, nothing here is wired to a real backend — see
- * PartnerTranslationView.tsx for the FeaturePlaceholder shown instead of a
- * fake "sent" confirmation when the user clicks "Share with your partner".
- */
-export const TRANSLATION_DEFAULT_EXCLUSIONS: string[] = ["Advice or solutions"];
-
-export const TRANSLATION_NOT_SENT_TITLE =
-  "This is a design preview — nothing is sent yet";
-export const TRANSLATION_NOT_SENT_DESCRIPTION =
-  "There's no real sharing pipeline connected here. Your draft stays on this screen and isn't saved or delivered to your partner.";

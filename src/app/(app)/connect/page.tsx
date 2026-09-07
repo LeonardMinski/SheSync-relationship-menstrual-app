@@ -14,6 +14,8 @@ import { PartnerConnectSummary } from "@/components/connect/PartnerConnectSummar
 import { ReflectionsTab } from "@/components/connect/ReflectionsTab";
 import { SupportiveActions } from "@/components/connect/SupportiveActions";
 import { TodaysIntimacySuggestion } from "@/components/connect/TodaysIntimacySuggestion";
+import { RelationshipHub } from "@/components/relationship/RelationshipHub";
+import { resolveActivePartner } from "@/features/partner/activePartner";
 import { usePartnerPortalData } from "@/hooks/usePartnerPortalData";
 
 type ConnectTab = "explore" | "boundaries" | "reflections";
@@ -28,7 +30,9 @@ export default function ConnectPage() {
   const [activeTab, setActiveTab] = useState<ConnectTab>("explore");
   const [activeCategory, setActiveCategory] = useState<CardCategory | "All">("All");
   const [activeCard, setActiveCard] = useState<IntimacyCard | null>(null);
-  const { partnerData } = usePartnerPortalData();
+  const { ownerLink, viewerLink, partnerData } = usePartnerPortalData();
+  const activePartner = resolveActivePartner(ownerLink, viewerLink);
+  const connectedSince = ownerLink?.status === "active" ? ownerLink.created_at : viewerLink?.status === "active" ? viewerLink.created_at : null;
 
   function handleTabKeyDown(event: KeyboardEvent<HTMLButtonElement>) {
     if (event.key !== "ArrowRight" && event.key !== "ArrowLeft") return;
@@ -55,6 +59,16 @@ export default function ConnectPage() {
           Share what matters, build understanding, and explore intimacy on your terms.
         </p>
       </div>
+
+      {activePartner && (
+        <div className="rounded-[1.5rem] border border-border bg-bg-surface p-6">
+          <RelationshipHub
+            partnerName={activePartner.name}
+            partnerId={activePartner.id}
+            connectedSince={connectedSince}
+          />
+        </div>
+      )}
 
       <div className="grid gap-5 lg:grid-cols-2">
         <div className="space-y-4">

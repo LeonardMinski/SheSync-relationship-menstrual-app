@@ -91,13 +91,12 @@ export default function CoachView() {
 
   const handleShareWithPartner = () => {
     if (!turn) return;
-    // No cross-route state store here on purpose — Coach and Partner
-    // Translation are both placeholder-backed, so the bridge between them
-    // stays as simple as possible: a plain query param the destination
-    // reads to pre-fill the private insight field. See
-    // PartnerTranslationView.tsx.
+    // No cross-route state store here on purpose — a plain query param the
+    // destination reads to pre-fill "what I want them to know". Partner
+    // Translation itself is real (see PartnerTranslationComposer); Coach
+    // remains placeholder-backed.
     router.push(
-      `/coach/translate?insight=${encodeURIComponent(turn.reply.fromLogs)}`,
+      `/connect/translate?insight=${encodeURIComponent(turn.reply.fromLogs)}`,
     );
   };
 
