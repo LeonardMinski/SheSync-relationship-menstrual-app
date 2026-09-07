@@ -1,7 +1,6 @@
-import { EyeOff, Lock, ShieldCheck, Smile } from "lucide-react";
+import { Droplet, EyeOff, Lock, ShieldCheck, Smile } from "lucide-react";
 
 import type { PartnerSharedData } from "@/types";
-import { getMoodEmoji, getPhaseDisplayName } from "@/features/partner/partner.selectors";
 
 export function PartnerSharedSummary({
   partnerData,
@@ -30,28 +29,36 @@ export function PartnerSharedSummary({
   );
 }
 
+/**
+ * There is no real cycle-phase detection model anywhere in this app (see
+ * services/cycle/dailyMood.ts's placeholderPhase) — only whether a period
+ * is active today is real. This used to render that placeholder as a
+ * specific phase name (Menstrual/Follicular/Ovulation/Luteal) plus a
+ * fabricated, unconditional "energy might be lower" caption; neither was
+ * ever a real signal. Now it states only the one real fact honestly.
+ */
 function PhasePanel({ partnerData }: { partnerData: PartnerSharedData }) {
+  const periodActiveToday = partnerData.todayCycle?.phase === "menstrual";
+
   return (
     <div className="rounded-[1.5rem] bg-bg p-6">
       <p className="text-xs font-black uppercase tracking-[0.18em] text-muted-foreground">
-        Current Phase
+        Period Status
       </p>
       {partnerData.privacySettings.shareCyclePhase && partnerData.todayCycle ? (
-        <div data-testid="cycle-phase">
+        <div data-testid="period-status">
           <div className="mt-5 flex items-center gap-3">
-            <span className="text-5xl" aria-hidden="true">
-              {getMoodEmoji(partnerData.todayCycle.phase || "")}
-            </span>
-            <h2 className="text-5xl font-black text-foreground">
-              {getPhaseDisplayName(partnerData.todayCycle.phase || "unknown")}
+            <Droplet
+              className={`h-10 w-10 ${periodActiveToday ? "text-[color:var(--accent-rose)]" : "text-muted-foreground"}`}
+              aria-hidden="true"
+            />
+            <h2 className="text-3xl font-black text-foreground">
+              {periodActiveToday ? "Period active today" : "No active period today"}
             </h2>
           </div>
-          <p className="mt-5 max-w-xl text-lg text-muted-foreground">
-            Energy might be lower today. A quiet evening could be appreciated.
-          </p>
         </div>
       ) : (
-        <LockedPanel label="Cycle phase hidden" />
+        <LockedPanel label="Period status hidden" />
       )}
     </div>
   );

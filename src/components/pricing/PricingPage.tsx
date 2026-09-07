@@ -387,8 +387,9 @@ const Pricing = () => {
                 How secure is my data?
               </h3>
               <p className="text-gray-600 dark:text-gray-300 text-sm">
-                Your data is encrypted and secure. We never share your personal
-                information with third parties.
+                We use encryption in transit and follow modern security practices.
+                We only share your data with people you explicitly choose to share
+                it with — never with anyone else.
               </p>
             </div>
             <div className="bg-white/70 dark:bg-gray-800/70 backdrop-blur-sm rounded-xl p-6 border border-rose-200 dark:border-gray-700">
