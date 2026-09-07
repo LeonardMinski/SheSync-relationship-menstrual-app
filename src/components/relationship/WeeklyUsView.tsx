@@ -123,6 +123,7 @@ export function WeeklyUsView({ partnerName }: { partnerName: string }) {
             <div key={prompt.key} className="rounded-[1.5rem] border border-border bg-bg-surface p-5">
               <h2 className="font-display text-lg italic text-foreground">{prompt.text}</h2>
               <textarea
+                aria-label={`Your answer to: ${prompt.text}`}
                 value={drafts[prompt.key] ?? ""}
                 onChange={(event) => setDrafts((current) => ({ ...current, [prompt.key]: event.target.value }))}
                 onBlur={() => {

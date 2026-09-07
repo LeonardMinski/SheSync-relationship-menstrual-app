@@ -146,10 +146,11 @@ export function SupportPreferencesView({ partnerName }: { partnerName: string })
                 <div className="flex items-center justify-between gap-3">
                   <h2 className="font-display text-lg italic text-foreground">{label}</h2>
                   <div className="flex items-center gap-3">
-                    <span className="text-xs font-semibold text-muted-foreground">
+                    <label htmlFor={`share-toggle-${value}`} className="text-xs font-semibold text-muted-foreground">
                       Share with {partnerName}
-                    </span>
+                    </label>
                     <Toggle
+                      id={`share-toggle-${value}`}
                       checked={pref?.isShared ?? false}
                       disabled={!pref || (pref.preferredSupports.length === 0 && !pref.additionalContext)}
                       onChange={(checked) => void handleToggleShared(value, checked)}

@@ -116,7 +116,11 @@ export function PartnerHome({
           <h2 className="font-display text-lg italic text-foreground">Something you appreciated today?</h2>
           <p className="mt-2 text-sm text-muted-foreground">Send a quick, private note to say thanks or make them smile.</p>
           <div className="mt-3 flex gap-2">
+            <label htmlFor="partner-home-appreciation-note" className="sr-only">
+              Write a warm note
+            </label>
             <input
+              id="partner-home-appreciation-note"
               type="text"
               value={note}
               onChange={(event) => setNote(event.target.value)}

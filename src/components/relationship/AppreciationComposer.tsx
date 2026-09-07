@@ -44,6 +44,7 @@ export function AppreciationComposer({ partnerName }: { partnerName: string }) {
         </p>
 
         <textarea
+          aria-label="Appreciation message"
           value={content}
           onChange={(event) => setContent(event.target.value)}
           rows={5}
