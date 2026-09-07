@@ -8,6 +8,7 @@ import { RecentEntries } from "@/components/cycle/RecentEntries";
 import { HomeGreeting } from "@/components/home/HomeGreeting";
 import { HomeObservationCard } from "@/components/home/HomeObservationCard";
 import { HomeRelationshipCard } from "@/components/home/HomeRelationshipCard";
+import { IncomingSharedContextCard } from "@/components/home/IncomingSharedContextCard";
 import { QuickCheckIn } from "@/components/home/QuickCheckIn";
 import { TopNavbar } from "@/components/layout/TopNavbar";
 import { buildDashboardSummary } from "@/features/dashboard/dashboard.utils";
@@ -45,7 +46,7 @@ export default function Dashboard() {
     updateFormState,
     user,
   } = useCyclePageState();
-  const { ownerLink, invitePartner } = usePartnerPortalData();
+  const { ownerLink, viewerLink, invitePartner } = usePartnerPortalData();
   const { loading: periodLoading, activePeriod, history } = usePeriodPageState();
 
   if (authLoading || cycleLoading) {
@@ -126,6 +127,13 @@ export default function Dashboard() {
           </div>
           <HomeRelationshipCard ownerLink={ownerLink} onInvite={invitePartner} />
         </div>
+
+        {viewerLink?.status === "active" && (
+          <IncomingSharedContextCard
+            partnerId={viewerLink.owner_user_id}
+            partnerName={viewerLink.personName}
+          />
+        )}
 
         {/* Secondary content: full wellbeing history and detail, below the
             primary Home experience — see Phase 10's priority ordering. */}
