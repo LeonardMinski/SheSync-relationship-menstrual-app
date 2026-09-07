@@ -2,11 +2,13 @@ import { fireEvent, render, screen } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import CoachView from "./CoachView";
+import { useAuth } from "@/context/AuthContext";
 import { useCoachWorkspace } from "@/hooks/useCoachWorkspace";
 import { usePatterns } from "@/hooks/usePatterns";
 
 const pushMock = vi.fn();
 vi.mock("next/navigation", () => ({ useRouter: () => ({ push: pushMock }) }));
+vi.mock("@/context/AuthContext", () => ({ useAuth: vi.fn() }));
 vi.mock("@/hooks/useCoachWorkspace", () => ({ useCoachWorkspace: vi.fn() }));
 vi.mock("@/hooks/usePatterns", () => ({ usePatterns: vi.fn() }));
 
@@ -32,7 +34,10 @@ function mockWorkspace(overrides: Partial<typeof BASE_WORKSPACE> = {}) {
 
 beforeEach(() => {
   vi.clearAllMocks();
+  window.localStorage.clear();
   vi.mocked(usePatterns).mockReturnValue({ observations: [], loading: false, error: null });
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  vi.mocked(useAuth).mockReturnValue({ user: { id: "user-1", name: "Person" } } as any);
 });
 
 describe("CoachView — first visit / empty conversation", () => {
@@ -238,6 +243,50 @@ describe("CoachView — Recent Observations wired to real Pattern Engine data", 
     expect(screen.getByText("Vault entries")).toBeInTheDocument();
     expect(screen.getByText("Partner messages and replies")).toBeInTheDocument();
     expect(screen.getByText("Private relationship reflections")).toBeInTheDocument();
+  });
+});
+
+describe("CoachView — context selection persists per user, not just for the session", () => {
+  it("persists a saved context selection to localStorage keyed by the current user", () => {
+    mockWorkspace();
+    render(<CoachView />);
+
+    fireEvent.click(screen.getByText("Manage context"));
+    fireEvent.click(screen.getByLabelText("Daily check-ins"));
+    fireEvent.click(screen.getByText("Save Changes"));
+
+    const stored = JSON.parse(window.localStorage.getItem("shesync-coach-context:user-1") ?? "null");
+    expect(stored).toEqual({ dailyCheckIns: false, cycleContext: true, periodHistory: true, recentObservations: true });
+  });
+
+  it("restores a previously saved choice on the next mount instead of silently reverting to defaults", () => {
+    window.localStorage.setItem(
+      "shesync-coach-context:user-1",
+      JSON.stringify({ dailyCheckIns: false, cycleContext: false, periodHistory: true, recentObservations: true }),
+    );
+    mockWorkspace();
+    render(<CoachView />);
+
+    fireEvent.click(screen.getByText("Manage context"));
+
+    expect(screen.getByLabelText("Daily check-ins")).not.toBeChecked();
+    expect(screen.getByLabelText("Cycle context")).not.toBeChecked();
+    expect(screen.getByLabelText("Period history")).toBeChecked();
+  });
+
+  it("keeps a different user's saved context choice separate — a shared browser can't leak one account's preference into another's", () => {
+    window.localStorage.setItem(
+      "shesync-coach-context:someone-else",
+      JSON.stringify({ dailyCheckIns: false, cycleContext: false, periodHistory: false, recentObservations: false }),
+    );
+    mockWorkspace();
+    render(<CoachView />);
+
+    fireEvent.click(screen.getByText("Manage context"));
+
+    expect(screen.getByLabelText("Daily check-ins")).toBeChecked();
+    expect(screen.getByLabelText("Cycle context")).toBeChecked();
+    expect(screen.getByLabelText("Period history")).toBeChecked();
   });
 });
 

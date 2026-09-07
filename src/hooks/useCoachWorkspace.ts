@@ -44,6 +44,7 @@ export function useCoachWorkspace() {
   const [sending, setSending] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [pendingContent, setPendingContent] = useState<string | null>(null);
+  const [pendingContext, setPendingContext] = useState<CoachContextSelection | undefined>(undefined);
 
   const refreshList = useCallback(async () => {
     setLoadingList(true);
@@ -61,6 +62,7 @@ export function useCoachWorkspace() {
     setMessages([]);
     setError(null);
     setPendingContent(null);
+    setPendingContext(undefined);
   }, []);
 
   const openConversation = useCallback(async (id: string) => {
@@ -68,6 +70,7 @@ export function useCoachWorkspace() {
     setLoadingConversation(true);
     setError(null);
     setPendingContent(null);
+    setPendingContext(undefined);
     const result = await getConversation(id);
     setLoadingConversation(false);
     if (result.success) {
@@ -99,6 +102,7 @@ export function useCoachWorkspace() {
       setSending(true);
       setError(null);
       setPendingContent(trimmed);
+      setPendingContext(context);
 
       let conversationId = activeConversationId;
       if (!conversationId) {
@@ -126,6 +130,7 @@ export function useCoachWorkspace() {
       }
 
       setPendingContent(null);
+      setPendingContext(undefined);
       setMessages((current) => [
         ...current.filter((m) => m.id !== optimisticMessage.id),
         result.data.userMessage,
@@ -149,8 +154,8 @@ export function useCoachWorkspace() {
 
   const retry = useCallback(() => {
     if (!pendingContent) return;
-    void sendUserMessage(pendingContent);
-  }, [pendingContent, sendUserMessage]);
+    void sendUserMessage(pendingContent, pendingContext);
+  }, [pendingContent, pendingContext, sendUserMessage]);
 
   return {
     conversations,
