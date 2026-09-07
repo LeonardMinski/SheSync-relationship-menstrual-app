@@ -7,6 +7,10 @@ process.env.NEXT_PUBLIC_SUPABASE_URL ||= "https://test.supabase.co";
 process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ||= "test-anon-key";
 (globalThis as typeof globalThis & { jest: typeof vi }).jest = vi;
 
+// jsdom does not implement scrollIntoView — needed by any component that
+// auto-scrolls a container (e.g. Coach's message list).
+Element.prototype.scrollIntoView ||= vi.fn();
+
 vi.mock("stripe", () => {
   const Stripe = vi.fn() as ReturnType<typeof vi.fn> & {
     errors: {

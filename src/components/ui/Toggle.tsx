@@ -36,7 +36,10 @@ export function Toggle({
           type="checkbox"
           id={toggleId}
           checked={checked}
-          onChange={(e) => onChange(e.target.checked)}
+          onChange={(e) => {
+            if (disabled) return;
+            onChange(e.target.checked);
+          }}
           disabled={disabled}
           className="sr-only"
         />
