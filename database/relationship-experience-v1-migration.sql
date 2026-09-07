@@ -540,6 +540,7 @@ DECLARE
     v_caller uuid := auth.uid();
     v_partner_id uuid;
     v_verified boolean := false;
+    v_memory_id uuid;
 BEGIN
     IF v_caller IS NULL THEN
         RAISE EXCEPTION 'not authenticated';
@@ -590,12 +591,12 @@ BEGIN
         RAISE EXCEPTION 'source record not found or not accessible';
     END IF;
 
-    RETURN (
-        INSERT INTO public.relationship_memories
-            (partner_a_id, partner_b_id, created_by, source_type, source_id, title, content)
-        VALUES (v_caller, v_partner_id, v_caller, p_source_type, p_source_id, p_title, p_content)
-        RETURNING id
-    );
+    INSERT INTO public.relationship_memories
+        (partner_a_id, partner_b_id, created_by, source_type, source_id, title, content)
+    VALUES (v_caller, v_partner_id, v_caller, p_source_type, p_source_id, p_title, p_content)
+    RETURNING id INTO v_memory_id;
+
+    RETURN v_memory_id;
 END;
 $$;
 
