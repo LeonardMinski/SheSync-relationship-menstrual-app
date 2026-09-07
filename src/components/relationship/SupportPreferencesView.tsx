@@ -264,7 +264,7 @@ export function SupportPreferencesView({ partnerName }: { partnerName: string })
             role="tab"
             aria-selected={activeContext === value}
             onClick={() => setActiveContext(value)}
-            className={`min-h-[44px] border-b-2 px-1 pb-3 text-sm font-semibold transition-colors ${
+            className={`min-h-[44px] border-b-2 px-1 pb-3 text-sm font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cta-start ${
               activeContext === value
                 ? "border-[color:var(--accent-rose)] text-foreground"
                 : "border-transparent text-muted-foreground hover:text-foreground"
@@ -286,7 +286,7 @@ export function SupportPreferencesView({ partnerName }: { partnerName: string })
               type="button"
               aria-pressed={preferredSupports.includes(option.value)}
               onClick={() => setPreferredSupports((current) => toggleValue(current, option.value))}
-              className={`min-h-[36px] rounded-full border px-3 py-1.5 text-sm font-semibold transition-colors ${
+              className={`min-h-[36px] rounded-full border px-3 py-1.5 text-sm font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cta-start ${
                 preferredSupports.includes(option.value)
                   ? "border-[color:var(--accent-rose)] bg-[color:var(--accent-rose)]/15 text-[color:var(--accent-rose)]"
                   : "border-border bg-bg-elevated text-foreground"
@@ -322,7 +322,7 @@ export function SupportPreferencesView({ partnerName }: { partnerName: string })
                 type="button"
                 aria-pressed={whatDoesNotHelp.includes(option.value)}
                 onClick={() => setWhatDoesNotHelp((current) => toggleValue(current, option.value))}
-                className={`min-h-[36px] rounded-full border px-3 py-1.5 text-sm font-semibold transition-colors ${
+                className={`min-h-[36px] rounded-full border px-3 py-1.5 text-sm font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cta-start ${
                   whatDoesNotHelp.includes(option.value)
                     ? "border-[color:var(--accent-sage)] bg-[color:var(--accent-sage-soft)] text-[color:var(--accent-sage)]"
                     : "border-border bg-bg-elevated text-muted-foreground"

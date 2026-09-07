@@ -155,7 +155,7 @@ export function PartnerTranslationComposer({
                   type="button"
                   aria-pressed={mightHelp.includes(option.value)}
                   onClick={() => setMightHelp((current) => toggle(current, option.value))}
-                  className={`min-h-[36px] rounded-full border px-3 py-1.5 text-sm font-semibold transition-colors ${
+                  className={`min-h-[36px] rounded-full border px-3 py-1.5 text-sm font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cta-start ${
                     mightHelp.includes(option.value)
                       ? "border-[color:var(--accent-rose)] bg-[color:var(--accent-rose)]/15 text-[color:var(--accent-rose)]"
                       : "border-border bg-bg-elevated text-foreground"
@@ -178,7 +178,7 @@ export function PartnerTranslationComposer({
                   type="button"
                   aria-pressed={dontNeed.includes(option.value)}
                   onClick={() => setDontNeed((current) => toggle(current, option.value))}
-                  className={`min-h-[36px] rounded-full border px-3 py-1.5 text-sm font-semibold transition-colors ${
+                  className={`min-h-[36px] rounded-full border px-3 py-1.5 text-sm font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cta-start ${
                     dontNeed.includes(option.value)
                       ? "border-foreground bg-bg-elevated text-foreground"
                       : "border-border bg-bg-elevated text-muted-foreground"
