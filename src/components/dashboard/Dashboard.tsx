@@ -12,9 +12,11 @@ import { YourWeek } from "@/components/home/YourWeek";
 import { TopNavbar } from "@/components/layout/TopNavbar";
 import { findCycleForDate, toCycleDateKey } from "@/features/cycle/cycle.utils";
 import { deriveHomeState, deriveObservation } from "@/features/home/homeState";
+import { selectHomeObservation } from "@/features/patterns/engine";
 import { useAuth } from "@/context/AuthContext";
 import { useCycleLogger } from "@/hooks/useCycleLogger";
 import { usePartnerPortalData } from "@/hooks/usePartnerPortalData";
+import { usePatterns } from "@/hooks/usePatterns";
 import { usePeriodPageState } from "@/hooks/usePeriodPageState";
 
 import { QuickExploreLinks } from "./QuickExploreLinks";
@@ -29,6 +31,7 @@ export default function Dashboard() {
     todayLog,
     history,
   } = usePeriodPageState();
+  const { observations } = usePatterns();
 
   if (authLoading || cycleLoading) {
     return (
@@ -50,7 +53,14 @@ export default function Dashboard() {
   const firstName = user.name?.split(" ")[0] || user.name || "there";
 
   const homeState = deriveHomeState({ activePeriod, periodHistory: history });
-  const observation = deriveObservation(homeState);
+  // Real Pattern Engine observation takes priority; falls back to the
+  // existing honest "still learning" copy when nothing sufficient exists
+  // yet — never a fabricated replacement. See features/patterns/engine.ts.
+  const patternObservation = selectHomeObservation(observations, Boolean(activePeriod));
+  const fallbackObservation = deriveObservation(homeState);
+  const observation = patternObservation
+    ? { title: patternObservation.title, body: patternObservation.statement }
+    : fallbackObservation;
   const todaysEntry = findCycleForDate(cycles, today) ?? null;
 
   const dayPillLabel =

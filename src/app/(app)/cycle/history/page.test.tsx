@@ -4,11 +4,13 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import CycleHistoryPage from "./page";
 import { useAuth } from "@/context/AuthContext";
 import { useCycleLogger } from "@/hooks/useCycleLogger";
+import { usePatterns } from "@/hooks/usePatterns";
 import { usePeriodPageState } from "@/hooks/usePeriodPageState";
 import { getPeriodById } from "@/services/period";
 
 vi.mock("@/context/AuthContext", () => ({ useAuth: vi.fn() }));
 vi.mock("@/hooks/useCycleLogger", () => ({ useCycleLogger: vi.fn() }));
+vi.mock("@/hooks/usePatterns", () => ({ usePatterns: vi.fn() }));
 vi.mock("@/hooks/usePeriodPageState", () => ({ usePeriodPageState: vi.fn() }));
 vi.mock("@/services/period", () => ({ getPeriodById: vi.fn() }));
 
@@ -55,6 +57,7 @@ beforeEach(() => {
     clearSuccessMessage: vi.fn(),
     refresh: vi.fn(),
   });
+  vi.mocked(usePatterns).mockReturnValue({ observations: [], loading: false, error: null });
 });
 
 afterEach(() => {
@@ -123,5 +126,36 @@ describe("Cycle history page", () => {
 
     const summary = within(screen.getByText("Days checked in").closest("div") as HTMLElement);
     expect(summary.getByText("1")).toBeInTheDocument(); // one cycle_data entry in September
+  });
+
+  it("shows an honest learning state in Your Patterns when there are no real observations yet", () => {
+    render(<CycleHistoryPage />);
+
+    expect(screen.getByText("Your Patterns")).toBeInTheDocument();
+    expect(screen.getByText(/still learning your patterns/i)).toBeInTheDocument();
+  });
+
+  it("shows real Pattern Engine observations, each with its evidence, when they exist", () => {
+    vi.mocked(usePatterns).mockReturnValue({
+      observations: [
+        {
+          id: "back_pain_recurrence",
+          type: "back_pain_recurrence",
+          title: "Lower-back pain",
+          statement: "You logged lower-back pain during 4 of your last 5 periods.",
+          evidence: { periodsConsidered: 5, occurrences: 4 },
+          sufficiency: "sufficient",
+          window: { description: "last 5 completed periods" },
+          generatedAt: "2026-09-01T00:00:00.000Z",
+        },
+      ],
+      loading: false,
+      error: null,
+    });
+
+    render(<CycleHistoryPage />);
+
+    expect(screen.getByText("You logged lower-back pain during 4 of your last 5 periods.")).toBeInTheDocument();
+    expect(screen.getByText("Based on 5 recent periods")).toBeInTheDocument();
   });
 });

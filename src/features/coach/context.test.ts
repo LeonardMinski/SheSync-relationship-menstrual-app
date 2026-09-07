@@ -57,7 +57,7 @@ describe("buildCoachContext — source inclusion", () => {
     expect(result.contextText).not.toContain("mood 4/10");
   });
 
-  it("never includes Recent Observations even if the caller explicitly requests it — no Pattern Engine exists", async () => {
+  it("does not include Recent Observations when there is no real logged history to calculate from, even if requested", async () => {
     const supabase = makeSupabase({});
 
     const result = await buildCoachContext(supabase, "user-1", {
@@ -70,6 +70,57 @@ describe("buildCoachContext — source inclusion", () => {
     expect(result.sourcesUsed).not.toContain("recentObservations");
     expect(result.contextText.toLowerCase()).not.toContain("pattern");
     expect(result.contextText.toLowerCase()).not.toContain("observation");
+  });
+
+  it("includes Recent Observations, computed by the real deterministic Pattern Engine, once real logged history exists", async () => {
+    const supabase = makeSupabase({
+      periods: {
+        data: [
+          { id: "p1", user_id: "user-1", start_date: "2026-06-01", end_date: "2026-06-04", period_day_logs: [] },
+          { id: "p2", user_id: "user-1", start_date: "2026-07-01", end_date: "2026-07-05", period_day_logs: [] },
+          { id: "p3", user_id: "user-1", start_date: "2026-08-01", end_date: "2026-08-06", period_day_logs: [] },
+        ],
+        error: null,
+      },
+      cycle_data: { data: [], error: null },
+    });
+
+    const result = await buildCoachContext(supabase, "user-1", {
+      dailyCheckIns: false,
+      cycleContext: false,
+      periodHistory: false,
+      recentObservations: true,
+    });
+
+    expect(result.sourcesUsed).toContain("recentObservations");
+    expect(result.contextText).toContain("Recent observations (calculated from your logged history, not AI-generated):");
+    expect(result.contextText).toContain("Your recent periods have lasted between 4 and 6 days.");
+    // Coach is handed a pre-computed statement, never raw per-day logs to pattern-match itself.
+    expect(result.contextText).not.toContain("period_day_logs");
+  });
+
+  it("still excludes Recent Observations when the caller does not request it, even though real data exists", async () => {
+    const supabase = makeSupabase({
+      periods: {
+        data: [
+          { id: "p1", user_id: "user-1", start_date: "2026-06-01", end_date: "2026-06-04", period_day_logs: [] },
+          { id: "p2", user_id: "user-1", start_date: "2026-07-01", end_date: "2026-07-05", period_day_logs: [] },
+          { id: "p3", user_id: "user-1", start_date: "2026-08-01", end_date: "2026-08-06", period_day_logs: [] },
+        ],
+        error: null,
+      },
+      cycle_data: { data: [], error: null },
+    });
+
+    const result = await buildCoachContext(supabase, "user-1", {
+      dailyCheckIns: false,
+      cycleContext: false,
+      periodHistory: false,
+      recentObservations: false,
+    });
+
+    expect(result.sourcesUsed).not.toContain("recentObservations");
+    expect(result.contextText.toLowerCase()).not.toContain("recent observations");
   });
 
   it("returns an honest 'no data available' message when nothing is requested or found", async () => {

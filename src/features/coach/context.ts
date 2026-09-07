@@ -1,8 +1,11 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 
 import { getAverageCycleLength, getPeriodDay, MIN_COMPLETED_PERIODS_FOR_AVERAGE } from "@/features/period/period.utils";
+import { generateObservations } from "@/features/patterns/engine";
+import { PATTERN_THRESHOLDS } from "@/features/patterns/thresholds";
+import type { PeriodWithDayLogs } from "@/features/patterns/periodObservations";
 import type { CoachContextSelection } from "@/types/coach";
-import type { Period, PeriodSummary } from "@/types/period";
+import type { Period, PeriodDayLog, PeriodSummary } from "@/types/period";
 
 const DAILY_CHECKIN_LOOKBACK_DAYS = 14;
 const DAILY_CHECKIN_MAX_ENTRIES = 10;
@@ -18,10 +21,13 @@ type CycleDataRow = { date: string; mood: number | null; energy: number | null; 
 
 /**
  * Builds Coach's context strictly from real, already-logged data, and only
- * from the sources the caller both requested AND is genuinely allowed —
- * Recent Observations is never included regardless of what's requested,
- * because there is no real Pattern Engine yet. Nothing here infers,
- * predicts, or fabricates; every line is traceable to a stored value.
+ * from the sources the caller both requested AND is genuinely allowed.
+ * Recent Observations (see features/patterns/engine.ts) runs the same
+ * deterministic, non-AI Pattern Engine used by Home/Cycle — Coach is
+ * handed already-computed statements, never raw logs to pattern-match
+ * itself, and never asked to discover a trend on its own. Nothing here
+ * infers, predicts, or fabricates; every line is traceable to a stored
+ * value or a deterministic calculation over stored values.
  */
 export async function buildCoachContext(
   supabase: SupabaseClient,
@@ -115,11 +121,44 @@ export async function buildCoachContext(
     }
   }
 
-  // Recent Observations is never included — see CoachContextSelection's
-  // doc comment. There is no real deterministic Pattern Engine yet, so
-  // fabricating "patterns" here would violate the product's no-fabrication
-  // rule. This is enforced here, not just hidden in the UI, so a client
-  // bug or a direct API call can't smuggle a fake observation in.
+  if (selection.recentObservations) {
+    const { data: periodRows } = await supabase
+      .from("periods")
+      .select("*, period_day_logs(*)")
+      .eq("user_id", userId)
+      .not("end_date", "is", null)
+      .order("start_date", { ascending: false })
+      .limit(PATTERN_THRESHOLDS.windows.recentCompletedPeriods);
+
+    const sinceKey = new Date();
+    sinceKey.setDate(sinceKey.getDate() - (PATTERN_THRESHOLDS.windows.dailyCheckInDays - 1));
+    const { data: cycleRows } = await supabase
+      .from("cycle_data")
+      .select("date, mood")
+      .eq("user_id", userId)
+      .gte("date", sinceKey.toISOString().split("T")[0])
+      .order("date", { ascending: false });
+
+    const periods: PeriodWithDayLogs[] = (
+      (periodRows ?? []) as (Period & { period_day_logs: PeriodDayLog[] })[]
+    ).map((row) => {
+      const { period_day_logs: logs, ...period } = row;
+      return { period, logs: logs ?? [] };
+    });
+    const cycleEntries = ((cycleRows ?? []) as { date: string; mood: number | null }[])
+      .filter((row): row is { date: string; mood: number } => typeof row.mood === "number")
+      .map((row) => ({ date: row.date, mood: row.mood }));
+
+    // Same deterministic, non-AI engine that powers Home/Cycle — Coach
+    // receives already-computed observations, it never sees raw logs and
+    // is never asked (or able) to discover a pattern itself.
+    const observations = generateObservations({ periods, cycleEntries });
+    if (observations.length > 0) {
+      const lines = observations.map((observation) => `- ${observation.statement}`);
+      sections.push(`Recent observations (calculated from your logged history, not AI-generated):\n${lines.join("\n")}`);
+      sourcesUsed.push("recentObservations");
+    }
+  }
 
   return {
     contextText: sections.length > 0 ? sections.join("\n\n") : "No logged data is currently available for this conversation.",

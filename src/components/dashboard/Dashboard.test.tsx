@@ -5,11 +5,13 @@ import Dashboard from "./Dashboard";
 import { useAuth } from "@/context/AuthContext";
 import { useCycleLogger } from "@/hooks/useCycleLogger";
 import { usePartnerPortalData } from "@/hooks/usePartnerPortalData";
+import { usePatterns } from "@/hooks/usePatterns";
 import { usePeriodPageState } from "@/hooks/usePeriodPageState";
 
 vi.mock("@/context/AuthContext", () => ({ useAuth: vi.fn() }));
 vi.mock("@/hooks/useCycleLogger", () => ({ useCycleLogger: vi.fn() }));
 vi.mock("@/hooks/usePartnerPortalData", () => ({ usePartnerPortalData: vi.fn() }));
+vi.mock("@/hooks/usePatterns", () => ({ usePatterns: vi.fn() }));
 vi.mock("@/hooks/usePeriodPageState", () => ({ usePeriodPageState: vi.fn() }));
 
 vi.mock("@/components/home/DailyCheckIn", () => ({
@@ -91,6 +93,8 @@ function setDefaults() {
     clearSuccessMessage: vi.fn(),
     refresh: vi.fn(),
   });
+
+  vi.mocked(usePatterns).mockReturnValue({ observations: [], loading: false, error: null });
 }
 
 describe("Dashboard (Home) — target section hierarchy", () => {
@@ -146,7 +150,7 @@ describe("Dashboard (Home) — target section hierarchy", () => {
     expect(screen.getByTestId("your-week")).toHaveTextContent("your week (1 entries)");
   });
 
-  it("renders What We're Noticing using the same evidence-gated observation as before", () => {
+  it("renders What We're Noticing using the same evidence-gated observation as before when Pattern Engine has nothing sufficient", () => {
     setDefaults();
     render(<Dashboard />);
 
@@ -158,5 +162,130 @@ describe("Dashboard (Home) — target section hierarchy", () => {
     render(<Dashboard />);
 
     expect(screen.getByText("relationship card")).toBeInTheDocument();
+  });
+});
+
+describe("Dashboard — What We're Noticing wired to real Pattern Engine observations", () => {
+  it("shows the real Pattern Engine observation instead of the honest-learning fallback once one is sufficient", () => {
+    setDefaults();
+    vi.mocked(usePatterns).mockReturnValue({
+      observations: [
+        {
+          id: "period_duration_range",
+          type: "period_duration_range",
+          title: "Period duration",
+          statement: "Your recent periods have lasted between 4 and 5 days.",
+          evidence: { periodsConsidered: 3, minDays: 4, maxDays: 5 },
+          sufficiency: "sufficient",
+          window: { description: "last 3 completed periods" },
+          generatedAt: "2026-09-01T00:00:00.000Z",
+        },
+      ],
+      loading: false,
+      error: null,
+    });
+
+    render(<Dashboard />);
+
+    expect(screen.getByText("Your recent periods have lasted between 4 and 5 days.")).toBeInTheDocument();
+    expect(screen.queryByText(/we're learning your patterns/i)).not.toBeInTheDocument();
+  });
+
+  it("shows only ONE observation on Home even when several are available", () => {
+    setDefaults();
+    vi.mocked(usePatterns).mockReturnValue({
+      observations: [
+        {
+          id: "period_duration_range",
+          type: "period_duration_range",
+          title: "Period duration",
+          statement: "Duration statement.",
+          evidence: { periodsConsidered: 3, minDays: 4, maxDays: 5 },
+          sufficiency: "sufficient",
+          window: { description: "x" },
+          generatedAt: "2026-09-01T00:00:00.000Z",
+        },
+        {
+          id: "checkin_consistency",
+          type: "checkin_consistency",
+          title: "Daily check-ins",
+          statement: "Check-in statement.",
+          evidence: { daysConsidered: 14, checkedInDays: 10 },
+          sufficiency: "sufficient",
+          window: { description: "x" },
+          generatedAt: "2026-09-01T00:00:00.000Z",
+        },
+      ],
+      loading: false,
+      error: null,
+    });
+
+    render(<Dashboard />);
+
+    expect(screen.getByText("Duration statement.")).toBeInTheDocument();
+    expect(screen.queryByText("Check-in statement.")).not.toBeInTheDocument();
+  });
+
+  it("falls back to the honest learning state rather than a fabricated observation when only 'emerging' evidence exists", () => {
+    setDefaults();
+    vi.mocked(usePatterns).mockReturnValue({
+      observations: [
+        {
+          id: "period_duration_range",
+          type: "period_duration_range",
+          title: "Period duration",
+          statement: "Your recent periods have lasted between 4 and 5 days.",
+          evidence: { periodsConsidered: 2, minDays: 4, maxDays: 5 },
+          sufficiency: "emerging",
+          window: { description: "x" },
+          generatedAt: "2026-09-01T00:00:00.000Z",
+        },
+      ],
+      loading: false,
+      error: null,
+    });
+
+    render(<Dashboard />);
+
+    expect(screen.getByText(/we're learning your patterns/i)).toBeInTheDocument();
+    expect(screen.queryByText("Your recent periods have lasted between 4 and 5 days.")).not.toBeInTheDocument();
+  });
+
+  it("prioritises an active-period observation type over a between-periods one when a period is active", () => {
+    setDefaults();
+    vi.mocked(usePeriodPageState).mockReturnValue({
+      ...vi.mocked(usePeriodPageState)(),
+      activePeriod: { id: "p1", user_id: "user-1", start_date: "2026-09-01", end_date: null, created_at: "", updated_at: "" },
+    });
+    vi.mocked(usePatterns).mockReturnValue({
+      observations: [
+        {
+          id: "period_duration_range",
+          type: "period_duration_range",
+          title: "Period duration",
+          statement: "Duration statement.",
+          evidence: { periodsConsidered: 3, minDays: 4, maxDays: 5 },
+          sufficiency: "sufficient",
+          window: { description: "x" },
+          generatedAt: "2026-09-01T00:00:00.000Z",
+        },
+        {
+          id: "cramp_peak_day",
+          type: "cramp_peak_day",
+          title: "Cramps",
+          statement: "Cramps have most often been strongest during Day 1.",
+          evidence: { periodsConsidered: 3, usablePeriods: 3, days: [1], recurrenceCount: 3 },
+          sufficiency: "sufficient",
+          window: { description: "x" },
+          generatedAt: "2026-09-01T00:00:00.000Z",
+        },
+      ],
+      loading: false,
+      error: null,
+    });
+
+    render(<Dashboard />);
+
+    expect(screen.getByText("Cramps have most often been strongest during Day 1.")).toBeInTheDocument();
   });
 });

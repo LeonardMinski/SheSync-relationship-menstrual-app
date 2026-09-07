@@ -4,6 +4,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import { authenticateRequest } from "@/lib/api/authentication";
 import { buildCoachContext } from "@/features/coach/context";
 import { generateCoachReply } from "@/features/coach/openaiClient";
+import { DEFAULT_COACH_CONTEXT_SELECTION } from "@/types/coach";
 
 import { POST } from "./route";
 
@@ -165,7 +166,7 @@ describe("POST /api/coach/conversations/[id]/messages", () => {
     expect(insertUserSingle).toHaveBeenCalled();
   });
 
-  it("always forces recentObservations to false regardless of what the client requests — no Pattern Engine exists", async () => {
+  it("passes the client's requested recentObservations preference through to buildCoachContext unmodified", async () => {
     const { from } = makeSupabase({ conversation: { id: "c1", title: null } });
     authenticateRequestMock.mockResolvedValue({
       user: CALLER,
@@ -181,7 +182,21 @@ describe("POST /api/coach/conversations/[id]/messages", () => {
     );
 
     const selectionArg = vi.mocked(buildCoachContext).mock.calls[0][2];
-    expect(selectionArg.recentObservations).toBe(false);
+    expect(selectionArg.recentObservations).toBe(true);
+  });
+
+  it("merges an omitted recentObservations preference with the default selection rather than forcing it off", async () => {
+    const { from } = makeSupabase({ conversation: { id: "c1", title: null } });
+    authenticateRequestMock.mockResolvedValue({
+      user: CALLER,
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      supabase: { from } as any,
+    });
+
+    await POST(makeRequest("/x", { body: { content: "hi" } }), makeParams("c1"));
+
+    const selectionArg = vi.mocked(buildCoachContext).mock.calls[0][2];
+    expect(selectionArg.recentObservations).toBe(DEFAULT_COACH_CONTEXT_SELECTION.recentObservations);
   });
 
   it("saves both the user message and the assistant reply, and sets the title only on the very first message", async () => {

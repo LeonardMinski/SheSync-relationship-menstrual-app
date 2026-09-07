@@ -16,17 +16,22 @@ import type { CoachContextSelection } from "@/types/coach";
 /**
  * "Manage Context" — a right-side drawer, staged: toggles only affect a
  * local draft until "Save Changes" commits it (and closes the drawer).
- * Recent Observations is always shown disabled: there is no real Pattern
- * Engine yet, so it is never toggleable and never silently enabled — see
- * features/coach/context.ts, which enforces this server-side too,
- * independent of whatever this panel shows.
+ * Recent Observations is only ever toggleable when the caller actually has
+ * real Pattern Engine observations right now (recentObservationsAvailable)
+ * — Pattern Engine V1 is real (features/patterns/engine.ts), but a user
+ * with too little logged data genuinely has nothing to include yet, and
+ * this panel says so honestly rather than offering a toggle with nothing
+ * behind it. features/coach/context.ts independently only ever includes
+ * real, non-empty observations, regardless of what this panel shows.
  */
 export function CoachContextPanel({
   selection,
+  recentObservationsAvailable,
   onSave,
   onClose,
 }: {
   selection: CoachContextSelection;
+  recentObservationsAvailable: boolean;
   onSave: (next: CoachContextSelection) => void;
   onClose: () => void;
 }) {
@@ -44,7 +49,7 @@ export function CoachContextPanel({
 
         <div className="space-y-4">
           {COACH_CONTEXT_SOURCES.map((source) => {
-            const isAvailable = source.key !== "recentObservations";
+            const isAvailable = source.key !== "recentObservations" || recentObservationsAvailable;
             const toggleId = `coach-context-${source.key}`;
             return (
               <div key={source.key} className="flex items-start justify-between gap-4 rounded-2xl border border-border bg-bg-surface p-4">

@@ -43,8 +43,9 @@ export const DEFAULT_COACH_CONTEXT_SELECTION: CoachContextSelection = {
   dailyCheckIns: true,
   cycleContext: true,
   periodHistory: true,
-  // Always unavailable until a real Pattern Engine exists — see
-  // features/coach/context.ts. Kept false by default so an unaware caller
-  // never has to know this source exists to get correct behaviour.
-  recentObservations: false,
+  // Pattern Engine V1 is live — see features/patterns/engine.ts and
+  // features/coach/context.ts. Real, deterministic observations only;
+  // an empty/insufficient result simply contributes nothing, never a
+  // fabricated one.
+  recentObservations: true,
 };
