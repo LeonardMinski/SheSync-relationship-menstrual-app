@@ -6,8 +6,6 @@
  * description, not this comment, for the full list that was removed.
  */
 
-export const COACH_AI_ACTIVE_PILL_TEXT = "AI Coach Active";
-
 export const COACH_HEADER_SUBTITLE =
   "A private space to understand what you're noticing, talk something through, or prepare something to share.";
 
@@ -24,8 +22,6 @@ export const COACH_COMPOSER_PLACEHOLDER =
 export const COACH_COMPOSER_FOLLOW_UP_PLACEHOLDER = "Ask a follow up question...";
 
 export const COACH_COMPOSER_THINKING_PLACEHOLDER = "Coach is thinking...";
-
-export const COACH_PRIVACY_CHIP_TEXT = "Private to you · Not shared with your partner";
 
 export const COACH_PRIVACY_EXPLANATION =
   "Coach only uses the sources you enable below. Your Coach conversation isn't shared with your partner unless you choose to turn something into partner context.";
