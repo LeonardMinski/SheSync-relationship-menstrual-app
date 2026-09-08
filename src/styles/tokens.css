@@ -89,6 +89,16 @@
      Relationship Experience V1 design set. */
   --font-family: var(--font-inter), 'Inter', system-ui, -apple-system, sans-serif;
   --font-display: var(--font-playfair), 'Playfair Display', Georgia, serif;
+
+  /* --font-geist-sans is set on <html> by the `geist` npm package;
+     Instrument Serif is loaded via a <link> to the Google Fonts CSS API
+     (both in src/app/layout.tsx) since it isn't in this Next.js version's
+     next/font/google bundle. These are the EXACT fonts the approved Vault
+     Figma design specifies — used by the shared Sidebar (the canonical
+     desktop shell) and by Vault's own content, not by the rest of the
+     app, which has no approved Figma redesign of its own. */
+  --font-geist: var(--font-geist-sans), 'Geist', system-ui, -apple-system, sans-serif;
+  --font-instrument-serif: 'Instrument Serif', Georgia, serif;
   --font-size-xs: 0.75rem;
   --font-size-sm: 0.875rem;
   --font-size-base: 1rem;

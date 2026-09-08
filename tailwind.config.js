@@ -11,6 +11,10 @@ module.exports = {
       fontFamily: {
         sans: ['var(--font-family)', 'system-ui', '-apple-system', 'sans-serif'],
         display: ['var(--font-display)', 'Georgia', 'serif'],
+        // Exact fonts from the approved Vault Figma design — used by the
+        // shared Sidebar and Vault's own content only, see tokens.css.
+        geist: ['var(--font-geist)', 'system-ui', '-apple-system', 'sans-serif'],
+        instrument: ['var(--font-instrument-serif)', 'Georgia', 'serif'],
       },
       colors: {
         // Design system colors

@@ -36,7 +36,7 @@ export default function ForTonightPage() {
 
       {!loading && matches.length === 0 && (
         <div className="rounded-3xl border border-dashed border-[var(--vault-border-surface)] bg-[var(--vault-bg-elevated)] p-16 text-center">
-          <p className="font-display text-xl italic text-[var(--vault-text-primary)]">Nothing to spotlight yet</p>
+          <p className="font-instrument text-xl italic text-[var(--vault-text-primary)]">Nothing to spotlight yet</p>
           <p className="mt-2 text-sm text-[var(--vault-text-secondary)]">
             Answer some Desire Deck prompts — when you and your partner independently choose the same thing, it
             shows up here.
@@ -58,7 +58,7 @@ export default function ForTonightPage() {
           <p className="mx-auto inline-flex items-center gap-1.5 rounded-full border border-[var(--vault-accent-rose)] bg-[var(--vault-accent-rose-tint)] px-4 py-1.5 text-xs font-semibold text-[var(--vault-accent-rose)]">
             Something you both chose
           </p>
-          <p className="mx-auto mt-6 max-w-2xl font-display text-3xl italic leading-relaxed text-[var(--vault-text-primary)] sm:text-4xl">
+          <p className="mx-auto mt-6 max-w-2xl font-instrument text-3xl italic leading-relaxed text-[var(--vault-text-primary)] sm:text-4xl">
             You and your partner are both drawn to something from the {deck?.name ?? "Desire"} deck.
           </p>
           <p className="mx-auto mt-3 max-w-lg text-sm text-[var(--vault-text-secondary)]">

@@ -19,8 +19,8 @@ vi.mock("@/components/ThemeProvider", () => ({
   default: ({ children }: { children: React.ReactNode }) => children,
 }));
 
-vi.mock("@/components/layout/TopNav", () => ({
-  TopNav: () => null,
+vi.mock("@/components/layout/Sidebar", () => ({
+  Sidebar: () => null,
 }));
 
 vi.mock("@/components/layout/MobileHeader", () => ({

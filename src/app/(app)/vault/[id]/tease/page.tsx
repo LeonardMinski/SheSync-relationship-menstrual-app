@@ -71,7 +71,7 @@ export default function CreateTeasePage({ params }: { params: Promise<{ id: stri
               </VaultPill>
             </div>
             <div className="relative rounded-xl border border-[var(--vault-border-surface)] bg-[var(--vault-bg-deep)] p-6">
-              <p className="select-none font-display text-lg italic text-[var(--vault-text-primary)] opacity-15">
+              <p className="select-none font-instrument text-lg italic text-[var(--vault-text-primary)] opacity-15">
                 {spark.content}
               </p>
               <div className="absolute inset-0 flex items-center justify-center rounded-xl bg-[color:var(--vault-bg-elevated)]/80 text-center text-xs text-[var(--vault-text-muted)] backdrop-blur-sm">
@@ -90,7 +90,7 @@ export default function CreateTeasePage({ params }: { params: Promise<{ id: stri
                   onClick={() => setTeaseText(framework.body)}
                   className="rounded-xl border border-[var(--vault-border-surface)] bg-[var(--vault-bg-deep)] p-3 text-left transition-colors hover:border-[var(--vault-accent-rose)]"
                 >
-                  <p className="font-display text-sm italic text-[var(--vault-accent-rose)]">{framework.title}</p>
+                  <p className="font-instrument text-sm italic text-[var(--vault-accent-rose)]">{framework.title}</p>
                   <p className="mt-1 line-clamp-2 text-xs text-[var(--vault-text-secondary)]">{framework.body}</p>
                 </button>
               ))}
@@ -122,7 +122,7 @@ export default function CreateTeasePage({ params }: { params: Promise<{ id: stri
             <div>
               <VaultSectionLabel tone="rose">They will see (the tease)</VaultSectionLabel>
               <VaultCard padding="md" className="mt-2 space-y-3">
-                <p className="font-display text-xl italic text-[var(--vault-text-primary)]">{teaseText}</p>
+                <p className="font-instrument text-xl italic text-[var(--vault-text-primary)]">{teaseText}</p>
                 <p className="rounded-lg bg-[var(--vault-bg-sidebar)] p-3 text-xs text-[var(--vault-text-secondary)]">
                   Your partner will see this hint and can respond with their curiosity level.
                 </p>
@@ -132,7 +132,7 @@ export default function CreateTeasePage({ params }: { params: Promise<{ id: stri
               <VaultSectionLabel>They will not see (private Spark)</VaultSectionLabel>
               <VaultCard padding="md" className="mt-2 space-y-3">
                 <div className="relative rounded-lg bg-[var(--vault-bg-sidebar)] p-4">
-                  <p className="select-none font-display italic text-[var(--vault-text-muted)] opacity-15">
+                  <p className="select-none font-instrument italic text-[var(--vault-text-muted)] opacity-15">
                     {spark.content}
                   </p>
                   <div className="absolute inset-0 flex items-center justify-center">

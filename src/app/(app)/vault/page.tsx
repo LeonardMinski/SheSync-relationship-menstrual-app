@@ -57,7 +57,7 @@ export default function VaultPage() {
         <VaultCard highlighted className="mb-6 flex flex-wrap items-center justify-between gap-4">
           <div className="flex items-center gap-3">
             <Sparkles className="h-5 w-5 shrink-0 text-[var(--vault-accent-purple)]" aria-hidden="true" />
-            <p className="font-display text-lg italic text-[var(--vault-text-primary)]">
+            <p className="font-instrument text-lg italic text-[var(--vault-text-primary)]">
               Ready to explore with someone? Connect with a partner later to safely share.
             </p>
           </div>
@@ -71,7 +71,7 @@ export default function VaultPage() {
         <VaultCard highlighted className="mb-6 flex flex-wrap items-center justify-between gap-4">
           <div className="flex items-center gap-3">
             <Heart className="h-5 w-5 shrink-0 text-[var(--vault-accent-rose)]" aria-hidden="true" />
-            <p className="font-display text-lg italic text-[var(--vault-text-primary)]">
+            <p className="font-instrument text-lg italic text-[var(--vault-text-primary)]">
               See what {partnerName} has teased or revealed with you.
             </p>
           </div>
@@ -112,7 +112,7 @@ export default function VaultPage() {
       ) : sparks.length === 0 ? (
         <VaultCard className="flex flex-col items-center gap-3 border-dashed py-16 text-center">
           <Lock className="h-8 w-8 text-[var(--vault-text-muted)]" aria-hidden="true" />
-          <p className="font-display text-xl italic text-[var(--vault-text-primary)]">Nothing here yet</p>
+          <p className="font-instrument text-xl italic text-[var(--vault-text-primary)]">Nothing here yet</p>
           <p className="max-w-sm text-sm text-[var(--vault-text-secondary)]">
             Start writing to create your first Spark. It stays just yours until you choose to share something from
             it.
@@ -142,7 +142,7 @@ export default function VaultPage() {
                       {STATUS_LABEL[spark.status]}
                     </VaultPill>
                   </div>
-                  <p className="line-clamp-3 font-display text-lg italic text-[var(--vault-text-primary)]">
+                  <p className="line-clamp-3 font-instrument text-lg italic text-[var(--vault-text-primary)]">
                     {spark.content}
                   </p>
                   <p className="mt-auto text-xs text-[var(--vault-text-muted)]">

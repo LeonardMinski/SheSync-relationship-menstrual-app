@@ -85,7 +85,7 @@ function GenericDeckPromptFlow({ deckId }: { deckId: Exclude<VaultDeckId, "give_
       <VaultRoom>
         <VaultBackLink href="/vault/decks" label="Back to Decks" />
         <VaultCard className="mx-auto max-w-lg space-y-4 text-center">
-          <p className="font-display text-2xl italic text-[var(--vault-text-primary)]">That&apos;s the whole deck</p>
+          <p className="font-instrument text-2xl italic text-[var(--vault-text-primary)]">That&apos;s the whole deck</p>
           <p className="text-sm text-[var(--vault-text-secondary)]">
             Anything you answered was saved privately to your Vault as a new Spark.
           </p>
@@ -123,7 +123,7 @@ function GenericDeckPromptFlow({ deckId }: { deckId: Exclude<VaultDeckId, "give_
           <p className="text-xs font-semibold uppercase tracking-wide text-[var(--vault-accent-rose)]">
             The {deck.name} prompt
           </p>
-          <p className="mt-3 font-display text-2xl italic leading-snug text-[var(--vault-text-primary)] sm:text-3xl">
+          <p className="mt-3 font-instrument text-2xl italic leading-snug text-[var(--vault-text-primary)] sm:text-3xl">
             {prompt.text}
           </p>
         </div>

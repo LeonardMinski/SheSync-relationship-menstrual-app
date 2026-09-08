@@ -89,7 +89,7 @@ export default function PartnerSparkResponsePage({ params }: { params: Promise<{
       {summary && summary.status === "teased" && (
         <VaultCard className="mx-auto max-w-2xl space-y-6 text-center">
           <VaultCard padding="md">
-            <p className="font-display text-2xl italic leading-relaxed text-[var(--vault-text-primary)]">
+            <p className="font-instrument text-2xl italic leading-relaxed text-[var(--vault-text-primary)]">
               {summary.teaseText}
             </p>
           </VaultCard>
@@ -112,7 +112,7 @@ export default function PartnerSparkResponsePage({ params }: { params: Promise<{
 
       {summary && summary.status === "waiting" && (
         <VaultCard className="mx-auto max-w-xl space-y-4 text-center">
-          <p className="font-display text-2xl italic text-[var(--vault-text-primary)]">You&apos;re curious</p>
+          <p className="font-instrument text-2xl italic text-[var(--vault-text-primary)]">You&apos;re curious</p>
           <p className="text-sm text-[var(--vault-text-secondary)]">
             They know you&apos;re curious. They&apos;ll decide when to reveal the full Spark.
           </p>
@@ -121,7 +121,7 @@ export default function PartnerSparkResponsePage({ params }: { params: Promise<{
 
       {summary && summary.status === "ready_to_reveal" && (
         <VaultCard className="mx-auto max-w-xl space-y-8 text-center">
-          <p className="font-display text-3xl italic text-[var(--vault-text-primary)]">Ready to open this together?</p>
+          <p className="font-instrument text-3xl italic text-[var(--vault-text-primary)]">Ready to open this together?</p>
           <VaultCard padding="md" className="mx-auto flex max-w-md items-center justify-center gap-10">
             <div className="flex flex-col items-center gap-1">
               <CheckCircle2
@@ -157,7 +157,7 @@ export default function PartnerSparkResponsePage({ params }: { params: Promise<{
       {summary && summary.status === "revealed" && revealed && (
         <VaultCard className="mx-auto max-w-2xl space-y-8 text-center">
           <VaultPill tone="rose">Revealed</VaultPill>
-          <p className="whitespace-pre-wrap font-display text-2xl italic leading-relaxed text-[var(--vault-text-primary)]">
+          <p className="whitespace-pre-wrap font-instrument text-2xl italic leading-relaxed text-[var(--vault-text-primary)]">
             {revealed.content}
           </p>
           <div className="h-px bg-[var(--vault-border-surface)]" />

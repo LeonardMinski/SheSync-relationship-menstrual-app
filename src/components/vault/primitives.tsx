@@ -8,21 +8,34 @@ import { cn } from "@/utils/cn";
 /**
  * Vault's shared visual primitives. The approved Figma design (Section
  * "Vault V1 — Approved Implementation") shows its own fixed dark "room" —
- * consistent across all 22 frames — layered on top of the app's real
- * shell (TopNav/MobileHeader/BottomTabBar, unchanged; there is no sidebar
- * anywhere in the current app, see src/app/(app)/layout.tsx). Rather than
- * fork the shared nav shell to match Figma's mockup chrome, every Vault
- * page wraps its content in <VaultRoom>, which applies the .vault-theme
- * token scope (src/styles/vault-tokens.css) to just that content area.
- * TopNav stays in the user's normal light/dark preference, matching every
- * other route — only the Vault "room" itself is a deliberately fixed dark
- * mood, per the design.
+ * consistent across all 22 frames — rendered inside the app's shared
+ * desktop shell, the Sidebar (src/components/layout/Sidebar.tsx, now the
+ * canonical desktop nav for every route, not just Vault). Every Vault page
+ * wraps its content in <VaultRoom>, which applies the .vault-theme token
+ * scope (src/styles/vault-tokens.css) plus the exact Geist body font to
+ * just that content area — Instrument Serif Italic headings use
+ * `font-instrument italic` explicitly (see tailwind.config.js). The
+ * Sidebar itself is always dark regardless of route; only page CONTENT
+ * outside Vault keeps the app's normal light/dark Inter/Playfair pairing,
+ * since there's no approved Figma redesign for it.
+ *
+ * Content padding matches the canonical 1440px Figma frame exactly
+ * (px-64/py-54 = Tailwind's px-16/py-[54px]); width is capped for
+ * readability well beyond that frame's proportions rather than left
+ * unbounded at very wide viewports.
  */
 
 export function VaultRoom({ children, className }: { children: React.ReactNode; className?: string }) {
   return (
-    <div className={cn("vault-theme min-h-screen bg-[var(--vault-bg)] text-[var(--vault-text-primary)]", className)}>
-      <div className="mx-auto w-full max-w-6xl px-4 py-8 sm:px-8 sm:py-12 lg:px-16 lg:py-14">{children}</div>
+    <div
+      className={cn(
+        "vault-theme min-h-screen flex-1 bg-[var(--vault-bg)] font-geist text-[var(--vault-text-primary)]",
+        className,
+      )}
+    >
+      <div className="mx-auto w-full max-w-[1400px] px-4 py-8 sm:px-10 sm:py-12 lg:px-16 lg:py-[54px]">
+        {children}
+      </div>
     </div>
   );
 }
@@ -59,7 +72,7 @@ export function VaultHeader({ eyebrow, title, subtitle, pill, reassurance, actio
               {eyebrow}
             </p>
           )}
-          <h1 className="font-display text-3xl italic text-[var(--vault-text-primary)] sm:text-4xl">{title}</h1>
+          <h1 className="font-instrument text-3xl italic text-[var(--vault-text-primary)] sm:text-4xl">{title}</h1>
         </div>
         <div className="flex items-center gap-3">
           {pill}
@@ -202,7 +215,7 @@ export function VaultSectionLabel({ children, tone = "muted" }: { children: Reac
 }
 
 export const VAULT_TEXTAREA_CLASSES =
-  "w-full rounded-2xl border border-[var(--vault-border-surface)] bg-[var(--vault-bg-deep)] p-5 font-display text-lg italic text-[var(--vault-text-primary)] placeholder:text-[var(--vault-text-muted)] placeholder:not-italic focus:outline-none focus:ring-2 focus:ring-[var(--vault-accent-rose)]";
+  "w-full rounded-2xl border border-[var(--vault-border-surface)] bg-[var(--vault-bg-deep)] p-5 font-instrument text-lg italic text-[var(--vault-text-primary)] placeholder:text-[var(--vault-text-muted)] placeholder:not-italic focus:outline-none focus:ring-2 focus:ring-[var(--vault-accent-rose)]";
 
 export const VAULT_INPUT_CLASSES =
   "w-full rounded-xl border border-[var(--vault-border-surface)] bg-[var(--vault-bg-deep)] px-4 py-3 text-sm text-[var(--vault-text-primary)] placeholder:text-[var(--vault-text-muted)] focus:outline-none focus:ring-2 focus:ring-[var(--vault-accent-rose)]";

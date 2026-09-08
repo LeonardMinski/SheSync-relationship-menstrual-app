@@ -68,7 +68,7 @@ export default function PartnerVaultPage() {
 
           {sparks.length === 0 ? (
             <VaultCard className="border-dashed py-16 text-center">
-              <p className="font-display text-xl italic text-[var(--vault-text-primary)]">Nothing shared yet</p>
+              <p className="font-instrument text-xl italic text-[var(--vault-text-primary)]">Nothing shared yet</p>
               <p className="mt-2 text-sm text-[var(--vault-text-secondary)]">
                 When {partnerName ?? "your partner"} shares a tease or reveal, it will appear here.
               </p>
@@ -92,7 +92,7 @@ export default function PartnerVaultPage() {
                         </VaultPill>
                       </div>
                       {spark.teaseText ? (
-                        <p className="line-clamp-3 font-display text-lg italic text-[var(--vault-text-primary)]">
+                        <p className="line-clamp-3 font-instrument text-lg italic text-[var(--vault-text-primary)]">
                           {spark.teaseText}
                         </p>
                       ) : (

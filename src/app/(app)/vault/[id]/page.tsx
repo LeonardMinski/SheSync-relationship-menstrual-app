@@ -53,7 +53,7 @@ function useActionState() {
 
 function SparkContent({ spark }: { spark: VaultSpark }) {
   return (
-    <p className="whitespace-pre-wrap font-display text-2xl italic leading-relaxed text-[var(--vault-text-primary)] sm:text-3xl">
+    <p className="whitespace-pre-wrap font-instrument text-2xl italic leading-relaxed text-[var(--vault-text-primary)] sm:text-3xl">
       {spark.content}
     </p>
   );
@@ -147,7 +147,7 @@ function PrivateView({ spark, refresh }: { spark: VaultSpark; refresh: () => Pro
       {showShareOptions && (
         <div className="space-y-4">
           <div className="text-center">
-            <p className="font-display text-2xl italic text-[var(--vault-text-primary)]">
+            <p className="font-instrument text-2xl italic text-[var(--vault-text-primary)]">
               How would you like to soften the enclosure?
             </p>
             <p className="mx-auto mt-2 max-w-lg text-sm text-[var(--vault-text-secondary)]">
@@ -156,7 +156,7 @@ function PrivateView({ spark, refresh }: { spark: VaultSpark; refresh: () => Pro
           </div>
           <div className="grid gap-4 sm:grid-cols-3">
             <VaultCard padding="md" className="flex flex-col gap-3">
-              <p className="font-display text-lg italic text-[var(--vault-text-primary)]">Create a Tease</p>
+              <p className="font-instrument text-lg italic text-[var(--vault-text-primary)]">Create a Tease</p>
               <p className="flex-1 text-xs text-[var(--vault-text-secondary)]">
                 Give them just enough to wonder, without revealing the core Spark.
               </p>
@@ -167,7 +167,7 @@ function PrivateView({ spark, refresh }: { spark: VaultSpark; refresh: () => Pro
               </Link>
             </VaultCard>
             <VaultCard padding="md" className="flex flex-col gap-3">
-              <p className="font-display text-lg italic text-[var(--vault-text-primary)]">Share Directly</p>
+              <p className="font-instrument text-lg italic text-[var(--vault-text-primary)]">Share Directly</p>
               <p className="flex-1 text-xs text-[var(--vault-text-secondary)]">
                 Reveal the full Spark immediately — highly intimate, immediate visibility.
               </p>
@@ -187,7 +187,7 @@ function PrivateView({ spark, refresh }: { spark: VaultSpark; refresh: () => Pro
               </VaultButton>
             </VaultCard>
             <VaultCard padding="md" className="flex flex-col gap-3">
-              <p className="font-display text-lg italic text-[var(--vault-text-primary)]">Keep Private</p>
+              <p className="font-instrument text-lg italic text-[var(--vault-text-primary)]">Keep Private</p>
               <p className="flex-1 text-xs text-[var(--vault-text-secondary)]">
                 Change nothing. Take all the time you need.
               </p>
@@ -211,9 +211,9 @@ function TeasedView({ spark }: { spark: VaultSpark }) {
   return (
     <VaultCard className="space-y-6 text-center">
       <VaultPill tone="purple">Not Revealed Yet</VaultPill>
-      <p className="font-display text-2xl italic text-[var(--vault-text-primary)]">Your tease is out there</p>
+      <p className="font-instrument text-2xl italic text-[var(--vault-text-primary)]">Your tease is out there</p>
       <VaultCard padding="md" className="mx-auto max-w-xl text-left">
-        <p className="font-display text-xl italic text-[var(--vault-text-primary)]">{spark.teaseText}</p>
+        <p className="font-instrument text-xl italic text-[var(--vault-text-primary)]">{spark.teaseText}</p>
       </VaultCard>
 
       {!spark.partnerTeaseResponse && (
@@ -228,12 +228,12 @@ function TeasedView({ spark }: { spark: VaultSpark }) {
 
       {declined && (
         <div className="mx-auto max-w-md space-y-4">
-          <p className="font-display text-xl italic text-[var(--vault-text-primary)]">Taking a pause</p>
+          <p className="font-instrument text-xl italic text-[var(--vault-text-primary)]">Taking a pause</p>
           <VaultCard padding="md" className="border-[color:var(--vault-accent-sage)]/40 bg-[var(--vault-accent-sage-tint)]">
             <p className="text-xs font-semibold uppercase tracking-wide text-[var(--vault-accent-sage)]">
               Consent &amp; autonomy first
             </p>
-            <p className="mt-2 font-display italic text-[var(--vault-text-primary)]">
+            <p className="mt-2 font-instrument italic text-[var(--vault-text-primary)]">
               Curiosity isn&apos;t consent, and a past yes isn&apos;t a yes for today.
             </p>
           </VaultCard>
@@ -270,7 +270,7 @@ function WaitingView({ spark, refresh }: { spark: VaultSpark; refresh: () => Pro
       <VaultCard highlighted className="space-y-6">
         <div className="flex items-center justify-between gap-4">
           <div>
-            <p className="font-display text-2xl italic text-[var(--vault-text-primary)]">They&apos;re curious</p>
+            <p className="font-instrument text-2xl italic text-[var(--vault-text-primary)]">They&apos;re curious</p>
             <p className="mt-1 text-sm text-[var(--vault-text-secondary)]">
               Your tease caught their attention.
             </p>
@@ -281,7 +281,7 @@ function WaitingView({ spark, refresh }: { spark: VaultSpark; refresh: () => Pro
           <div>
             <VaultSectionLabel>Your tease (what they responded to)</VaultSectionLabel>
             <VaultCard padding="md" className="mt-2">
-              <p className="font-display italic text-[var(--vault-text-secondary)]">{spark.teaseText}</p>
+              <p className="font-instrument italic text-[var(--vault-text-secondary)]">{spark.teaseText}</p>
             </VaultCard>
           </div>
           <div>
@@ -304,7 +304,7 @@ function WaitingView({ spark, refresh }: { spark: VaultSpark; refresh: () => Pro
   return (
     <VaultCard className="space-y-6">
       <div>
-        <p className="font-display text-2xl italic text-[var(--vault-text-primary)]">Ready to reveal?</p>
+        <p className="font-instrument text-2xl italic text-[var(--vault-text-primary)]">Ready to reveal?</p>
         <p className="mt-1 text-sm text-[var(--vault-text-secondary)]">
           This makes the full Spark visible to your partner in your shared Vault.
         </p>
@@ -313,7 +313,7 @@ function WaitingView({ spark, refresh }: { spark: VaultSpark; refresh: () => Pro
         <div>
           <VaultSectionLabel>They currently see:</VaultSectionLabel>
           <VaultCard padding="md" className="mt-2">
-            <p className="font-display italic text-[var(--vault-text-secondary)]">{spark.teaseText}</p>
+            <p className="font-instrument italic text-[var(--vault-text-secondary)]">{spark.teaseText}</p>
           </VaultCard>
         </div>
         <div>
@@ -353,7 +353,7 @@ function ReadyToRevealView({ spark, refresh }: { spark: VaultSpark; refresh: () 
 
   return (
     <VaultCard className="space-y-8 text-center">
-      <p className="font-display text-3xl italic text-[var(--vault-text-primary)]">Ready to open this together?</p>
+      <p className="font-instrument text-3xl italic text-[var(--vault-text-primary)]">Ready to open this together?</p>
       <p className="mx-auto max-w-md text-sm text-[var(--vault-text-secondary)]">
         When both partners are ready, the Spark unlocks for both of you.
       </p>

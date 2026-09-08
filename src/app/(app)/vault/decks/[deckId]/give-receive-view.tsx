@@ -29,7 +29,7 @@ const STATUS_CAPTION: Record<VaultSpark["status"], string> = {
 function DeckItemRow({ label, statusCaption }: { label: string; statusCaption: string }) {
   return (
     <div className="rounded-xl border border-[var(--vault-border-surface)] bg-[var(--vault-bg-deep)] p-4">
-      <p className="font-display text-lg italic text-[var(--vault-text-primary)]">{label}</p>
+      <p className="font-instrument text-lg italic text-[var(--vault-text-primary)]">{label}</p>
       <p className="mt-1 text-xs text-[var(--vault-text-muted)]">{statusCaption}</p>
     </div>
   );
@@ -88,7 +88,7 @@ export default function GiveAndReceivePage() {
 
       {!loading && partnerOffering && (
         <VaultCard highlighted className="mb-6 flex flex-wrap items-center justify-between gap-4">
-          <p className="font-display text-lg italic text-[var(--vault-text-primary)]">
+          <p className="font-instrument text-lg italic text-[var(--vault-text-primary)]">
             A new Spark has been shared — unveil it together.
           </p>
           <Link href={`/vault/partner/${partnerOffering.id}`}>

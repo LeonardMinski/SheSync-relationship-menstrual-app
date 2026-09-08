@@ -74,7 +74,7 @@ export default function NewVaultSparkPage() {
                 onClick={() => setContent((current) => (current ? current : `${prompt.title} `))}
                 className="rounded-xl border border-[var(--vault-border-surface)] bg-[var(--vault-bg-elevated)] p-4 text-left transition-colors hover:border-[var(--vault-accent-rose)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--vault-accent-rose)]"
               >
-                <p className="font-display text-lg italic text-[var(--vault-text-primary)]">{prompt.title}</p>
+                <p className="font-instrument text-lg italic text-[var(--vault-text-primary)]">{prompt.title}</p>
                 <p className="mt-1 text-xs text-[var(--vault-text-muted)]">{prompt.subtitle}</p>
               </button>
             ))}

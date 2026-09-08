@@ -26,7 +26,7 @@ export default function DesireDecksPage() {
           <Link key={deck.id} href={`/vault/decks/${deck.id}`}>
             <VaultCard className="flex h-full flex-col gap-4 transition-colors hover:border-[var(--vault-accent-rose)]">
               <div className="flex items-start justify-between gap-3">
-                <p className="font-display text-3xl italic text-[var(--vault-text-primary)]">{deck.name}</p>
+                <p className="font-instrument text-3xl italic text-[var(--vault-text-primary)]">{deck.name}</p>
                 <VaultPill tone="purple" className="shrink-0 px-2.5 py-0.5 text-[10px]">
                   Premium
                 </VaultPill>
