@@ -145,7 +145,7 @@ export default function OnboardingPage() {
                 <p className="text-sm font-semibold text-foreground">
                   {isPartnerOriented
                     ? "What you see is entirely up to your partner."
-                    : "Your logs, fantasies and reflections start private."}
+                    : "Your logs, Vault Sparks, and reflections start private."}
                 </p>
                 <p className="mt-2 text-sm text-muted-foreground">
                   {isPartnerOriented

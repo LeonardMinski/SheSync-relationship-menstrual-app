@@ -4,7 +4,7 @@ export default function FantasyPageRoute() {
   return (
     <ComingLater
       title="Fantasy Vault"
-      description="Fantasy entries are staying in the codebase as a future feature, but the MVP is focused on cycle logging, privacy controls, and the partner view."
+      description="This page has been superseded by Vault, which is real — see the Vault tab for Sparks, teases, and the mutual-reveal ceremony."
     />
   );
 }
