@@ -168,6 +168,17 @@ export default function CoachView() {
       </div>
 
       <div className="mt-8">
+        {/* Rendered above both branches deliberately: a failed send rolls
+            the optimistic user message back out of `messages` (see
+            useCoachWorkspace's sendUserMessage), which flips `isEmpty` back
+            to true and would otherwise silently strand the error where
+            only the non-empty branch showed it — the user would see the
+            landing/starter view again with no indication anything went
+            wrong. Found live during the 2026-09-08 showcase audit: a
+            genuine OpenAI failure produced a correct, honest 502 with a
+            real error message server-side, but the UI showed nothing. */}
+        {error && <CoachErrorState onRetry={retry} />}
+
         {isEmpty ? (
           <div className="flex flex-col">
             <div className="order-2 mt-6 sm:order-1 sm:mt-0">
@@ -208,8 +219,6 @@ export default function CoachView() {
               {sending && <CoachThinkingState />}
               <div ref={messagesEndRef} />
             </div>
-
-            {error && <CoachErrorState onRetry={retry} />}
 
             <CoachContextStrip
               selection={contextSelection}
