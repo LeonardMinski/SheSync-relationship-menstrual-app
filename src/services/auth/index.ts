@@ -137,7 +137,12 @@ const getDisplayName = (user: SupabaseAuthUser) => {
 const getTrackingEnabledMetadata = (user: SupabaseAuthUser): boolean =>
   user.user_metadata?.tracking_enabled !== false;
 
-const buildUserRecord = (
+// Exported for src/services/auth/profileSchemaContract.test.ts, which
+// verifies its output only ever contains columns that exist on the live
+// public.users table — this is the only profile-creation path that
+// actually runs today (see the function's own comment below), so a schema
+// mismatch here silently strands every affected user without a profile row.
+export const buildUserRecord = (
   user: SupabaseAuthUser,
   overrides: Partial<
     Pick<
@@ -152,7 +157,11 @@ const buildUserRecord = (
   subscription_tier: "free",
   created_at:
     overrides.created_at ?? user.created_at ?? new Date().toISOString(),
-  profile_image_url: null,
+  // profile_image_url is NOT written here: public.users has no such column
+  // live (avatar upload was never actually built — see docs/ROADMAP.md).
+  // Writing it broke every profile creation via this fallback path with a
+  // PostgREST "could not find column" error until this fix — found live
+  // during the 2026-09-08 showcase audit testing a fresh fixture account.
   privacy_settings: overrides.privacy_settings ?? {
     ...DEFAULT_PRIVACY_SETTINGS,
   },

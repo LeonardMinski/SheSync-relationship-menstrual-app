@@ -3,6 +3,7 @@
 import React, { useState, useRef } from 'react'
 import { Upload, User } from 'lucide-react'
 import { cn } from '@/utils/cn'
+import { InlineBanner } from '@/components/ui/InlineBanner'
 
 interface AvatarProps {
   src?: string
@@ -13,16 +14,17 @@ interface AvatarProps {
   className?: string
 }
 
-export function Avatar({ 
-  src, 
-  alt = 'User avatar', 
-  size = 'md', 
-  editable = false, 
+export function Avatar({
+  src,
+  alt = 'User avatar',
+  size = 'md',
+  editable = false,
   onUpload,
-  className 
+  className
 }: AvatarProps) {
   const [imageSrc, setImageSrc] = useState(src)
   const [isUploading, setIsUploading] = useState(false)
+  const [uploadError, setUploadError] = useState<string | null>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
 
   const sizeClasses = {
@@ -41,35 +43,30 @@ export function Avatar({
     const file = event.target.files?.[0]
     if (!file || !onUpload) return
 
-    // Validate file type
+    setUploadError(null)
+
     if (!file.type.startsWith('image/')) {
-      alert('Please select an image file')
+      setUploadError('Please select an image file.')
       return
     }
 
-    // Validate file size (max 5MB)
     if (file.size > 5 * 1024 * 1024) {
-      alert('Image size must be less than 5MB')
+      setUploadError('Image size must be less than 5MB.')
       return
     }
 
     setIsUploading(true)
-    
+
     try {
-      // Create preview URL
       const previewUrl = URL.createObjectURL(file)
       setImageSrc(previewUrl)
-      
-      // Call upload handler
       await onUpload(file)
     } catch (error) {
       console.error('Error uploading avatar:', error)
-      alert('Failed to upload image. Please try again.')
-      // Revert to original image
+      setUploadError('Failed to upload image. Please try again.')
       setImageSrc(src)
     } finally {
       setIsUploading(false)
-      // Clear file input
       if (fileInputRef.current) {
         fileInputRef.current.value = ''
       }
@@ -127,6 +124,12 @@ export function Avatar({
             <Upload className="w-3 h-3 text-white" />
           </button>
         </>
+      )}
+
+      {uploadError && (
+        <InlineBanner tone="error" className="absolute left-1/2 top-full z-10 mt-2 w-max max-w-xs -translate-x-1/2">
+          {uploadError}
+        </InlineBanner>
       )}
     </div>
   )

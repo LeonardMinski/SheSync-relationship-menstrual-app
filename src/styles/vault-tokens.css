@@ -1,0 +1,47 @@
+/* Vault-specific design tokens.
+ *
+ * The approved Vault Figma design (Section "Vault V1 — Approved
+ * Implementation") uses its own fixed, dark, moody palette — no design
+ * variables in the Figma file itself (all raw hex), and no light-mode
+ * Vault frames exist in the approved set. Rather than force those exact
+ * values onto the app-wide --bg/--accent-rose/etc. tokens (which are
+ * shared by Home/Cycle/Coach/Connect and toggle with the light/dark
+ * theme), Vault gets its own scoped token set here, applied via the
+ * `.vault-theme` class on the Vault route's root element. This keeps the
+ * rest of the app's theming completely untouched while giving Vault
+ * pixel-accurate fidelity to the approved design, deliberately regardless
+ * of the user's light/dark preference — Vault is an intentionally
+ * dark-only "mood," the same way some products give one specific feature
+ * its own fixed visual treatment on top of a shared structural shell
+ * (same Sidebar/Button/Modal/StatusPill components, different skin).
+ */
+.vault-theme {
+  --vault-bg: #0d080d;
+  --vault-bg-sidebar: #110710;
+  --vault-bg-elevated: #1c101b;
+  --vault-bg-deep: #0d080d;
+  --vault-border: #2a1425;
+  --vault-border-surface: #321a2c;
+
+  --vault-accent-rose: #e57c95;
+  --vault-accent-rose-tint: rgba(229, 124, 149, 0.12);
+  --vault-accent-rose-border: #48263e;
+
+  --vault-accent-purple: #9b6ec5;
+  --vault-accent-purple-tint: rgba(155, 110, 197, 0.1);
+
+  --vault-accent-sage: #82a992;
+  --vault-accent-sage-tint: rgba(130, 169, 146, 0.08);
+
+  /* Highlighted / notification surface — the "something's happening" card
+     background used for curiosity/match/nudge banners. */
+  --vault-highlight-bg: #251421;
+  --vault-highlight-border: #4f223d;
+
+  --vault-text-primary: #f7f4f6;
+  --vault-text-secondary: #bcaeba;
+  --vault-text-muted: #877484;
+  --vault-text-on-accent: #0d080d;
+
+  color-scheme: dark;
+}

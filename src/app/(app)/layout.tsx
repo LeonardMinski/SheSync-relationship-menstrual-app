@@ -8,7 +8,7 @@ import ThemeProvider from "@/components/ThemeProvider";
 import { getLoginRedirectPath } from "@/utils/authRedirects";
 import { BottomTabBar } from "@/components/layout/BottomTabBar";
 import { MobileHeader } from "@/components/layout/MobileHeader";
-import { TopNav } from "@/components/layout/TopNav";
+import { Sidebar } from "@/components/layout/Sidebar";
 import {
   isWaitingForOnboardingStatus,
   shouldRedirectToOnboarding,
@@ -81,10 +81,10 @@ function AuthenticatedAppLayout({ children }: { children: React.ReactNode }) {
   return (
     <AppProvider>
       <ThemeProvider>
-        <div className="min-h-screen bg-bg text-foreground">
-          <TopNav />
+        <div className="min-h-screen bg-bg text-foreground md:flex">
+          <Sidebar />
           <MobileHeader />
-          <div className="min-h-screen pb-16 md:pb-0">{children}</div>
+          <div className="min-h-screen flex-1 pb-16 md:pb-0">{children}</div>
           <BottomTabBar />
         </div>
       </ThemeProvider>

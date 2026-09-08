@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect } from "react";
 import { format } from "date-fns";
 
 import { CurrentCycleContext } from "@/components/home/CurrentCycleContext";
@@ -25,6 +26,20 @@ export default function Dashboard() {
   const { user, loading: authLoading } = useAuth();
   const { cycles, loading: cycleLoading, error: cycleError, fetchCycles, clearError } = useCycleLogger();
   const { ownerLink, viewerLink, invitePartner } = usePartnerPortalData();
+
+  // useCycleLogger only fetches when explicitly told to (see its other
+  // callers: cycle/patterns and useSettingsPageState both do this same
+  // mount-effect) — without it, `cycles` stays the hook's initial empty
+  // array until the first save-triggered refetch, so today's Daily
+  // Check-in silently shows as unanswered on every fresh load/reload even
+  // when it was already saved. Found live during the 2026-09-08 showcase
+  // audit: a real fixture account's saved mood vanished from the UI on
+  // reload despite the database row being correct.
+  useEffect(() => {
+    if (user && !authLoading) {
+      void fetchCycles();
+    }
+  }, [user, authLoading, fetchCycles]);
   const {
     loading: periodLoading,
     activePeriod,

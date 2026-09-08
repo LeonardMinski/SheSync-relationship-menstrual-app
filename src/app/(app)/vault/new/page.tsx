@@ -1,364 +1,129 @@
 "use client";
 
 import { useState } from "react";
-import Link from "next/link";
-import { ArrowLeft, Eye, Lock, MessageCircleHeart, Plus, X } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { ShieldCheck } from "lucide-react";
 
-import { Button } from "@/components/ui/Button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/Card";
-import { FeaturePlaceholder } from "@/components/ui/FeaturePlaceholder";
-import { InlineBanner } from "@/components/ui/InlineBanner";
-import { Input, Textarea } from "@/components/ui/Input";
-import { Modal } from "@/components/ui/Modal";
-import { SectionHeading } from "@/components/ui/SectionHeading";
-import { SharingGate } from "@/components/ui/SharingGate";
-import { StatusPill } from "@/components/ui/StatusPill";
+import { createSpark } from "@/services/vault/data";
+import {
+  VAULT_TEXTAREA_CLASSES,
+  VaultBackLink,
+  VaultButton,
+  VaultCard,
+  VaultHeader,
+  VaultRoom,
+} from "@/components/vault/primitives";
+import { cn } from "@/utils/cn";
+import type { SparkHeatLevel } from "@/types/vault";
 
-// TODO(V1-VAULT): wire to a real Vault persistence + sharing model (current fantasy schema is drifted, see docs/ROADMAP.md)
+const STARTER_PROMPTS = [
+  { title: "I want...", subtitle: "Express a direct desire" },
+  { title: "I'm curious about...", subtitle: "Explore a fantasy" },
+  { title: "I fantasise about...", subtitle: "Deep personal wonderings" },
+  { title: "I'd love you to...", subtitle: "Invite them into action" },
+  { title: "I'd love to do this for you...", subtitle: "Generous intimacy" },
+  { title: "Something I've never told you...", subtitle: "Deconstruct walls" },
+  { title: "Something I want more of...", subtitle: "Multiply goodness" },
+  { title: "Something I'd like us to try...", subtitle: "Curated experiences" },
+];
 
-interface VaultEntryDraft {
-  title: string;
-  content: string;
-  tags: string[];
-}
+const HEAT_LEVELS: { value: SparkHeatLevel; label: string }[] = [
+  { value: "warm", label: "Warm" },
+  { value: "hot", label: "Hot" },
+  { value: "bold", label: "Bold" },
+];
 
-type ViewState = "form" | "detail";
+export default function NewVaultSparkPage() {
+  const router = useRouter();
+  const [content, setContent] = useState("");
+  const [heatLevel, setHeatLevel] = useState<SparkHeatLevel>("warm");
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-const EMPTY_DRAFT: VaultEntryDraft = { title: "", content: "", tags: [] };
+  const canSave = content.trim().length > 0 && !saving;
 
-export default function NewVaultEntryPage() {
-  const [view, setView] = useState<ViewState>("form");
-  const [draft, setDraft] = useState<VaultEntryDraft>(EMPTY_DRAFT);
-  const [tagInput, setTagInput] = useState("");
-  const [savedEntry, setSavedEntry] = useState<VaultEntryDraft | null>(null);
-
-  const [teaseOpen, setTeaseOpen] = useState(false);
-  const [teaseText, setTeaseText] = useState("");
-  const [teaseSent, setTeaseSent] = useState(false);
-
-  const [revealOpen, setRevealOpen] = useState(false);
-  const [revealConfirmed, setRevealConfirmed] = useState(false);
-
-  const canSave = draft.title.trim().length > 0 && draft.content.trim().length > 0;
-
-  function addTagsFromInput() {
-    const newTags = tagInput
-      .split(",")
-      .map((tag) => tag.trim())
-      .filter((tag) => tag.length > 0 && !draft.tags.includes(tag));
-
-    if (newTags.length > 0) {
-      setDraft((current) => ({ ...current, tags: [...current.tags, ...newTags] }));
-    }
-    setTagInput("");
-  }
-
-  function removeTag(tag: string) {
-    setDraft((current) => ({ ...current, tags: current.tags.filter((t) => t !== tag) }));
-  }
-
-  function handleSave() {
+  async function handleSave() {
     if (!canSave) return;
-    // No backend call here on purpose — see TODO above. This only moves the
-    // entered content into local component state so the detail/tease/reveal
-    // preview below has something real to act on for this session.
-    setSavedEntry(draft);
-    setView("detail");
-  }
-
-  function startNewEntry() {
-    setDraft(EMPTY_DRAFT);
-    setTagInput("");
-    setSavedEntry(null);
-    setTeaseOpen(false);
-    setTeaseText("");
-    setTeaseSent(false);
-    setRevealOpen(false);
-    setRevealConfirmed(false);
-    setView("form");
+    setSaving(true);
+    setError(null);
+    try {
+      const spark = await createSpark({ heatLevel, content: content.trim() });
+      router.push(`/vault/${spark.id}`);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to save this Spark");
+      setSaving(false);
+    }
   }
 
   return (
-    <div className="mx-auto w-full max-w-2xl space-y-6 px-4 py-8 sm:px-6">
-      <Link
-        href="/vault"
-        className="inline-flex min-h-[44px] items-center gap-1.5 text-sm font-semibold text-muted-foreground hover:text-foreground"
-      >
-        <ArrowLeft className="h-4 w-4" aria-hidden="true" />
-        Back to Vault
-      </Link>
+    <VaultRoom>
+      <VaultBackLink href="/vault" label="Back to Vault" />
 
-      {view === "form" && (
-        <>
-          <SectionHeading
-            title="New Vault entry"
-            description="Write a thought, desire, or fantasy for yourself. It's private by default — sharing is always a separate, later step."
-          />
+      <VaultHeader eyebrow="Add a Spark" title="What's on your mind?" />
 
-          <Card>
-            <CardContent className="space-y-4 pt-4">
-              <Input
-                label="Title or theme"
-                placeholder="Give this entry a name"
-                value={draft.title}
-                onChange={(event) => setDraft((current) => ({ ...current, title: event.target.value }))}
-              />
-
-              <Textarea
-                label="Describe your desire or fantasy"
-                placeholder="Write freely — this stays just yours unless you choose to share it."
-                rows={8}
-                value={draft.content}
-                onChange={(event) => setDraft((current) => ({ ...current, content: event.target.value }))}
-              />
-
-              <div className="space-y-2">
-                <label htmlFor="vault-tag-input" className="block text-sm font-medium text-foreground">
-                  Tags (optional)
-                </label>
-                <div className="flex gap-2">
-                  <Input
-                    id="vault-tag-input"
-                    placeholder="e.g. slow-burn, roleplay"
-                    value={tagInput}
-                    onChange={(event) => setTagInput(event.target.value)}
-                    onKeyDown={(event) => {
-                      if (event.key === "Enter") {
-                        event.preventDefault();
-                        addTagsFromInput();
-                      }
-                    }}
-                    className="flex-1"
-                  />
-                  <Button type="button" variant="secondary" onClick={addTagsFromInput}>
-                    <Plus className="h-4 w-4" aria-hidden="true" />
-                    Add
-                  </Button>
-                </div>
-                <p className="text-sm text-muted-foreground">Separate multiple tags with commas.</p>
-                {draft.tags.length > 0 && (
-                  <ul className="flex flex-wrap gap-2 pt-1">
-                    {draft.tags.map((tag) => (
-                      <li key={tag}>
-                        <button
-                          type="button"
-                          onClick={() => removeTag(tag)}
-                          className="inline-flex min-h-[44px] items-center gap-1.5 rounded-full border border-border bg-bg-elevated px-3 py-1 text-xs font-semibold text-foreground transition-colors hover:bg-bg-surface focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cta-start"
-                        >
-                          {tag}
-                          <X className="h-3 w-3" aria-hidden="true" />
-                          <span className="sr-only">Remove tag {tag}</span>
-                        </button>
-                      </li>
-                    ))}
-                  </ul>
-                )}
-              </div>
-            </CardContent>
-          </Card>
-
-          <div className="space-y-3">
-            <Button variant="cta" size="lg" disabled={!canSave} onClick={handleSave} className="w-full sm:w-auto">
-              <Lock className="h-4 w-4" aria-hidden="true" />
-              Save privately
-            </Button>
-
-            <FeaturePlaceholder
-              title="This is a design preview"
-              description="Entries aren't saved to your account yet — nothing here is written to a server, and it won't be there if you reload or come back later."
-            />
+      <div className="grid gap-6 lg:grid-cols-[1fr_1.2fr]">
+        <div>
+          <p className="mb-3 text-xs font-semibold uppercase tracking-wide text-[var(--vault-text-muted)]">
+            Intimate starting prompts
+          </p>
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+            {STARTER_PROMPTS.map((prompt) => (
+              <button
+                key={prompt.title}
+                type="button"
+                onClick={() => setContent((current) => (current ? current : `${prompt.title} `))}
+                className="rounded-xl border border-[var(--vault-border-surface)] bg-[var(--vault-bg-elevated)] p-4 text-left transition-colors hover:border-[var(--vault-accent-rose)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--vault-accent-rose)]"
+              >
+                <p className="font-instrument text-lg italic text-[var(--vault-text-primary)]">{prompt.title}</p>
+                <p className="mt-1 text-xs text-[var(--vault-text-muted)]">{prompt.subtitle}</p>
+              </button>
+            ))}
           </div>
-        </>
-      )}
+        </div>
 
-      {view === "detail" && savedEntry && (
-        <>
-          {teaseSent === false && revealConfirmed === false && (
-            <InlineBanner tone="success">Saved privately.</InlineBanner>
-          )}
-
-          <SectionHeading
-            title={savedEntry.title}
-            actions={
-              revealConfirmed ? (
-                <StatusPill tone="sage">
-                  <Eye className="h-3 w-3" aria-hidden="true" />
-                  Full Reveal
-                </StatusPill>
-              ) : teaseSent ? (
-                <StatusPill tone="amber">Tease Shared</StatusPill>
-              ) : (
-                <StatusPill tone="rose">
-                  <Lock className="h-3 w-3" aria-hidden="true" />
-                  Private
-                </StatusPill>
-              )
-            }
-          />
-
-          <Card>
-            <CardContent className="space-y-4 pt-4">
-              <p className="whitespace-pre-wrap text-sm leading-relaxed text-foreground">{savedEntry.content}</p>
-              {savedEntry.tags.length > 0 && (
-                <div className="flex flex-wrap gap-1.5">
-                  {savedEntry.tags.map((tag) => (
-                    <StatusPill key={tag} tone="sage">
-                      {tag}
-                    </StatusPill>
-                  ))}
-                </div>
-              )}
-            </CardContent>
-          </Card>
-
-          <FeaturePlaceholder
-            title="This is a design preview"
-            description="This entry only exists in this browser tab right now — it isn't saved to your account and won't be here after you reload."
-          />
-
-          <div className="grid gap-4 sm:grid-cols-2">
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2 text-lg">
-                  <MessageCircleHeart className="h-5 w-5 text-[color:var(--accent-rose)]" aria-hidden="true" />
-                  Share a tease
-                </CardTitle>
-                <CardDescription>Send a short teaser about this entry without revealing everything.</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <Button variant="outline" onClick={() => setTeaseOpen(true)}>
-                  Share a tease
-                </Button>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2 text-lg">
-                  <Eye className="h-5 w-5 text-[color:var(--accent-rose)]" aria-hidden="true" />
-                  Reveal fully
-                </CardTitle>
-                <CardDescription>Share the complete entry with your partner.</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <Button variant="outline" onClick={() => setRevealOpen(true)}>
-                  Reveal fully
-                </Button>
-              </CardContent>
-            </Card>
-          </div>
-
-          <Button variant="ghost" onClick={startNewEntry}>
-            Write another entry
-          </Button>
-        </>
-      )}
-
-      {teaseOpen && (
-        <Modal
-          title="Share a tease"
-          onClose={() => {
-            setTeaseOpen(false);
-          }}
-        >
-          <div className="space-y-4">
-            {teaseSent ? (
-              <InlineBanner tone="success">Tease saved for this preview.</InlineBanner>
-            ) : (
-              <div className="grid gap-4 sm:grid-cols-[1fr_auto_1fr]">
-                <div className="rounded-xl border border-[color:var(--accent-sage)]/40 bg-[color:var(--accent-sage-soft)]/15 p-4">
-                  <p className="text-xs font-semibold uppercase tracking-wide text-[color:var(--accent-sage)]">
-                    Private Original
-                  </p>
-                  <p className="mt-1 text-xs text-muted-foreground">Only you see this.</p>
-                  <p className="mt-3 whitespace-pre-wrap text-sm text-foreground">
-                    {savedEntry?.content}
-                  </p>
-                </div>
-
-                <SharingGate label="Gate" />
-
-                <div className="rounded-xl border border-[color:var(--accent-amber)]/40 bg-[color:var(--accent-amber-soft)] p-4">
-                  <p className="text-xs font-semibold uppercase tracking-wide text-[color:var(--accent-amber)]">
-                    Partner Teaser Draft
-                  </p>
-                  <p className="mt-1 text-xs text-muted-foreground">What your partner can see.</p>
-                  <Textarea
-                    label="Teaser text"
-                    placeholder="A short hint about this entry — not the full thing."
-                    rows={4}
-                    value={teaseText}
-                    onChange={(event) => setTeaseText(event.target.value)}
-                    className="mt-3"
-                  />
-                </div>
-              </div>
-            )}
-
-            <p className="text-xs text-muted-foreground">
-              Private to you until you choose to share.
-            </p>
-
-            <FeaturePlaceholder
-              title="Not wired to partner sharing yet"
-              description="This is a design preview of the tease flow. It doesn't send anything to a partner — there's no real partner-sharing pipeline connected here yet."
-            />
-
-            <div className="flex flex-wrap gap-3">
-              {!teaseSent && (
-                <>
-                  <Button variant="cta" disabled={!teaseText.trim()} onClick={() => setTeaseSent(true)}>
-                    Share tease
-                  </Button>
-                  <Button variant="secondary" onClick={() => setTeaseOpen(false)}>
-                    Keep private
-                  </Button>
-                </>
-              )}
-              {teaseSent && (
-                <Button variant="secondary" onClick={() => setTeaseOpen(false)}>
-                  Close
-                </Button>
-              )}
+        <VaultCard className="flex flex-col gap-6">
+          <div className="flex items-center justify-between gap-4">
+            <label className="text-sm text-[var(--vault-text-secondary)]">Choose Intensity Level:</label>
+            <div className="flex gap-1.5 rounded-lg bg-[var(--vault-bg-deep)] p-1">
+              {HEAT_LEVELS.map((level) => (
+                <button
+                  key={level.value}
+                  type="button"
+                  onClick={() => setHeatLevel(level.value)}
+                  className={cn(
+                    "rounded-md px-3 py-1.5 text-xs font-semibold transition-colors",
+                    heatLevel === level.value
+                      ? "bg-[var(--vault-accent-rose)] text-[var(--vault-text-on-accent)]"
+                      : "text-[var(--vault-text-secondary)] hover:text-[var(--vault-text-primary)]",
+                  )}
+                >
+                  {level.label}
+                </button>
+              ))}
             </div>
           </div>
-        </Modal>
-      )}
 
-      {revealOpen && (
-        <Modal
-          title="Reveal fully"
-          onClose={() => {
-            setRevealOpen(false);
-          }}
-        >
-          <div className="space-y-4">
-            {revealConfirmed ? (
-              <InlineBanner tone="success">Marked as revealed for this preview.</InlineBanner>
-            ) : (
-              <p className="text-sm text-foreground">
-                This would share the complete entry with your partner. Are you sure you want to reveal it fully?
-              </p>
-            )}
+          <textarea
+            value={content}
+            onChange={(event) => setContent(event.target.value)}
+            placeholder="Start writing here..."
+            rows={8}
+            className={cn(VAULT_TEXTAREA_CLASSES, "flex-1")}
+          />
 
-            <FeaturePlaceholder
-              title="This is a design preview of the reveal flow"
-              description="It doesn't share anything with a partner yet — there's no real partner-sharing pipeline connected here yet, and no one is notified."
-            />
+          {error && <p className="text-sm text-[color:var(--error)]">{error}</p>}
 
-            <div className="flex flex-wrap gap-3">
-              {!revealConfirmed && (
-                <Button variant="cta" onClick={() => setRevealConfirmed(true)}>
-                  Yes, reveal fully
-                </Button>
-              )}
-              <Button variant="secondary" onClick={() => setRevealOpen(false)}>
-                Close
-              </Button>
+          <div className="flex flex-wrap items-center justify-between gap-4">
+            <div className="flex items-center gap-2 text-sm text-[var(--vault-accent-sage)]">
+              <ShieldCheck className="h-3.5 w-3.5" aria-hidden="true" />
+              Saved to Private Vault
             </div>
+            <VaultButton variant="cta" onClick={handleSave} disabled={!canSave} loading={saving}>
+              Save Spark to Vault
+            </VaultButton>
           </div>
-        </Modal>
-      )}
-    </div>
+        </VaultCard>
+      </div>
+    </VaultRoom>
   );
 }

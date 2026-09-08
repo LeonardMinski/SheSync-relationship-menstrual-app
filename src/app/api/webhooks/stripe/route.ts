@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import Stripe from 'stripe'
 import { createClient } from '@supabase/supabase-js'
+import { env } from '@/lib/env'
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
   apiVersion: '2025-08-27.basil',
@@ -12,10 +13,16 @@ type InvoiceWithSubscription = Stripe.Invoice & {
   subscription?: string | Stripe.Subscription | null
 }
 
+// Uses the anon key deliberately unauthenticated (there is no end-user
+// session in a webhook request) — see docs/ROADMAP.md "Not yet real:
+// Premium entitlement": this means auth.uid() is null for every write
+// below, so RLS silently rejects them against the live schema today.
+// Fixing that requires a service-role client, which is a real
+// architecture change (and a bigger blast radius) out of scope here.
 function createWebhookSupabaseClient() {
   return createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    env.NEXT_PUBLIC_SUPABASE_URL,
+    env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
     {
       auth: {
         autoRefreshToken: false,

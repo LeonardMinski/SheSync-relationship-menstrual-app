@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import { Heart } from "lucide-react";
 
 import { Button } from "@/components/ui/Button";
 import { Card, CardContent } from "@/components/ui/Card";
@@ -10,7 +9,7 @@ import { InlineBanner } from "@/components/ui/InlineBanner";
 import { Modal } from "@/components/ui/Modal";
 import { StatusPill } from "@/components/ui/StatusPill";
 import { Textarea } from "@/components/ui/Input";
-import { MutualReveal } from "@/components/connect/MutualReveal";
+import { AnswerTogetherPreview } from "@/components/connect/AnswerTogetherPreview";
 
 export type CardCategory = "Talk" | "Connect" | "Affection" | "Play" | "Reflect";
 
@@ -117,19 +116,20 @@ export function ExploreTab({
       {activeCard && (
         <Modal title={activeCard.prompt} onClose={closeCard}>
           <div className="space-y-4">
-            <p className="text-sm text-muted-foreground">
-              Private by default — your reflection stays just yours unless you choose to share it.
-            </p>
+            <FeaturePlaceholder
+              title="Reflections aren't saved yet"
+              description="This is a design preview of the Explore flow. Nothing you write here persists once you close this window, and it is never sent to your partner."
+            />
 
             {savedForLater && (
-              <InlineBanner tone="success">
-                Saved for later, privately. Nothing is shared with your partner.
+              <InlineBanner tone="info">
+                Noted for this preview — not saved. Closing this window discards it.
               </InlineBanner>
             )}
 
             {saved ? (
-              <InlineBanner tone="success">
-                Saved privately. Nothing is shared with your partner unless you choose to.
+              <InlineBanner tone="info">
+                Written for this preview — not saved. Closing this window discards it.
               </InlineBanner>
             ) : (
               <>
@@ -147,10 +147,6 @@ export function ExploreTab({
                     onClick={() => setSaved(true)}
                   >
                     Reflect privately
-                  </Button>
-                  <Button variant="outline" disabled={!response.trim()} onClick={() => setSaved(true)}>
-                    <Heart className="h-4 w-4" aria-hidden="true" />
-                    Share response
                   </Button>
                   <Button
                     variant="secondary"
@@ -170,13 +166,8 @@ export function ExploreTab({
             )}
 
             {showMutualReveal && (
-              <MutualReveal yourAnswer={response} onClose={() => setShowMutualReveal(false)} />
+              <AnswerTogetherPreview yourAnswer={response} onClose={() => setShowMutualReveal(false)} />
             )}
-
-            <FeaturePlaceholder
-              title="Reflections aren't saved yet"
-              description="This is a design preview of the Explore flow. Reflection responses and partner-sharing for this section aren't wired to a real backend yet — nothing you write here persists after you close this window."
-            />
           </div>
         </Modal>
       )}

@@ -4,7 +4,7 @@ export default function IntimacyPage() {
   return (
     <ComingLater
       title="Intimacy Deck"
-      description="Connection prompts and intimacy sessions are parked for a later phase. The MVP partner experience now focuses on cycle data and privacy-controlled sharing."
+      description="This page has been superseded by Connect's Explore, Boundaries, and Reflections tabs — see the Connect tab for the current version of this experience."
     />
   );
 }

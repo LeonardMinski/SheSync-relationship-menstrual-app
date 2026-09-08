@@ -9,7 +9,6 @@ import {
   COACH_ERROR_TITLE,
   COACH_HEADER_SUBTITLE,
   COACH_PARTNER_TRANSLATION_CTA,
-  COACH_PRIVACY_CHIP_TEXT,
   COACH_PRIVACY_EXPLANATION,
   COACH_RECENT_OBSERVATIONS_UNAVAILABLE_TEXT,
   COACH_STARTER_CARDS,
@@ -41,7 +40,6 @@ function allCoachCopyStrings(): string[] {
     COACH_HEADER_SUBTITLE,
     COACH_EMPTY_STATE_PROMPT,
     COACH_COMPOSER_PLACEHOLDER,
-    COACH_PRIVACY_CHIP_TEXT,
     COACH_PRIVACY_EXPLANATION,
     COACH_THINKING_TEXT,
     COACH_ERROR_TITLE,
@@ -60,10 +58,6 @@ describe("Coach copy audit", () => {
     for (const phrase of FORBIDDEN_PHRASES) {
       expect(allText).not.toMatch(phrase);
     }
-  });
-
-  it("uses the approved privacy chip wording exactly", () => {
-    expect(COACH_PRIVACY_CHIP_TEXT).toBe("Private to you · Not shared with your partner");
   });
 
   it("every starter card has an explicit, non-vague CTA", () => {

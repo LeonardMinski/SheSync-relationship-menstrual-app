@@ -2,9 +2,8 @@
 
 import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
-import { History, Plus } from "lucide-react";
+import { Plus } from "lucide-react";
 
-import { StatusPill } from "@/components/ui/StatusPill";
 import { useAuth } from "@/context/AuthContext";
 import { useCoachWorkspace } from "@/hooks/useCoachWorkspace";
 import { usePatterns } from "@/hooks/usePatterns";
@@ -16,19 +15,15 @@ import { CoachContextPanel } from "./CoachContextPanel";
 import { CoachContextStrip } from "./CoachContextStrip";
 import { CoachErrorState } from "./CoachErrorState";
 import { CoachMessageBubble } from "./CoachMessageBubble";
-import { CoachPreviousConversations } from "./CoachPreviousConversations";
 import { CoachStarterCards } from "./CoachStarterCards";
 import { CoachThinkingState } from "./CoachThinkingState";
-import { Modal } from "@/components/ui/Modal";
 import {
-  COACH_AI_ACTIVE_PILL_TEXT,
   COACH_COMPOSER_FOLLOW_UP_PLACEHOLDER,
   COACH_COMPOSER_PLACEHOLDER,
   COACH_COMPOSER_THINKING_PLACEHOLDER,
   COACH_EMPTY_STATE_PROMPT,
   COACH_EMPTY_STATE_SUBDESCRIPTION,
   COACH_HEADER_SUBTITLE,
-  COACH_PRIVACY_CHIP_TEXT,
   COACH_STARTERS_EYEBROW,
   COACH_STARTER_PROMPTS,
   type CoachStarterCard,
@@ -74,16 +69,11 @@ export default function CoachView() {
   const router = useRouter();
   const { user } = useAuth();
   const {
-    conversations,
-    loadingList,
-    activeConversationId,
     messages,
     loadingConversation,
     sending,
     error,
     startNewConversation,
-    openConversation,
-    removeConversation,
     sendUserMessage,
     retry,
   } = useCoachWorkspace();
@@ -93,7 +83,6 @@ export default function CoachView() {
     () => (user ? readStoredContextSelection(user.id) : null) ?? DEFAULT_COACH_CONTEXT_SELECTION,
   );
   const [showContextPanel, setShowContextPanel] = useState(false);
-  const [showHistory, setShowHistory] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   function setContextSelection(selection: CoachContextSelection) {
@@ -138,21 +127,7 @@ export default function CoachView() {
         </div>
 
         <div className="flex shrink-0 flex-col items-end gap-2">
-          <StatusPill tone="purple" className="uppercase tracking-wide">
-            {COACH_AI_ACTIVE_PILL_TEXT}
-          </StatusPill>
-          <StatusPill tone="sage" className="uppercase tracking-wide">
-            {COACH_PRIVACY_CHIP_TEXT}
-          </StatusPill>
           <div className="mt-1 flex gap-2">
-            <button
-              type="button"
-              onClick={() => setShowHistory(true)}
-              aria-label="Previous conversations"
-              className="flex h-9 w-9 items-center justify-center rounded-full border border-border text-foreground hover:border-cta-start/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cta-start"
-            >
-              <History className="h-4 w-4" aria-hidden="true" />
-            </button>
             {!isEmpty && (
               <button
                 type="button"
@@ -168,6 +143,17 @@ export default function CoachView() {
       </div>
 
       <div className="mt-8">
+        {/* Rendered above both branches deliberately: a failed send rolls
+            the optimistic user message back out of `messages` (see
+            useCoachWorkspace's sendUserMessage), which flips `isEmpty` back
+            to true and would otherwise silently strand the error where
+            only the non-empty branch showed it — the user would see the
+            landing/starter view again with no indication anything went
+            wrong. Found live during the 2026-09-08 showcase audit: a
+            genuine OpenAI failure produced a correct, honest 502 with a
+            real error message server-side, but the UI showed nothing. */}
+        {error && <CoachErrorState onRetry={retry} />}
+
         {isEmpty ? (
           <div className="flex flex-col">
             <div className="order-2 mt-6 sm:order-1 sm:mt-0">
@@ -209,8 +195,6 @@ export default function CoachView() {
               <div ref={messagesEndRef} />
             </div>
 
-            {error && <CoachErrorState onRetry={retry} />}
-
             <CoachContextStrip
               selection={contextSelection}
               recentObservationsAvailable={observations.length > 0}
@@ -230,24 +214,6 @@ export default function CoachView() {
         />
       )}
 
-      {showHistory && (
-        <Modal title="Previous Chats" onClose={() => setShowHistory(false)} maxWidthClassName="max-w-md" placement="right">
-          <CoachPreviousConversations
-            conversations={conversations}
-            activeConversationId={activeConversationId}
-            loading={loadingList}
-            onOpen={(id) => {
-              void openConversation(id);
-              setShowHistory(false);
-            }}
-            onNew={() => {
-              startNewConversation();
-              setShowHistory(false);
-            }}
-            onDelete={(id) => void removeConversation(id)}
-          />
-        </Modal>
-      )}
     </div>
   );
 }

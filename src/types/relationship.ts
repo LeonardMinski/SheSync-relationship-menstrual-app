@@ -122,7 +122,7 @@ export interface RelationshipMemory {
   createdAt: string;
 }
 
-export type ReplySourceType = "partner_context" | "appreciation" | "relationship_session";
+export type ReplySourceType = "partner_context" | "appreciation" | "relationship_session" | "vault_spark";
 
 export interface SharedReply {
   id: string;

@@ -20,9 +20,19 @@ import type { PeriodDayLog } from "@/types/period";
 
 export default function CycleHistoryPage() {
   const { user, loading: authLoading } = useAuth();
-  const { cycles, loading: cycleLoading, error: cycleError } = useCycleLogger();
+  const { cycles, loading: cycleLoading, error: cycleError, fetchCycles } = useCycleLogger();
   const { activePeriod, history, loading: periodLoading, loadError: periodLoadError } = usePeriodPageState();
   const { observations } = usePatterns();
+
+  // See the matching fix + comment in components/dashboard/Dashboard.tsx —
+  // this page had the same bug: useCycleLogger only fetches when told to,
+  // and this page never told it to, so the calendar's daily-mood markers
+  // were silently always empty regardless of what was actually logged.
+  useEffect(() => {
+    if (user && !authLoading) {
+      void fetchCycles();
+    }
+  }, [user, authLoading, fetchCycles]);
 
   const [monthDate, setMonthDate] = useState(() => new Date());
   const [selectedDateKey, setSelectedDateKey] = useState<string | null>(null);

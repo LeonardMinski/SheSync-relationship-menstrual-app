@@ -51,10 +51,10 @@ describe("getVisibleNavItems", () => {
     expect(getVisibleNavItems(true)).toEqual(navItems);
   });
 
-  it("hides Cycle, Coach, and Vault for a partner-only account", () => {
+  it("hides Cycle and Coach, but keeps Vault, for a partner-only account", () => {
     const hrefs = getVisibleNavItems(false).map((item) => item.href);
 
-    expect(hrefs).toEqual(["/dashboard", "/connect"]);
+    expect(hrefs).toEqual(["/dashboard", "/connect", "/vault"]);
   });
 
   it("does not mutate the shared navItems array", () => {
