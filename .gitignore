@@ -102,3 +102,8 @@ jspm_packages/
 
 # TernJS port file
 .tern-port
+
+# Local test-fixture manifest (UUIDs + notes for disposable test accounts
+# used during audits) — never contains passwords; see
+# docs/showcase-readiness-audit.md for why this stays local-only.
+docs/fixture-manifest.local.md
