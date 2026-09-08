@@ -13,6 +13,78 @@ unreachable from any real entry point.
 
 ---
 
+## Findings — bugs found and fixed live, this pass
+
+Every one below was reproduced with real fixture accounts (not assumed from
+reading code), fixed, then reverified live. See git log on this branch for
+full commit messages and `docs/fixture-manifest.local.md` for the actors/rows
+used.
+
+1. **Vault V1 migration never applied live** — zero `vault_*` tables existed
+   despite 4 commits of UI built against them. Applied (user-approved).
+2. **`profile_image_url`** — every new user's client-side profile-creation
+   fallback wrote a column that's never existed live, silently stranding the
+   account with no `public.users` row. Now guarded by a schema-contract test
+   (`src/services/auth/profileSchemaContract.test.ts`) that fails `tsc` and
+   Vitest if the same class of drift recurs.
+3. **Daily Check-in / Cycle History never fetched on mount** — `cycles`
+   stayed empty until a same-session save triggered a refetch, so a
+   genuinely-saved mood always looked unanswered after reload/fresh login.
+4. **Coach send errors were invisible** — a failed AI reply rolled the
+   optimistic message back out of state, which flipped the view back to the
+   empty/landing branch — but the error banner only rendered in the
+   non-empty branch. User saw nothing; message was actually safely
+   persisted server-side the whole time.
+5. **`get_revealed_vault_spark` ambiguous column** — `RETURNS TABLE(id ...)`
+   plus an unqualified `WHERE id = p_spark_id` inside the function body
+   made Postgres unable to tell which `id` was meant. Nobody — owner or
+   partner — could ever view a Spark's content after completing the reveal
+   ceremony. Live since the Vault migration was first applied this morning.
+6. **`shared_replies` CHECK constraint missing `vault_spark`** — the Vault
+   migration taught the RPC layer about a fourth reply source type but
+   never updated the table's own constraint; every reply on a revealed
+   Spark's focused-talk thread failed with a 500.
+7. **Hardcoded "Not Revealed Yet" pill** on the partner Spark-response page
+   — static regardless of actual status, producing a contradictory
+   "Not Revealed Yet" / "Revealed" pair once a Spark really was revealed.
+8. **Connect Explore tab's fake success banners** — claimed "Saved
+   privately" with no backend behind it; disclosure was below the fake
+   success instead of before it.
+9. **Naming collision** between the real, backend-wired Mutual Reveal
+   feature and a fully local-only simulated demo of the same name embedded
+   in Explore — renamed the fake one to `AnswerTogetherPreview`.
+
+**Dead code removed** (confirmed zero importers each): `src/app/api/auth/route.ts`
+(306 lines, already flagged dead in `docs/MVP_AUDIT.md`), `PricingPage.tsx`
+(orphaned, fake Stripe price ID + native `alert()`), `ComingSoonTile.tsx`,
+`CoachPreviousConversations.tsx` (orphaned after the Coach UI simplification
+below), 5 unused npm dependencies.
+
+**Product/UI changes per direct instruction:** removed the "AI Coach Active"
+and privacy-chip status pills, and the "Previous Chats" history modal, from
+the Coach screen.
+
+**Documentation corrected:** Coach was mislabeled "UI placeholder, no AI
+backend" in both `ROADMAP.md` and its own source comment — it's real
+(persisted conversations, real OpenAI replies). `/pricing` was misclassified
+as an unreachable stub — it's real and linked from the homepage. Two "parked"
+route stubs (`/fantasy`, `/intimacy`) had stale "future feature" copy instead
+of "superseded by X."
+
+**Confirmed clean / not fixed (documented, out of scope):** Stripe webhook
+writes two more nonexistent `public.users` columns (`subscription_status`,
+`stripe_subscription_id`) — same bug class as #2, left alone because it's
+entangled with the already-known anon-key/RLS issue that makes the webhook
+non-functional regardless, and real Stripe work is explicitly deferred.
+Avatar's upload path is complete but unreachable — recommended for removal,
+not executed (product decision, not mine to make unilaterally). A single
+~240s `/api/user` response was observed once during extremely heavy
+concurrent local test load (dozens of browser contexts + live migrations in
+one session) — very likely a local resource-contention artifact, not
+reproduced a second time, flagged for awareness rather than chased further.
+
+---
+
 ## Phase 1 — Feature & Route Inventory
 
 ### Auth
