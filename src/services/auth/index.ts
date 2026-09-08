@@ -152,7 +152,11 @@ const buildUserRecord = (
   subscription_tier: "free",
   created_at:
     overrides.created_at ?? user.created_at ?? new Date().toISOString(),
-  profile_image_url: null,
+  // profile_image_url is NOT written here: public.users has no such column
+  // live (avatar upload was never actually built — see docs/ROADMAP.md).
+  // Writing it broke every profile creation via this fallback path with a
+  // PostgREST "could not find column" error until this fix — found live
+  // during the 2026-09-08 showcase audit testing a fresh fixture account.
   privacy_settings: overrides.privacy_settings ?? {
     ...DEFAULT_PRIVACY_SETTINGS,
   },
