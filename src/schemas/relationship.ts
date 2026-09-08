@@ -104,7 +104,7 @@ export const SaveRelationshipMemoryInputSchema = z
 
 export const AddReplyInputSchema = z
   .object({
-    sourceType: z.enum(['partner_context', 'appreciation', 'relationship_session']),
+    sourceType: z.enum(['partner_context', 'appreciation', 'relationship_session', 'vault_spark']),
     sourceId: z.string().uuid(),
     content: z.string().trim().min(1).max(1000),
   })

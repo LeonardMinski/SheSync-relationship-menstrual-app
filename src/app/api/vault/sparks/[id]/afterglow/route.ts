@@ -71,7 +71,10 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
     if (error || !data) {
       console.error(`[${ROUTE_NAME}] POST failed`, error);
       const message = error?.message ?? "";
-      if (message.includes("has not been revealed") || message.includes("not the Spark owner")) {
+      if (message.includes("does not reference an existing spark")) {
+        return createErrorResponse("Spark not found", 404);
+      }
+      if (message.includes("before it has been revealed") || message.includes("is not the Spark owner")) {
         return createErrorResponse(message, 409);
       }
       return createErrorResponse("Unable to save this reflection. Please try again.", 500);
