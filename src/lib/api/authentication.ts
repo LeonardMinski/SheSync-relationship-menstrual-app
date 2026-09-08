@@ -10,9 +10,6 @@ export async function authenticateRequest(
 
   try {
     const authHeader = request.headers.get("authorization");
-    console.log("[auth]", {
-      hasHeader: Boolean(authHeader),
-    });
 
     if (!authHeader || !authHeader.startsWith("Bearer ")) {
       console.error(`[auth] missing Bearer token for ${routeName}`);
