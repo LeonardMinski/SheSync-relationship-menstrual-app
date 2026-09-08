@@ -81,7 +81,17 @@ export default function PartnerSparkResponsePage({ params }: { params: Promise<{
   return (
     <VaultRoom>
       <VaultBackLink href="/vault/partner" label="Back to their Vault" />
-      <VaultHeader eyebrow="Tease From Them" title="A Spark shared with you" pill={<VaultPill tone="purple">Not Revealed Yet</VaultPill>} />
+      <VaultHeader
+        eyebrow="Tease From Them"
+        title="A Spark shared with you"
+        pill={
+          summary?.status === "revealed" ? (
+            <VaultPill tone="rose">Revealed</VaultPill>
+          ) : (
+            <VaultPill tone="purple">Not Revealed Yet</VaultPill>
+          )
+        }
+      />
 
       {loading && <p className="text-sm text-[var(--vault-text-muted)]">Loading...</p>}
       {!loading && !summary && <p className="text-sm text-[var(--vault-text-muted)]">This Spark isn&apos;t available.</p>}
