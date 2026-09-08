@@ -131,15 +131,18 @@ independent of the user's light/dark preference — the same shared
 Button/Card/Modal/StatusPill *component shapes* are reused throughout
 (via className overrides), just with a different skin.
 
-### Why there's no Vault sidebar
+### The Vault sidebar
 
-The Figma mockups show a 260px left sidebar shell. The real app has no
-sidebar anywhere — it was deliberately replaced with `TopNav` +
-`MobileHeader` + `BottomTabBar` in a recent, unrelated pass (see
-`src/app/(app)/layout.tsx`). Resurrecting a sidebar for Vault alone would
-both fork the shared shell and reverse that recent architecture decision
-outside this feature's scope. Vault pages render inside the existing
-shell unchanged; only the content area gets the `.vault-theme` treatment.
+The Figma mockups show a 260px left sidebar shell. As of
+`fix/vault-figma-fidelity`, the app's canonical desktop shell *is* that
+sidebar (`src/components/layout/Sidebar.tsx`) — re-extracted from Figma
+and promoted to replace `TopNav` (deleted) for every authenticated route,
+not just Vault (see `src/app/(app)/layout.tsx`). It is fixed-dark
+regardless of route or the app's light/dark preference, matching all 22
+Figma frames. Mobile still uses the existing `MobileHeader`/
+`BottomTabBar` shell unchanged, since no approved mobile Figma frames
+exist. Vault pages render inside this shared shell; only the content
+area additionally gets the `.vault-theme` treatment.
 
 ## Capability gating
 
@@ -176,12 +179,24 @@ not the anon-key client it uses today).
 
 ## What's deferred / not done in this pass
 
-- **Figma pixel-level visual reconciliation.** No browser-automation tool
-  was available in this environment, so implementation followed the
-  extracted structural/token-level design spec (exact hex values,
-  spacing, typography, copy) rather than live screenshot diffing against
-  each Figma frame. Server-side route compilation was verified for every
-  screen; a real authenticated in-browser QA pass is still needed.
+- **The vault-v1 and security-advisory-hardening migrations were applied
+  to the live project (`wuvjrpgoqrpaogpewlyj`) on 2026-09-08** via the
+  Supabase MCP, closing the gap noted below — `vault_sparks` and
+  `vault_afterglow_reflections` now exist live. A real authenticated
+  in-browser check the same day confirmed `GET /vault` and
+  `GET /api/vault/sparks` both return 200 against the live schema (full
+  test suite: 778/778 passing; `tsc --noEmit` clean).
+- **Figma pixel-level visual reconciliation is still not done.** The
+  in-browser check above confirmed the route loads and the API works
+  end-to-end, but did not screenshot-diff each of the 22 approved frames
+  against the live rendered page — it was cut short because the browser
+  session in use turned out to be sharing the developer's real logged-in
+  account/cookies rather than an isolated test account, and continuing
+  live experimentation there (creating Sparks, exercising the reveal
+  ceremony) risked writing test data into real Vault content. A proper
+  pass needs a dedicated test account (and, ideally, two linked test
+  accounts to exercise the partner-facing side) rather than the app's own
+  signup flow in a shared browser session.
 - **Mobile/tablet Vault layouts.** Per explicit instruction, only the
   approved desktop Section was in scope for V1; responsive behavior below
   desktop widths has not been specifically verified.

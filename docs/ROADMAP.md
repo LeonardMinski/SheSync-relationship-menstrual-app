@@ -89,10 +89,12 @@ The underlying MVP loop this app must keep working is unchanged:
   drifted `src/services/intimacy/*` layer without re-auditing it first.
 - Rebuild browser-level coverage for the MVP journey from
   `docs/PARKED_TEST_SCENARIOS.md`.
-- Real full-browser QA for Vault V1 (see `docs/vault-v1.md` "Manual QA
-  required") — this pass validated server-side behavior, tsc/lint/build, and
-  route compilation, but did not exercise the UI with a live authenticated
-  session in a browser (no browser-automation tool was available).
+- Full Figma pixel-level reconciliation for Vault V1's 22 approved frames
+  (see `docs/vault-v1.md` "What's deferred") — a live-authenticated smoke
+  check on 2026-09-08 confirmed `/vault` and `/api/vault/sparks` work
+  end-to-end against the now-applied `vault-v1-migration.sql`, but a full
+  screenshot-diff pass against each frame, using a dedicated test account,
+  is still needed.
 
 ## Not yet real (do not build UI that implies otherwise)
 
