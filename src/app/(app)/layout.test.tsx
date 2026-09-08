@@ -161,8 +161,8 @@ describe("(app) layout tracking capability guard", () => {
     expect(screen.queryByText("tracked content")).not.toBeInTheDocument();
   });
 
-  it("redirects a partner-only account away from nested tracked routes (/cycle/patterns, /coach, /vault/new)", async () => {
-    for (const pathname of ["/cycle/patterns", "/coach", "/vault/new"]) {
+  it("redirects a partner-only account away from nested tracked routes (/cycle/patterns, /coach)", async () => {
+    for (const pathname of ["/cycle/patterns", "/coach"]) {
       vi.clearAllMocks();
       vi.mocked(useRouter).mockReturnValue({ replace } as unknown as ReturnType<typeof useRouter>);
       vi.mocked(usePathname).mockReturnValue(pathname);
@@ -172,6 +172,16 @@ describe("(app) layout tracking capability guard", () => {
       await waitFor(() => expect(replace).toHaveBeenCalledWith("/dashboard"));
       unmount();
     }
+  });
+
+  it("allows a partner-only account to reach /vault/new — Vault has no tracking dependency", async () => {
+    vi.mocked(usePathname).mockReturnValue("/vault/new");
+    setAuth({ session, user: partnerOnlyUser, loading: false });
+
+    render(<AppLayout>tracked content</AppLayout>);
+
+    await screen.findByText("tracked content");
+    expect(replace).not.toHaveBeenCalled();
   });
 
   it("allows a tracking-enabled account to reach /cycle", async () => {

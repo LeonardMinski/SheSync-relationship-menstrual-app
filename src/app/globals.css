@@ -8,6 +8,7 @@
 
 /* Import design tokens first */
 @import "../styles/tokens.css";
+@import "../styles/vault-tokens.css";
 
 /* Import organized CSS modules */
 @import "../styles/variables.css";

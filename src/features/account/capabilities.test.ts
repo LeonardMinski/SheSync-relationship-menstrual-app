@@ -4,7 +4,6 @@ import {
   canUseCoach,
   canUseCycle,
   canUseTracking,
-  canUseVault,
   isTrackedOnlyRoute,
   isTrackingStatusResolved,
   isWaitingForTrackingStatus,
@@ -29,12 +28,11 @@ describe("isTrackingStatusResolved", () => {
   });
 });
 
-describe("canUseTracking / canUseCycle / canUseCoach / canUseVault", () => {
+describe("canUseTracking / canUseCycle / canUseCoach", () => {
   it("is false while unresolved (never optimistically grants access)", () => {
     expect(canUseTracking({ trackingEnabled: undefined })).toBe(false);
     expect(canUseCycle({ trackingEnabled: undefined })).toBe(false);
     expect(canUseCoach({ trackingEnabled: undefined })).toBe(false);
-    expect(canUseVault({ trackingEnabled: undefined })).toBe(false);
   });
 
   it("is false for a null user", () => {
@@ -54,19 +52,19 @@ describe("isTrackedOnlyRoute", () => {
   it("matches the exact tracked-only routes", () => {
     expect(isTrackedOnlyRoute("/cycle")).toBe(true);
     expect(isTrackedOnlyRoute("/coach")).toBe(true);
-    expect(isTrackedOnlyRoute("/vault")).toBe(true);
   });
 
   it("matches nested routes under a tracked-only destination", () => {
     expect(isTrackedOnlyRoute("/cycle/patterns")).toBe(true);
-    expect(isTrackedOnlyRoute("/vault/new")).toBe(true);
   });
 
-  it("does not match unrelated routes", () => {
+  it("does not match unrelated routes, including Vault", () => {
     expect(isTrackedOnlyRoute("/dashboard")).toBe(false);
     expect(isTrackedOnlyRoute("/connect")).toBe(false);
     expect(isTrackedOnlyRoute("/partner")).toBe(false);
     expect(isTrackedOnlyRoute("/settings")).toBe(false);
+    expect(isTrackedOnlyRoute("/vault")).toBe(false);
+    expect(isTrackedOnlyRoute("/vault/new")).toBe(false);
   });
 
   it("does not treat sibling-prefixed routes as matching", () => {
@@ -100,8 +98,11 @@ describe("shouldBlockTrackedRoute", () => {
   it("blocks a tracked-only route for a known partner-only account", () => {
     expect(shouldBlockTrackedRoute({ trackingEnabled: false }, "/cycle")).toBe(true);
     expect(shouldBlockTrackedRoute({ trackingEnabled: false }, "/coach")).toBe(true);
-    expect(shouldBlockTrackedRoute({ trackingEnabled: false }, "/vault")).toBe(true);
-    expect(shouldBlockTrackedRoute({ trackingEnabled: false }, "/vault/new")).toBe(true);
+  });
+
+  it("does not block Vault for a partner-only account", () => {
+    expect(shouldBlockTrackedRoute({ trackingEnabled: false }, "/vault")).toBe(false);
+    expect(shouldBlockTrackedRoute({ trackingEnabled: false }, "/vault/new")).toBe(false);
   });
 
   it("does not block a tracked-only route for a tracking-enabled account", () => {

@@ -49,15 +49,18 @@ export function canUseTracking(user: CapabilityUser | null | undefined): boolean
   return isTrackingStatusResolved(user) && user!.trackingEnabled === true;
 }
 
-// Cycle logging, Coach, and Vault creation are all gated on the same single
-// tracking capability today. Kept as distinct named exports (rather than one
-// generic canUseTracking call at every call site) so each can diverge
-// independently later without renaming callers.
+// Cycle logging and Coach are gated on the tracking capability. Kept as
+// distinct named exports (rather than one generic canUseTracking call at
+// every call site) so each can diverge independently later without
+// renaming callers. Vault is deliberately NOT in this group — it has no
+// dependency on cycle-tracking data, and a partner-only account is exactly
+// who needs to respond to teases, mark ready, and react to a revealed
+// Spark (see database/vault-v1-migration.sql). Vault's own entitlement
+// axis is Premium, handled separately from tracking capability.
 export const canUseCycle = canUseTracking;
 export const canUseCoach = canUseTracking;
-export const canUseVault = canUseTracking;
 
-const TRACKED_ONLY_ROUTE_PREFIXES = ["/cycle", "/coach", "/vault"];
+const TRACKED_ONLY_ROUTE_PREFIXES = ["/cycle", "/coach"];
 
 /** Whether `pathname` is one of the tracked-only routes gated by capability. */
 export function isTrackedOnlyRoute(pathname: string): boolean {
