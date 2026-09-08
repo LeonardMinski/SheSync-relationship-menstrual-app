@@ -137,7 +137,12 @@ const getDisplayName = (user: SupabaseAuthUser) => {
 const getTrackingEnabledMetadata = (user: SupabaseAuthUser): boolean =>
   user.user_metadata?.tracking_enabled !== false;
 
-const buildUserRecord = (
+// Exported for src/services/auth/profileSchemaContract.test.ts, which
+// verifies its output only ever contains columns that exist on the live
+// public.users table — this is the only profile-creation path that
+// actually runs today (see the function's own comment below), so a schema
+// mismatch here silently strands every affected user without a profile row.
+export const buildUserRecord = (
   user: SupabaseAuthUser,
   overrides: Partial<
     Pick<
