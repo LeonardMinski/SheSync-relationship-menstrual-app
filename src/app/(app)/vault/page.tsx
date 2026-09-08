@@ -85,12 +85,17 @@ export default function VaultPage() {
         <p className="text-sm font-semibold text-[var(--vault-accent-purple)]">
           Archive: {privateCount} Private Spark{privateCount === 1 ? "" : "s"}
         </p>
-        <Link href="/vault/new">
-          <VaultButton variant="cta">
-            <Plus className="h-4 w-4" aria-hidden="true" />
-            Add a Spark
-          </VaultButton>
-        </Link>
+        <div className="flex gap-3">
+          <Link href="/vault/decks">
+            <VaultButton variant="secondary">Desire Decks</VaultButton>
+          </Link>
+          <Link href="/vault/new">
+            <VaultButton variant="cta">
+              <Plus className="h-4 w-4" aria-hidden="true" />
+              Add a Spark
+            </VaultButton>
+          </Link>
+        </div>
       </div>
 
       {error && (

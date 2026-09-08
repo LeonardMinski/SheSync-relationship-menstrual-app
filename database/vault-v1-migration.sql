@@ -540,6 +540,51 @@ BEGIN
 END;
 $$;
 
+-- "For Tonight" spotlight: surfaces deck prompts where BOTH the caller and
+-- their active partner independently rated the same deck_id/deck_prompt_id
+-- positively -- WITHOUT ever exposing the partner's actual spark content,
+-- interest level, or spark id. Only that a match exists, plus the
+-- caller's OWN spark id for that prompt (which they already fully own),
+-- so the UI can route them into the normal tease/share/reveal flow from
+-- their own side. This is the origin mechanic behind "mutual match" for
+-- deck-originated Sparks.
+CREATE OR REPLACE FUNCTION public.get_deck_prompt_matches()
+RETURNS TABLE (spark_id uuid, deck_id text, deck_prompt_id text, heat_level text, matched_at timestamptz)
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path = pg_catalog, public
+AS $$
+DECLARE
+    v_caller uuid := auth.uid();
+    v_partner_id uuid;
+BEGIN
+    IF v_caller IS NULL THEN
+        RAISE EXCEPTION 'not authenticated';
+    END IF;
+
+    v_partner_id := public._active_partner_of(v_caller);
+    IF v_partner_id IS NULL THEN
+        RETURN;
+    END IF;
+
+    RETURN QUERY
+    SELECT mine.id, mine.deck_id, mine.deck_prompt_id, mine.heat_level,
+           greatest(mine.created_at, theirs.created_at)
+    FROM public.vault_sparks mine
+    JOIN public.vault_sparks theirs
+      ON theirs.user_id = v_partner_id
+     AND theirs.deck_id = mine.deck_id
+     AND theirs.deck_prompt_id = mine.deck_prompt_id
+     AND theirs.deck_interest_level IN ('into_this', 'curious')
+     AND theirs.status <> 'archived'
+    WHERE mine.user_id = v_caller
+      AND mine.deck_id IS NOT NULL
+      AND mine.deck_prompt_id IS NOT NULL
+      AND mine.deck_interest_level IN ('into_this', 'curious')
+      AND mine.status <> 'archived';
+END;
+$$;
+
 -- ---------------------------------------------------
 -- 6. Extend the existing source-scoped reply system (see
 -- relationship-experience-v1-migration.sql) with a new source type for
@@ -639,6 +684,10 @@ GRANT EXECUTE ON FUNCTION public.get_partner_vault_summary() TO authenticated;
 REVOKE ALL ON FUNCTION public.get_vault_afterglow_reflections(uuid) FROM PUBLIC;
 REVOKE EXECUTE ON FUNCTION public.get_vault_afterglow_reflections(uuid) FROM anon;
 GRANT EXECUTE ON FUNCTION public.get_vault_afterglow_reflections(uuid) TO authenticated;
+
+REVOKE ALL ON FUNCTION public.get_deck_prompt_matches() FROM PUBLIC;
+REVOKE EXECUTE ON FUNCTION public.get_deck_prompt_matches() FROM anon;
+GRANT EXECUTE ON FUNCTION public.get_deck_prompt_matches() TO authenticated;
 
 -- _has_reply_source_access / get_replies / add_reply privileges were
 -- already granted in relationship-experience-v1-migration.sql; replacing

@@ -6,10 +6,19 @@ import type {
   SparkHeatLevel,
   TeaseResponse,
   VaultAfterglowReflection,
+  VaultDeckId,
   VaultPartnerSparkSummary,
   VaultRevealedSpark,
   VaultSpark,
 } from "@/types/vault";
+
+export interface DeckPromptMatch {
+  sparkId: string;
+  deckId: VaultDeckId;
+  deckPromptId: string;
+  heatLevel: SparkHeatLevel;
+  matchedAt: string;
+}
 
 async function authorizedFetch(path: string, init: RequestInit = {}) {
   const {
@@ -183,5 +192,16 @@ export async function getPartnerVaultSummary(): Promise<VaultPartnerSparkSummary
     partnerReadyAt: (row.partner_ready_at as string | null) ?? null,
     revealedAt: (row.revealed_at as string | null) ?? null,
     createdAt: row.created_at as string,
+  }));
+}
+
+export async function getForTonightMatches(): Promise<DeckPromptMatch[]> {
+  const data = await authorizedFetch("/api/vault/for-tonight", { method: "GET" });
+  return ((data?.matches ?? []) as Record<string, unknown>[]).map((row) => ({
+    sparkId: row.spark_id as string,
+    deckId: row.deck_id as VaultDeckId,
+    deckPromptId: row.deck_prompt_id as string,
+    heatLevel: row.heat_level as SparkHeatLevel,
+    matchedAt: row.matched_at as string,
   }));
 }
