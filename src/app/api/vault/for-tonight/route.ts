@@ -1,6 +1,7 @@
 import { NextRequest } from "next/server";
 
 import { authenticateRequest } from "@/lib/api/authentication";
+import { requireVaultAccess } from "@/lib/api/entitlement";
 import { createErrorResponse, createSuccessResponse } from "@/lib/api/responses";
 import { vaultRpcErrorResponse } from "@/app/api/vault/_lib/rpc-error";
 
@@ -18,6 +19,8 @@ export async function GET(request: NextRequest) {
     if (!user || !supabase) {
       return createErrorResponse("Authentication required", 401);
     }
+    const entitlementBlocked = await requireVaultAccess(supabase, user.id);
+    if (entitlementBlocked) return entitlementBlocked;
 
     const { data, error } = await supabase.rpc("get_deck_prompt_matches");
 

@@ -1,6 +1,7 @@
 import { NextRequest } from "next/server";
 
 import { authenticateRequest } from "@/lib/api/authentication";
+import { requireVaultAccess } from "@/lib/api/entitlement";
 import { createErrorResponse, createSuccessResponse } from "@/lib/api/responses";
 
 /**
@@ -16,6 +17,8 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
     if (!user || !supabase) {
       return createErrorResponse("Authentication required", 401);
     }
+    const entitlementBlocked = await requireVaultAccess(supabase, user.id);
+    if (entitlementBlocked) return entitlementBlocked;
     const { id } = await params;
     const { data, error } = await supabase
       .from("vault_sparks")

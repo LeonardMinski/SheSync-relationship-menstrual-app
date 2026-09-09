@@ -2,14 +2,19 @@ import { NextRequest } from "next/server";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import { authenticateRequest } from "@/lib/api/authentication";
+import { requireVaultAccess } from "@/lib/api/entitlement";
 
 import { GET, POST } from "./route";
 
 vi.mock("@/lib/api/authentication", () => ({
   authenticateRequest: vi.fn(),
 }));
+vi.mock("@/lib/api/entitlement", () => ({
+  requireVaultAccess: vi.fn(),
+}));
 
 const authenticateRequestMock = vi.mocked(authenticateRequest);
+const requireVaultAccessMock = vi.mocked(requireVaultAccess);
 const CALLER = { id: "user-1", email: "person@example.com", name: "Person" };
 
 function makeGetRequest(query = "") {
@@ -39,6 +44,7 @@ function makeSupabaseStub({ selectResult = { data: [], error: null }, insertResu
 describe("GET /api/vault/sparks", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    requireVaultAccessMock.mockResolvedValue(null);
     vi.spyOn(console, "error").mockImplementation(() => {});
   });
 
@@ -66,11 +72,47 @@ describe("GET /api/vault/sparks", () => {
     const eqCall = supabase.from.mock.results[0].value.eq;
     expect(eqCall).toHaveBeenCalledWith("user_id", CALLER.id);
   });
+
+  it("FREE: denies a caller with no Vault entitlement (403), never touching vault_sparks", async () => {
+    const supabase = makeSupabaseStub();
+    authenticateRequestMock.mockResolvedValue({
+      user: CALLER,
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      supabase: supabase as any,
+    });
+    requireVaultAccessMock.mockResolvedValue(
+      new Response(JSON.stringify({ error: "Vault is a Premium feature. Upgrade to unlock it." }), {
+        status: 403,
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      }) as any,
+    );
+
+    const response = await GET(makeGetRequest());
+
+    expect(response.status).toBe(403);
+    expect(requireVaultAccessMock).toHaveBeenCalledWith(supabase, CALLER.id);
+    expect(supabase.from).not.toHaveBeenCalled();
+  });
+
+  it("PREMIUM: an entitled caller is allowed through to the query", async () => {
+    const supabase = makeSupabaseStub();
+    authenticateRequestMock.mockResolvedValue({
+      user: CALLER,
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      supabase: supabase as any,
+    });
+    requireVaultAccessMock.mockResolvedValue(null);
+
+    const response = await GET(makeGetRequest());
+
+    expect(response.status).toBe(200);
+  });
 });
 
 describe("POST /api/vault/sparks", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    requireVaultAccessMock.mockResolvedValue(null);
     vi.spyOn(console, "error").mockImplementation(() => {});
   });
 
@@ -140,5 +182,25 @@ describe("POST /api/vault/sparks", () => {
       expect.objectContaining({ user_id: CALLER.id, heat_level: "hot", content: "test" }),
     );
     expect(body.data.status).toBe("private");
+  });
+
+  it("FREE: denies Spark creation (403) before any row is inserted — Vault creation is a Premium feature, not just a UI-hidden one", async () => {
+    const supabase = makeSupabaseStub();
+    authenticateRequestMock.mockResolvedValue({
+      user: CALLER,
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      supabase: supabase as any,
+    });
+    requireVaultAccessMock.mockResolvedValue(
+      new Response(JSON.stringify({ error: "Vault is a Premium feature. Upgrade to unlock it." }), {
+        status: 403,
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      }) as any,
+    );
+
+    const response = await POST(makePostRequest({ heatLevel: "warm", content: "test" }));
+
+    expect(response.status).toBe(403);
+    expect(supabase.from).not.toHaveBeenCalled();
   });
 });

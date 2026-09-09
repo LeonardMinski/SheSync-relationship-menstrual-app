@@ -2,14 +2,19 @@ import { NextRequest } from "next/server";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import { authenticateRequest } from "@/lib/api/authentication";
+import { requireVaultAccess } from "@/lib/api/entitlement";
 
 import { GET, POST } from "./route";
 
 vi.mock("@/lib/api/authentication", () => ({
   authenticateRequest: vi.fn(),
 }));
+vi.mock("@/lib/api/entitlement", () => ({
+  requireVaultAccess: vi.fn(),
+}));
 
 const authenticateRequestMock = vi.mocked(authenticateRequest);
+const requireVaultAccessMock = vi.mocked(requireVaultAccess);
 const CALLER = { id: "user-1", email: "person@example.com", name: "Person" };
 
 function makeParams(id: string) {
@@ -34,6 +39,7 @@ function makePostRequest(body: unknown) {
 describe("GET /api/vault/sparks/[id]/afterglow", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    requireVaultAccessMock.mockResolvedValue(null);
     vi.spyOn(console, "error").mockImplementation(() => {});
   });
 
@@ -79,6 +85,7 @@ describe("GET /api/vault/sparks/[id]/afterglow", () => {
 describe("POST /api/vault/sparks/[id]/afterglow", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    requireVaultAccessMock.mockResolvedValue(null);
     vi.spyOn(console, "error").mockImplementation(() => {});
   });
 

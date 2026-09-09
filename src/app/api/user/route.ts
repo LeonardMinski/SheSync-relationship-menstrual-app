@@ -42,11 +42,17 @@ export async function PUT(request: NextRequest) {
       return createErrorResponse('Invalid email format', 400)
     }
 
-    // Prepare update object with only allowed fields
+    // Prepare update object with only allowed fields. subscription_tier
+    // is deliberately NOT settable here — it is a display-only cache
+    // written exclusively by the Stripe webhook's service-role client
+    // from the canonical public.subscriptions table. A user-facing
+    // profile endpoint must never grant Premium; see
+    // database/subscriptions-entitlement-migration.sql for the
+    // matching column-level GRANT/REVOKE that closes the same path at
+    // the database level (RLS protects rows, not columns).
     const allowedUpdates: {
       name?: string
       email?: string
-      subscription_tier?: 'free' | 'premium' | 'vip' | 'lifetime'
       privacy_settings?: {
         share_with_partner: boolean
         share_cycle_phase: boolean
@@ -70,13 +76,6 @@ export async function PUT(request: NextRequest) {
         return createErrorResponse('Invalid email', 400)
       }
       allowedUpdates.email = updateData.email.toLowerCase().trim()
-    }
-    
-    if (updateData.subscriptionTier !== undefined) {
-      if (!['free', 'premium', 'vip', 'lifetime'].includes(updateData.subscriptionTier)) {
-        return createErrorResponse('Invalid subscription tier', 400)
-      }
-      allowedUpdates.subscription_tier = updateData.subscriptionTier
     }
     
     if (updateData.privacySettings !== undefined) {

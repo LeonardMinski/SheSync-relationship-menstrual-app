@@ -1,6 +1,7 @@
 import { NextRequest } from "next/server";
 
 import { authenticateRequest } from "@/lib/api/authentication";
+import { requireVaultAccess } from "@/lib/api/entitlement";
 import { createErrorResponse, createSuccessResponse } from "@/lib/api/responses";
 import { CreateVaultSparkInputSchema } from "@/schemas/vault";
 
@@ -22,6 +23,8 @@ export async function GET(request: NextRequest) {
     if (!user || !supabase) {
       return createErrorResponse("Authentication required", 401);
     }
+    const entitlementBlocked = await requireVaultAccess(supabase, user.id);
+    if (entitlementBlocked) return entitlementBlocked;
     const { searchParams } = new URL(request.url);
     const status = searchParams.get("status");
 
@@ -54,6 +57,8 @@ export async function POST(request: NextRequest) {
     if (!user || !supabase) {
       return createErrorResponse("Authentication required", 401);
     }
+    const entitlementBlocked = await requireVaultAccess(supabase, user.id);
+    if (entitlementBlocked) return entitlementBlocked;
     const rawBody = await request.json().catch(() => ({}));
     const parsed = CreateVaultSparkInputSchema.safeParse(rawBody);
     if (!parsed.success) {

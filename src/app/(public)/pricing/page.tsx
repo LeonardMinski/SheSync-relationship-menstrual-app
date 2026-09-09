@@ -1,14 +1,14 @@
+"use client";
+
+import { useState } from "react";
 import { Check } from "lucide-react";
 
 import { Button } from "@/components/ui/Button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/Card";
-import { FeaturePlaceholder } from "@/components/ui/FeaturePlaceholder";
 import { PremiumBadge } from "@/components/ui/PremiumBadge";
 import { SectionHeading } from "@/components/ui/SectionHeading";
+import { createCheckoutSession } from "@/services/checkout";
 
-// Real designed pricing shell. There is no Stripe/checkout integration wired
-// up yet — see docs/ROADMAP.md. "Unlock Premium" is intentionally
-// non-functional rather than faking a successful purchase.
 const FREE_FEATURES = [
   "Daily wellbeing logging",
   "Basic history trends",
@@ -26,6 +26,24 @@ const PREMIUM_FEATURES = [
 ];
 
 export default function PricingPageRoute() {
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  async function handleUnlockPremium() {
+    setLoading(true);
+    setError(null);
+
+    const result = await createCheckoutSession("premium");
+
+    if (!result.success) {
+      setError(result.error);
+      setLoading(false);
+      return;
+    }
+
+    window.location.href = result.data.url;
+  }
+
   return (
     <div className="mx-auto w-full max-w-4xl space-y-8 px-4 py-10 sm:px-6">
       <SectionHeading
@@ -75,22 +93,13 @@ export default function PricingPageRoute() {
                 </li>
               ))}
             </ul>
-            <Button
-              variant="cta"
-              className="w-full"
-              disabled
-              title="Premium checkout isn't available yet"
-            >
-              Unlock Premium
+            {error && <p className="text-sm text-white">{error}</p>}
+            <Button variant="cta" className="w-full" disabled={loading} onClick={handleUnlockPremium}>
+              {loading ? "Redirecting to checkout…" : "Unlock Premium"}
             </Button>
           </CardContent>
         </Card>
       </div>
-
-      <FeaturePlaceholder
-        title="Premium checkout is coming soon"
-        description="Subscriptions and billing aren't wired up yet — this page shows the plans, but 'Unlock Premium' doesn't process any payment. The MVP remains free while the core sharing flow is validated."
-      />
     </div>
   );
 }

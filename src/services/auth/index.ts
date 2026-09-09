@@ -179,7 +179,18 @@ const hasNoSignUpIdentities = (user: SupabaseAuthUser) =>
 const createUserProfile = async (
   user: UserRecord,
 ): Promise<AuthServiceError | null> => {
-  const { error } = await supabase.from("users").upsert(user);
+  // ignoreDuplicates (ON CONFLICT (id) DO NOTHING) is required, not just
+  // more correct: a plain .upsert() compiles to ON CONFLICT DO UPDATE SET
+  // <every column, including subscription_tier>, and Postgres requires
+  // UPDATE privilege on every column in that SET clause for the
+  // authenticated role regardless of whether a conflict actually occurs.
+  // subscription_tier is deliberately not authenticated-UPDATE-able (see
+  // database/subscriptions-entitlement-migration.sql) — DO NOTHING avoids
+  // needing that privilege at all, and also matches the intent here: this
+  // is a fallback for when handle_new_auth_user()'s trigger insert hasn't
+  // landed yet, so if a row now exists (the trigger won it), it must never
+  // be overwritten by this fallback.
+  const { error } = await supabase.from("users").upsert(user, { onConflict: "id", ignoreDuplicates: true });
 
   if (error) {
     return createAuthError("PROFILE_ERROR", error);

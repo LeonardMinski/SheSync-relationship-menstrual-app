@@ -149,6 +149,36 @@ describe("PUT /api/user — onboarding completion trust boundary", () => {
     expect(response.status).toBe(400);
     expect(supabase.update).not.toHaveBeenCalled();
   });
+
+  it("F: cannot self-upgrade — subscriptionTier is not a recognized field; it is silently dropped, never written", async () => {
+    const supabase = makeSupabaseMock({ data: {}, error: null });
+    authenticateRequestMock.mockResolvedValue({
+      user: { id: "user-1", email: "person@example.com", name: "Person" },
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      supabase: supabase as any,
+    });
+
+    const response = await PUT(makeRequest({ subscriptionTier: "lifetime" }));
+
+    expect(response.status).toBe(400);
+    expect(supabase.update).not.toHaveBeenCalled();
+  });
+
+  it("F: subscriptionTier is dropped even when sent alongside a legitimate field — only the legitimate field is written", async () => {
+    const supabase = makeSupabaseMock({ data: { id: "user-1", name: "New Name" }, error: null });
+    authenticateRequestMock.mockResolvedValue({
+      user: { id: "user-1", email: "person@example.com", name: "Person" },
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      supabase: supabase as any,
+    });
+
+    const response = await PUT(makeRequest({ name: "New Name", subscriptionTier: "lifetime" }));
+
+    expect(response.status).toBe(200);
+    const updatePayload = supabase.update.mock.calls[0][0];
+    expect(updatePayload).toEqual({ name: "New Name" });
+    expect(updatePayload).not.toHaveProperty("subscription_tier");
+  });
 });
 
 describe("PUT /api/user — trackingEnabled (account capabilities)", () => {

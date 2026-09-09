@@ -1,4 +1,5 @@
 import { supabase } from "@/lib/supabase/client";
+import type { PurchasablePlan } from "@/lib/stripe/plans";
 
 type ApiResult<T> =
   | { success: true; data: T; error?: never }
@@ -16,8 +17,14 @@ async function getAccessToken(): Promise<string | null> {
   return session?.access_token || null;
 }
 
-/** Starts a Stripe Checkout session for the caller's own account. Never accepts a user id — the server always derives identity from the auth token. */
-export async function createCheckoutSession(priceId: string): Promise<ApiResult<{ url: string; sessionId: string }>> {
+/**
+ * Starts a Stripe Checkout session for the caller's own account. Never
+ * accepts a user id — the server always derives identity from the auth
+ * token. Sends an internal plan identifier, never a Stripe Price ID —
+ * the server owns that mapping (src/lib/stripe/plans.ts) so the client
+ * can never determine its own entitlement by supplying a price.
+ */
+export async function createCheckoutSession(plan: PurchasablePlan): Promise<ApiResult<{ url: string; sessionId: string }>> {
   const token = await getAccessToken();
   if (!token) {
     return { success: false, error: "Authentication required" };
@@ -30,7 +37,7 @@ export async function createCheckoutSession(priceId: string): Promise<ApiResult<
         "Content-Type": "application/json",
         Authorization: `Bearer ${token}`,
       },
-      body: JSON.stringify({ priceId }),
+      body: JSON.stringify({ plan }),
     });
 
     const json = (await response.json().catch(() => ({}))) as { url?: string; sessionId?: string; error?: string };

@@ -2,14 +2,19 @@ import { NextRequest } from "next/server";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import { authenticateRequest } from "@/lib/api/authentication";
+import { requireVaultAccess } from "@/lib/api/entitlement";
 
 import { GET } from "./route";
 
 vi.mock("@/lib/api/authentication", () => ({
   authenticateRequest: vi.fn(),
 }));
+vi.mock("@/lib/api/entitlement", () => ({
+  requireVaultAccess: vi.fn(),
+}));
 
 const authenticateRequestMock = vi.mocked(authenticateRequest);
+const requireVaultAccessMock = vi.mocked(requireVaultAccess);
 const CALLER = { id: "user-1", email: "person@example.com", name: "Person" };
 
 function makeRequest() {
@@ -22,6 +27,7 @@ function makeRequest() {
 describe("GET /api/vault/partner", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    requireVaultAccessMock.mockResolvedValue(null);
     vi.spyOn(console, "error").mockImplementation(() => {});
   });
 
@@ -31,6 +37,26 @@ describe("GET /api/vault/partner", () => {
     const response = await GET(makeRequest());
 
     expect(response.status).toBe(401);
+  });
+
+  it("FREE: denies viewing the partner's Vault summary — entitlement is evaluated against the CALLING user, not whichever partner may be Premium", async () => {
+    const rpc = vi.fn();
+    authenticateRequestMock.mockResolvedValue({
+      user: CALLER,
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      supabase: { rpc } as any,
+    });
+    requireVaultAccessMock.mockResolvedValue(
+      new Response(JSON.stringify({ error: "Vault is a Premium feature. Upgrade to unlock it." }), {
+        status: 403,
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      }) as any,
+    );
+
+    const response = await GET(makeRequest());
+
+    expect(response.status).toBe(403);
+    expect(rpc).not.toHaveBeenCalled();
   });
 
   it("calls get_partner_vault_summary with no parameters — it resolves the caller's partner internally, never accepts one", async () => {
