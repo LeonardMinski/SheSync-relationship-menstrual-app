@@ -4,6 +4,7 @@ import type {
   PrivacySettingsRecord,
   SignInInput,
   SignUpInput,
+  UserProfileInsert,
   UserRecord,
 } from "@/types";
 import type { Session, User as SupabaseAuthUser } from "@supabase/supabase-js";
@@ -176,21 +177,36 @@ export const buildUserRecord = (
 const hasNoSignUpIdentities = (user: SupabaseAuthUser) =>
   Array.isArray(user.identities) && user.identities.length === 0;
 
+// subscription_tier is server-owned billing display state — never sent
+// from the browser, even though buildUserRecord's in-memory UserRecord
+// happens to set it to "free" for the optimistic read model returned to
+// callers. This picks exactly the columns a fresh profile INSERT is
+// trusted with; the database's own column-level GRANT (see
+// database/subscriptions-entitlement-forward-fix-migration.sql) enforces
+// the same boundary independent of what this function sends.
+const toProfileInsertPayload = (record: UserRecord): UserProfileInsert => ({
+  id: record.id,
+  email: record.email,
+  name: record.name,
+  created_at: record.created_at,
+  privacy_settings: record.privacy_settings,
+  tracking_enabled: record.tracking_enabled,
+});
+
 const createUserProfile = async (
   user: UserRecord,
 ): Promise<AuthServiceError | null> => {
   // ignoreDuplicates (ON CONFLICT (id) DO NOTHING) is required, not just
   // more correct: a plain .upsert() compiles to ON CONFLICT DO UPDATE SET
-  // <every column, including subscription_tier>, and Postgres requires
-  // UPDATE privilege on every column in that SET clause for the
-  // authenticated role regardless of whether a conflict actually occurs.
-  // subscription_tier is deliberately not authenticated-UPDATE-able (see
-  // database/subscriptions-entitlement-migration.sql) — DO NOTHING avoids
-  // needing that privilege at all, and also matches the intent here: this
-  // is a fallback for when handle_new_auth_user()'s trigger insert hasn't
-  // landed yet, so if a row now exists (the trigger won it), it must never
-  // be overwritten by this fallback.
-  const { error } = await supabase.from("users").upsert(user, { onConflict: "id", ignoreDuplicates: true });
+  // <every column in the payload>, and Postgres requires UPDATE privilege
+  // on every column in that SET clause for the authenticated role
+  // regardless of whether a conflict actually occurs. This is a fallback
+  // for when handle_new_auth_user()'s trigger insert hasn't landed yet,
+  // so if a row now exists (the trigger won it), it must never be
+  // overwritten by this fallback.
+  const { error } = await supabase
+    .from("users")
+    .upsert(toProfileInsertPayload(user), { onConflict: "id", ignoreDuplicates: true });
 
   if (error) {
     return createAuthError("PROFILE_ERROR", error);

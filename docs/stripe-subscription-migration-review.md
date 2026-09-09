@@ -907,3 +907,311 @@ revoke. The plan/billing_type/subscription_id invariant now admits exactly
 two shapes.
 
 **Stopping here per instruction — no live DDL executed.**
+
+---
+---
+
+# Round 3 — Forward Fix
+
+**IMPORTANT DISCOVERY that motivates this round:** a checkpoint audit found
+that Round 2's `database/subscriptions-entitlement-migration.sql` was never
+applied, but an EARLIER draft of that same migration — "Round 1" — WAS
+applied live, recorded as Supabase migration
+`20260909060545_subscriptions_entitlement_correction`, before Round 2's own
+corrections (the claim/outcome ledger state machine, the stricter billing
+shape check, `stripe_price_id NOT NULL`, the `stripe_webhook_events` grant
+narrowing) were ever written. Round 2's file assumes a pristine
+pre-migration schema, so re-running it now fails outright (it re-creates
+`stripe_webhook_events` and re-adds columns that already exist). This round
+introduces a NEW migration,
+`database/subscriptions-entitlement-forward-fix-migration.sql`, that evolves
+the ACTUAL live (Round-1) schema forward, plus three further findings from
+that same audit and one design addition (claim-token ownership).
+
+Round 1 and Round 2 above are kept exactly as written — nothing in this
+section rewrites them. **Still not applied.**
+
+## A. Confirmed live starting schema (read-only, immediately before writing the forward-fix)
+
+- `public.subscriptions` — 0 rows. Every Round-1/Round-2-shared column
+  already present (`stripe_price_id` nullable, `billing_type` NOT NULL with
+  no default, etc.). Constraint is `subscriptions_billing_type_identifiers_check`
+  (Round-1's looser shape — still permits `lifetime+premium`, `lifetime+vip`,
+  `recurring+lifetime`), not `subscriptions_billing_shape_check`. Grants/RLS
+  already match the final target (`authenticated` SELECT-only via the
+  owner-scoped RLS policy, `anon` nothing, `service_role` unchanged) — not
+  touched by the forward fix.
+- `public.stripe_webhook_events` — 0 rows. Only 4 columns live: `event_id`
+  (PK), `event_type`, `event_created_at`, `processed_at` (NOT NULL DEFAULT
+  now()) — the Round-1 existence-implies-success shape. No `status`,
+  `started_at`, or `claim_token`; no CHECK tying `processed_at` to status.
+  `service_role` holds unrestricted `ALL PRIVILEGES` (Round-1's exact
+  flagged under-narrowing bug). `anon`/`authenticated` already have
+  nothing.
+- `public.users` — UPDATE already correctly narrowed live (Round 1's
+  column-level grant to `name, email, privacy_settings,
+  onboarding_completed_at, tracking_enabled`). INSERT was never touched by
+  any prior migration: `authenticated` holds full-column INSERT, including
+  `subscription_tier` — confirmed via `information_schema.role_column_grants`.
+  RLS INSERT/UPDATE policies (`auth.uid() = id`) restrict row ownership
+  only, never columns — confirmed via `pg_policies`.
+
+Live state matched the prior checkpoint exactly — nothing had drifted since,
+so no stop-and-report was needed before implementing.
+
+## B. Why Round 2's file cannot be applied directly
+
+It targets a pristine pre-migration schema: `CREATE TABLE
+public.stripe_webhook_events` (already exists), `ALTER TABLE
+public.subscriptions ADD COLUMN stripe_checkout_session_id ...` etc. (already
+added by the live Round-1 apply). Running it now errors immediately on the
+first conflicting statement. The forward-fix migration instead only issues
+statements that are valid against the schema in section A.
+
+## C. Forward-fix migration — exact SQL
+
+Full file: `database/subscriptions-entitlement-forward-fix-migration.sql`.
+Three parts: (1) swap `subscriptions_billing_type_identifiers_check` for the
+stricter `subscriptions_billing_shape_check` and set `stripe_price_id NOT
+NULL`; (2) evolve `stripe_webhook_events` in place — add `status`,
+`started_at`, `claim_token uuid not null`, drop `processed_at`'s NOT
+NULL/default, add the `processed_at ⇔ status='processed'` CHECK, add the
+status index, and re-narrow `service_role`'s grant via an explicit `REVOKE
+ALL` first; (3) `REVOKE INSERT ... GRANT INSERT (id, email, name,
+created_at, privacy_settings, tracking_enabled)` on `public.users` for
+`authenticated`, excluding `subscription_tier`. See the file itself for the
+full annotated SQL and the audit trail behind each column list.
+
+## D. Final `subscriptions` constraints/nullability
+
+- `subscriptions_billing_shape_check`: exactly two legal shapes —
+  `lifetime` (`plan='lifetime'`, `stripe_subscription_id IS NULL`) or
+  `recurring` (`plan IN ('premium','vip')`, `stripe_subscription_id IS NOT NULL`).
+- `stripe_price_id`: `NOT NULL` (was nullable).
+- Everything else (plan/status/billing_type checks, unique keys, the
+  owner-SELECT RLS policy, grants) — unchanged, already correct live.
+
+## E. Final `stripe_webhook_events` schema
+
+```
+event_id           text primary key
+event_type         text not null
+event_created_at   timestamptz not null
+status             text not null default 'processing' check (status in ('processing','processed','failed'))
+started_at         timestamptz not null default now()
+claim_token        uuid not null                 -- new in this round
+processed_at       timestamptz null              -- was NOT NULL DEFAULT now()
+constraint stripe_webhook_events_processed_at_matches_status check ((status = 'processed') = (processed_at is not null))
+```
+Grants after the fix: `service_role` → `SELECT, INSERT, UPDATE` only (no
+DELETE), via an explicit `REVOKE ALL` first (this project's
+`pg_default_acl` hands new tables default privileges to all three roles, so
+a bare additive `GRANT` never narrows that — the exact bug Round 1 shipped
+with). `anon`/`authenticated` → none.
+
+## F. Claim-token ownership algorithm
+
+`claimEvent` now returns `{ outcome: 'duplicate' }` or `{ outcome: 'claimed',
+claimToken }` — every fresh claim and every reclaim (from `'failed'` or a
+stale `'processing'` row) mints a brand-new `claimToken` via
+`randomUUID()`. `markProcessed(eventId, claimToken)` and
+`markFailed(eventId, claimToken)` finalize with `UPDATE ... WHERE event_id =
+? AND claim_token = ?` — a stale claimant's token no longer matches once a
+reclaim has replaced it, so the CAS affects 0 rows. Both finalize functions
+return `'finalized' | 'lost_ownership'` explicitly rather than assuming a
+0-row update means success; the POST handler branches on this: on
+`'lost_ownership'` it logs a distinct warning and responds success (200)
+without forcing an extra Stripe retry, since (a) the mutation this request
+already performed is safe to have run (see G) and (b) the reclaiming
+attempt's own response is what should drive any further retry. A DB error
+(as opposed to a clean 0-row CAS miss) inside `markFailed` is treated as
+`'finalized'`, preserving the original best-effort semantics of that path —
+ownership status is genuinely unknown on a transient error, not lost.
+Implemented in `src/app/api/webhooks/stripe/route.ts`
+(`claimEvent`/`tryReclaim`/`markProcessed`/`markFailed`).
+
+## G. Final webhook ordering/reconciliation algorithm
+
+Replaced the `>=`-based `isStaleEvent()` timestamp guard entirely — deleted,
+not patched, because a `>` fix (as first proposed) still doesn't produce a
+total order across events sharing a timestamp, and this repo's own review
+called that out as an incomplete fix. Instead,
+`reconcileSubscriptionFromStripe()` is now the single source of every
+subscription-lifecycle write: for `customer.subscription.created/updated/
+deleted` AND for `checkout.session.completed`'s subscription-mode branch, it
+calls `stripe.subscriptions.retrieve(subscriptionId)` and writes THAT
+object's status/price/period/cancel-flag — never the triggering event's own
+embedded payload. A delivery that is old, retried, or ties another event's
+timestamp still converges to the same current Stripe truth a "new" delivery
+would, so it can never regress canonical state, with no ordering heuristic
+needed at all. Canceled subscriptions remain retrievable from Stripe
+indefinitely in their terminal state, so `customer.subscription.deleted`
+uses this exact same path rather than a separate handler — no special-case
+terminal-event rule was needed. `last_stripe_event_created_at` is still
+written on every upsert for observability, just no longer read back as a
+gate.
+
+## H. Checkout responsibility after the fix
+
+`checkout.session.completed` (subscription mode) now only ESTABLISHES the
+customer↔user↔checkout-session linkage (and creates the row for a
+brand-new customer); it calls the same `reconcileSubscriptionFromStripe()`
+lifecycle events use, supplying `newRowUserId`/`newCheckoutSessionId` only.
+It no longer authoritatively writes `status`/`current_period_end`/
+`cancel_at_period_end`/grace state itself — those always come from the
+retrieved subscription, so checkout can never regress a more current
+lifecycle write, regardless of delivery order. Lifetime (payment mode) is
+unchanged: there is no ongoing Stripe subscription object for a one-time
+payment to reconcile against, so checkout remains the sole and permanent
+source of truth there, as it always was.
+
+## I. `public.users` INSERT/UPDATE grants matrix (final)
+
+| | INSERT | UPDATE |
+|---|---|---|
+| `authenticated` | `id, email, name, created_at, privacy_settings, tracking_enabled` | `name, email, privacy_settings, onboarding_completed_at, tracking_enabled` |
+| `subscription_tier` | **excluded** (new in this round) | excluded (Round 1) |
+| `anon` | none | none |
+| `service_role` | unchanged (ALL) | unchanged (ALL) |
+
+## J. Proof `subscription_tier` is structurally non-writable by authenticated users
+
+- **INSERT:** the forward-fix migration's `REVOKE INSERT ... GRANT INSERT
+  (6 named columns)` excludes it — a direct PostgREST INSERT naming it now
+  fails on column privilege, not merely on the app never sending it.
+- **UPDATE:** already excluded live since the Round-1 apply (unchanged by
+  this round).
+- **App-level, belt-and-suspenders:** `createUserProfile()`'s payload
+  (`toProfileInsertPayload` in `src/services/auth/index.ts`) explicitly
+  omits `subscription_tier` before calling `.upsert()` — it no longer sends
+  `'free'` even though that's what `buildUserRecord()`'s in-memory read
+  model reports. `UserProfileInsert` (`src/types/auth.ts`) is `Omit<UserRecord,
+  "subscription_tier">`, a distinct type from the read-model `UserRecord`
+  so the trust boundary is explicit at the type level, not just by
+  convention. Covered by
+  `src/services/auth/profileSchemaContract.test.ts`'s new
+  `UserProfileInsert schema contract` block and by an assertion added to
+  `src/services/auth/index.test.ts`'s existing "creates a missing profile"
+  test that inspects the actual `.upsert()` call payload.
+- `PUT /api/user`'s allowlist (unchanged, already excluded it) remains the
+  only other write surface.
+
+## K. Test files/cases added
+
+- `src/app/api/webhooks/stripe/route.test.ts` — 19 cases (was 14):
+  rewrote every subscription-lifecycle test to mock
+  `stripe.subscriptions.retrieve` as the source of truth instead of trusting
+  event payloads; replaced the two old staleness-skip tests ("OLDER
+  OUT-OF-ORDER EVENT", "NEWER SUBSCRIPTION EVENT then OLDER CHECKOUT
+  COMPLETED") with "OLDER EVENT AFTER NEWER STATE", "EQUAL-SECOND DISTINCT
+  EVENTS", and "CHECKOUT CANNOT REGRESS"; added "CURRENT OWNER CAN MARK
+  PROCESSED", "CURRENT OWNER CAN MARK FAILED", "STALE OWNER CANNOT MARK
+  PROCESSED AFTER RECLAIM", and "STALE OWNER CANNOT MARK FAILED AFTER
+  RECLAIM".
+- `src/services/auth/profileSchemaContract.test.ts` — +1 case (new
+  `UserProfileInsert schema contract` describe block, plus a compile-time
+  assertion that `UserProfileInsert` excludes `subscription_tier`).
+- `src/services/auth/index.test.ts` — same 15 cases, two strengthened:
+  "restores an existing session and profile" now asserts `upsert` is never
+  called (existing profile not overwritten); "creates a missing profile for
+  an authenticated user" now asserts the actual `.upsert()` payload omits
+  `subscription_tier`.
+
+Net: 104 test files (unchanged), **819 cases** (was 813, +6).
+
+## L. Full validation results
+
+- `npx tsc --noEmit` — clean
+- `npm run lint` — clean (the same 2 pre-existing, unrelated warnings:
+  `layout.tsx` custom-font, `Avatar.tsx` `<img>`)
+- `npm test` — **819/819 passed**, 104 files, 0 failed, 0 skipped
+- `npm run build` — succeeds
+
+## M. Files changed
+
+- `database/subscriptions-entitlement-forward-fix-migration.sql` (new)
+- `src/app/api/webhooks/stripe/route.ts` (claim-token ownership,
+  Stripe-truth reconciliation, narrowed checkout responsibility)
+- `src/app/api/webhooks/stripe/route.test.ts` (rewritten per K)
+- `src/types/auth.ts` (`UserProfileInsert` type)
+- `src/services/auth/index.ts` (`toProfileInsertPayload`, narrowed
+  `createUserProfile` payload)
+- `src/services/auth/index.test.ts` (strengthened per K)
+- `src/services/auth/profileSchemaContract.test.ts` (new contract per K)
+- `docs/stripe-subscription-migration-review.md` (this section)
+
+`database/subscriptions-entitlement-migration.sql` (Round 2's file) and
+every prior section of this document are untouched.
+
+## N. Commit SHA
+
+Recorded once committed — see the commit immediately following this
+document update on `fix/stripe-subscription-sync`.
+
+## O. git status + untouched stash list
+
+Working tree: clean except the same untracked, machine-local
+`.claude/`/`.mcp.json`/`.ignore` noted since Round 2. Two pre-existing
+stashes (`wip: stripe subscription sync implementation`, and an unrelated
+`develop` WIP) — **not** popped, applied, or dropped; left exactly as
+found.
+
+## P. Remaining known issues
+
+- The account-delete `partner_id` unlink bug (Round 1, section B) —
+  confirmed still present, deliberately **not** fixed here (out of scope
+  for this pass; needs a service-role client or a `SECURITY DEFINER` RPC,
+  and a Graft check on whether `partner_id` is even still load-bearing now
+  that `partner_links` is canonical).
+- No automated test runs the forward-fix SQL against a real/ephemeral
+  Postgres — consistent with every other migration in `database/`, not a
+  new gap. See Q for the manual verification plan to run immediately after
+  applying.
+
+## Q. PROPOSED LIVE CHANGE — forward-fix migration
+
+Migration SQL: section C above (full file in
+`database/subscriptions-entitlement-forward-fix-migration.sql`).
+
+**This migration has NOT been applied.** Post-apply verification plan:
+
+1. **Schema:** `subscriptions_billing_shape_check` exists,
+   `subscriptions_billing_type_identifiers_check` does not;
+   `stripe_price_id` is `NOT NULL`; `stripe_webhook_events` has
+   `status`/`started_at`/`claim_token`/nullable `processed_at` plus the
+   matching-status CHECK and the `status` index.
+2. **Grants:** `information_schema.role_table_grants` for
+   `stripe_webhook_events` shows `service_role` → exactly
+   `SELECT,INSERT,UPDATE` (no DELETE, no leftover `ALL`);
+   `anon`/`authenticated` → nothing. `role_column_grants` for `users`
+   shows `authenticated` INSERT limited to the 6 named columns, with
+   `subscription_tier` absent from that list (still absent from UPDATE
+   too).
+3. **Policies:** `pg_policies` unchanged — owner-only SELECT on
+   `subscriptions`; no policies on `stripe_webhook_events`.
+4. **Attack — INSERT:** as an authenticated (non-service-role) client,
+   attempt `INSERT INTO users (id, email, name, subscription_tier, ...)
+   VALUES (auth.uid(), ..., 'lifetime', ...)` → expect a column-privilege
+   error naming `subscription_tier`.
+5. **Attack — UPDATE:** attempt `UPDATE users SET subscription_tier =
+   'lifetime' WHERE id = auth.uid()` → expect the same class of error
+   (already true pre-fix; re-confirm post-fix).
+6. **Normal profile creation:** sign up a new account → `public.users`
+   row appears with `subscription_tier = 'free'` (from the column default,
+   never from the client) and every other `createUserProfile`-supplied
+   column intact.
+7. **Subscription owner SELECT:** as the owning authenticated user, `SELECT
+   * FROM subscriptions WHERE user_id = auth.uid()` succeeds (once a row
+   exists).
+8. **Cross-user subscription SELECT:** as a different authenticated user,
+   the same query against someone else's row returns zero rows (RLS).
+9. **Webhook claim/process/finalize:** send a test `checkout.session.completed`
+   and a `customer.subscription.updated` through the real webhook endpoint
+   (Stripe CLI or dashboard test event) → `stripe_webhook_events` gets a row
+   with `status='processed'`, `claim_token` set, `processed_at` set;
+   `subscriptions` reflects Stripe's actual current state.
+10. **Vault FREE denied / Premium allowed:** as a FREE account, any Vault
+    route returns 403 ("Vault is a Premium feature..."); after a real or
+    simulated upgrade to an entitled plan, the same route succeeds.
+
+**Stopping here per instruction — no live DDL executed.**

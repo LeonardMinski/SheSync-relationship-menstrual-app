@@ -149,13 +149,16 @@ describe("auth service", () => {
       data: { session },
       error: null,
     });
-    setProfileResult({ data: profile, error: null });
+    const { upsert } = setProfileResult({ data: profile, error: null });
 
     const result = await auth.getCurrentUser();
 
     expect(result.session).toBe(session);
     expect(result.user?.subscription_tier).toBe("premium");
     expect(result.error).toBeNull();
+    // EXISTING PROFILE IS NOT OVERWRITTEN: a row already exists, so the
+    // fallback-creation upsert must never run.
+    expect(upsert).not.toHaveBeenCalled();
   });
 
   it("creates a missing profile for an authenticated user", async () => {
@@ -171,6 +174,19 @@ describe("auth service", () => {
     expect(result.user?.id).toBe("user-1");
     expect(result.user?.subscription_tier).toBe("free");
     expect(upsert).toHaveBeenCalledOnce();
+
+    // USERS INSERT SECURITY: subscription_tier is server-owned billing
+    // state — the client-side fallback profile-creation payload must
+    // never send it, even though the in-memory read model (asserted
+    // above) reports "free". The DB establishes free status itself via
+    // the column's own NOT NULL DEFAULT.
+    const [insertPayload] = upsert.mock.calls[0] as [Record<string, unknown>, unknown];
+    expect(insertPayload).not.toHaveProperty("subscription_tier");
+    expect(insertPayload).toMatchObject({
+      id: "user-1",
+      email: "person@example.com",
+      name: "Person",
+    });
   });
 
   it("keeps profile query failures distinct from auth failures", async () => {

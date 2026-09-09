@@ -25,6 +25,17 @@ export type UserRecord = {
   tracking_enabled: boolean;
 };
 
+/**
+ * What the browser is trusted to INSERT for a new profile row —
+ * everything in UserRecord except subscription_tier, which is
+ * server-owned billing display state (see
+ * database/subscriptions-entitlement-forward-fix-migration.sql, which
+ * revokes authenticated INSERT on that column at the database level
+ * too). The column's own NOT NULL DEFAULT 'free' establishes free
+ * status without the client ever naming it.
+ */
+export type UserProfileInsert = Omit<UserRecord, "subscription_tier">;
+
 export type CreateUserData = {
   email: string;
   password: string;
