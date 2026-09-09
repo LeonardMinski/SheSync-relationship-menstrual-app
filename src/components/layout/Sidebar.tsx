@@ -10,6 +10,7 @@ import { useApp } from "@/context/AppContext";
 import { useAuth } from "@/context/AuthContext";
 import { canUseTracking } from "@/features/account/capabilities";
 import { getPartnerStatus } from "@/services/partner/data";
+import { BrandMark } from "@/components/ui/BrandMark";
 import { cn } from "@/utils/cn";
 
 import { getVisibleNavItems, isItemActive } from "./navItems";
@@ -85,10 +86,10 @@ export function Sidebar() {
     >
       <div className="flex w-full flex-col gap-12">
         <Link href="/dashboard" className="flex items-center gap-2.5">
-          <span className="flex size-8 shrink-0 items-center justify-center rounded-[10px] bg-[#e57c95]">
-            <span className="font-instrument text-xl italic text-[#0d080d]">S</span>
+          <BrandMark className="size-8" />
+          <span className="font-geist text-lg font-bold text-[#f7f4f6]">
+            SheSync<span className="text-[#e5c158]">+</span>
           </span>
-          <span className="font-geist text-lg font-bold text-[#f7f4f6]">SheSync+</span>
         </Link>
 
         <nav aria-label="Primary navigation" className="flex w-full flex-col gap-2">

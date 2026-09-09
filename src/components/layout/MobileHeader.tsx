@@ -5,6 +5,7 @@ import { Moon, Sun } from "lucide-react";
 
 import { useApp } from "@/context/AppContext";
 import { useAuth } from "@/context/AuthContext";
+import { BrandMark } from "@/components/ui/BrandMark";
 import { PrivacyBadge } from "@/components/ui/PrivacyBadge";
 
 export function MobileHeader() {
@@ -18,8 +19,9 @@ export function MobileHeader() {
     >
       <Link
         href="/dashboard"
-        className="font-display shrink-0 text-base font-bold tracking-tight text-foreground"
+        className="font-display flex shrink-0 items-center gap-1.5 text-base font-bold tracking-tight text-foreground"
       >
+        <BrandMark className="size-6" />
         SheSync<span className="text-[color:var(--accent-rose)]">+</span>
       </Link>
 
