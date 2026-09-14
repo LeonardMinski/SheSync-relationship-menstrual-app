@@ -397,7 +397,19 @@ async function handleCheckoutSessionCompleted(supabase: SupabaseClient, event: S
     const paymentIntentId =
       typeof session.payment_intent === 'string' ? session.payment_intent : session.payment_intent?.id ?? null
 
-    await upsertSubscription(supabase, {
+    // Lifetime participates in the SAME customer-level reconciliation
+    // fence and canonical-identity RPC as recurring reconciliation — see
+    // reconcileSubscriptionFromStripe's docstring. Without this, an
+    // in-flight recurring reconciliation for this same customer (e.g. an
+    // old subscription's lifecycle event, or a resubscribe race) could
+    // interleave with this checkout and the two writes could clobber each
+    // other; and a stale recurring write arriving after this authoritative
+    // lifetime write must never resurrect the old recurring state (see
+    // Fix 2/3 in the migration's reconcile_subscription_if_owner).
+    const reconciliationToken = randomUUID()
+    await acquireReconciliationLock(supabase, customerId, reconciliationToken)
+
+    const ownershipRetained = await writeSubscriptionIfOwner(supabase, reconciliationToken, true, {
       userId,
       stripeCustomerId: customerId,
       stripeSubscriptionId: null,
@@ -412,6 +424,18 @@ async function handleCheckoutSessionCompleted(supabase: SupabaseClient, event: S
       gracePeriodEndsAt: null,
       eventCreatedIso,
     })
+
+    if (!ownershipRetained) {
+      // Vanishingly unlikely (this is the authoritative path — it always
+      // wins the canonical-identity check) but still possible if a LATER
+      // reconciliation attempt for this same customer has since replaced
+      // the fencing token outright. Safe to no-op: that later attempt is,
+      // by construction, more current than this one.
+      console.warn(
+        '[stripe webhook] lost subscription reconciliation ownership — a newer reconciliation for this customer already applied more current state; this lifetime checkout write was skipped',
+        customerId,
+      )
+    }
     return
   }
 
@@ -437,6 +461,11 @@ async function handleCheckoutSessionCompleted(supabase: SupabaseClient, event: S
     stripeCustomerId: customerId,
     stripeSubscriptionId: subscriptionId,
     eventCreatedIso,
+    // checkout.session.completed is an authoritative purchase path: it
+    // may establish or replace which Stripe subscription is canonical
+    // for this user (e.g. a resubscribe) — see the canonical-identity
+    // rule in reconcile_subscription_if_owner.
+    isAuthoritative: true,
     newRowUserId: userId,
     newCheckoutSessionId: session.id,
   })
@@ -451,6 +480,11 @@ async function handleSubscriptionLifecycleEvent(supabase: SupabaseClient, event:
     stripeCustomerId: customerId,
     stripeSubscriptionId: subscription.id,
     eventCreatedIso,
+    // A normal lifecycle event must never SWITCH which subscription (or
+    // billing state) is canonical for the user — only reconcile the one
+    // that already is. See the canonical-identity rule in
+    // reconcile_subscription_if_owner.
+    isAuthoritative: false,
   })
 }
 
@@ -458,6 +492,17 @@ interface ReconcileSubscriptionInput {
   stripeCustomerId: string
   stripeSubscriptionId: string
   eventCreatedIso: string
+  /**
+   * True only for an authoritative purchase/checkout path — the only kind
+   * of event allowed to establish or replace which Stripe subscription
+   * (or lifetime billing state) is canonical for this user. A normal
+   * customer.subscription.* lifecycle event is never authoritative: it
+   * may only reconcile the subscription that is ALREADY canonical, never
+   * switch to a different one. Enforced atomically inside
+   * reconcile_subscription_if_owner, not merely by this client-side flag
+   * — see that function's comments in the forward-fix migration.
+   */
+  isAuthoritative: boolean
   /**
    * Supplied only by checkout.session.completed — the one caller that
    * authoritatively knows the user id and may need to create a brand-new
@@ -476,20 +521,42 @@ interface ReconcileSubscriptionInput {
  * guarantee arrives in order, and which checkout.session.completed and
  * customer.subscription.* can race against each other for the same
  * resubscribing customer — this always re-fetches the subscription's
- * CURRENT state directly from Stripe and writes that. A delivery that is
- * itself "old" (delayed, retried, processed out of order, or even sharing
- * the exact same `created` second as another event) still converges to
- * the same current Stripe truth as a "new" delivery would, so it can
- * never regress canonical state and never needs to guess at a total
- * order across events. Safe to call for a canceled subscription too:
- * Stripe keeps a canceled subscription retrievable indefinitely in its
- * terminal state, so customer.subscription.deleted uses this exact same
- * path rather than a separate handler.
+ * CURRENT state directly from Stripe and writes that. Safe to call for a
+ * canceled subscription too: a canceled subscription remains retrievable
+ * through the Subscription API in this supported flow, so
+ * customer.subscription.deleted uses this exact same path rather than a
+ * separate handler.
+ *
+ * Re-fetching current state alone is NOT sufficient to prevent a
+ * regression, though: a caller can retrieve a subscription's state and
+ * then stall (slow network, GC pause, frozen serverless instance) long
+ * enough for a DIFFERENT reconciliation attempt for the SAME CUSTOMER —
+ * a reclaim of the same event_id, a wholly distinct event_id for the
+ * same subscription, a resubscribe under a brand-new subscription id, or
+ * a Lifetime checkout — to retrieve/establish a newer state and write it
+ * first. The stalled caller would then resume and overwrite that newer
+ * state with its own, now-stale, snapshot. acquireReconciliationLock/
+ * writeSubscriptionIfOwner close that gap with a per-CUSTOMER fencing
+ * token (not per-subscription — see the migration's table comment for
+ * why): acquired here before the retrieve, and checked-and-consumed
+ * atomically (single-transaction SELECT ... FOR UPDATE + write, see
+ * reconcile_subscription_if_owner in the forward-fix migration) at the
+ * moment the canonical mutation is applied, so only the
+ * most-recently-acquired attempt for this CUSTOMER can ever write.
+ *
+ * The fencing token alone still isn't enough to stop a normal lifecycle
+ * event from silently switching which subscription is canonical (e.g. an
+ * old, noncanonical subscription's event arriving after a resubscribe).
+ * See `input.isAuthoritative` and the canonical-identity rule enforced
+ * inside reconcile_subscription_if_owner.
  */
 async function reconcileSubscriptionFromStripe(
   supabase: SupabaseClient,
   input: ReconcileSubscriptionInput,
 ): Promise<void> {
+  const reconciliationToken = randomUUID()
+  await acquireReconciliationLock(supabase, input.stripeCustomerId, reconciliationToken)
+
   const subscription = await stripe.subscriptions.retrieve(input.stripeSubscriptionId)
 
   const status = toKnownStatus(subscription.status)
@@ -523,11 +590,10 @@ async function reconcileSubscriptionFromStripe(
   const gracePeriodEndsAt = computeGracePeriodEndsAt(
     existing?.status ?? null,
     status,
-    input.eventCreatedIso,
     existing?.grace_period_ends_at ?? null,
   )
 
-  await upsertSubscription(supabase, {
+  const ownershipRetained = await writeSubscriptionIfOwner(supabase, reconciliationToken, input.isAuthoritative, {
     userId,
     stripeCustomerId: input.stripeCustomerId,
     stripeSubscriptionId: subscription.id,
@@ -544,28 +610,66 @@ async function reconcileSubscriptionFromStripe(
     gracePeriodEndsAt,
     eventCreatedIso: input.eventCreatedIso,
   })
+
+  if (!ownershipRetained) {
+    // Two independent, non-error reasons collapse to the same false
+    // here — see reconcile_subscription_if_owner: (1) a later
+    // reconciliation attempt for this SAME CUSTOMER already retrieved
+    // and wrote a state that is, by construction, at least as current as
+    // this attempt's own now-stale retrieve, or (2) this is a normal
+    // lifecycle event for a subscription/billing state that is no longer
+    // (or never was) canonical for this user — a benign no-op, not a
+    // regression. Either way there is nothing to retry: the canonical row
+    // already reflects the correct Stripe truth.
+    console.warn(
+      '[stripe webhook] lost subscription reconciliation ownership (fencing token superseded, or this event is not canonical for the current subscription/billing state) — write skipped',
+      subscription.id,
+    )
+  }
 }
 
 /**
- * A grace period is granted from the FIRST transition into past_due —
- * repeated/related events while already past_due must not push the
- * deadline back out. Any status other than past_due carries none. Safe
- * regardless of delivery order or same-second event ties: this depends
- * only on the PREVIOUSLY STORED status vs. the newly reconciled one, both
- * read at the moment of this call, never on comparing event timestamps
- * against each other.
+ * A grace period is granted from the FIRST RELIABLE OBSERVATION of the
+ * CURRENT past_due state — deliberately never reconstructed from any
+ * webhook event's own `created` timestamp, confirmed transition evidence
+ * or not.
+ *
+ * Why not even a "confirmed" transition event: Stripe's
+ * `previous_attributes.status` on a delayed/out-of-order event proves
+ * only that status changed at SOME earlier point — never that it was the
+ * transition BEHIND THE STATE THIS RECONCILIATION JUST RETRIEVED.
+ * Example: active→past_due (event A), past_due→active (event B),
+ * active→past_due (event C) — if delayed event A arrives after C, its
+ * `previous_attributes.status` is present and "confirmed" by the old
+ * rule, but anchoring to A's `created` time would backdate the grace
+ * window for transition C, potentially shortening or even
+ * already-expiring the customer's promised 7 days. There is no way to
+ * distinguish this from a genuine first transition using only the
+ * triggering event's own payload, so this stops trying: it NEVER anchors
+ * to an event timestamp.
+ *
+ * Instead: any status other than past_due carries no grace. Repeated/
+ * related events while already past_due must not push the deadline back
+ * out (depends only on the PREVIOUSLY STORED status vs. the newly
+ * reconciled one, both read at the moment of this call — never on
+ * comparing event timestamps). Every OTHER transition into past_due
+ * anchors a fresh 7-day window to `now` — the current moment being the
+ * earliest instant this reconciliation can prove the CURRENT past_due
+ * state was observed, so this can only ever grant a window equal to or
+ * MORE generous than the true (unknowable) transition instant, never
+ * shorter than the promised 7 days. A delayed delivery may make the
+ * grace slightly more generous; it must never make it shorter.
  */
 function computeGracePeriodEndsAt(
   previousStatus: StripeSubscriptionStatus | null,
   newStatus: StripeSubscriptionStatus,
-  eventCreatedIso: string,
   existingGracePeriodEndsAt: string | null,
 ): string | null {
   if (newStatus !== 'past_due') return null
   if (previousStatus === 'past_due' && existingGracePeriodEndsAt) {
     return existingGracePeriodEndsAt
   }
-  return new Date(new Date(eventCreatedIso).getTime() + PAST_DUE_GRACE_PERIOD_MS).toISOString()
+  return new Date(Date.now() + PAST_DUE_GRACE_PERIOD_MS).toISOString()
 }
 
 async function fetchExistingByCustomerId(
@@ -587,43 +691,17 @@ async function fetchExistingByCustomerId(
   return data as ExistingSubscriptionRow | null
 }
 
-async function upsertSubscription(supabase: SupabaseClient, input: UpsertInput) {
-  const { error } = await supabase.from('subscriptions').upsert(
-    {
-      user_id: input.userId,
-      stripe_customer_id: input.stripeCustomerId,
-      stripe_subscription_id: input.stripeSubscriptionId,
-      stripe_checkout_session_id: input.stripeCheckoutSessionId,
-      stripe_payment_intent_id: input.stripePaymentIntentId,
-      stripe_price_id: input.stripePriceId,
-      plan: input.plan,
-      billing_type: input.billingType,
-      status: input.status,
-      current_period_end: input.currentPeriodEnd,
-      cancel_at_period_end: input.cancelAtPeriodEnd,
-      grace_period_ends_at: input.gracePeriodEndsAt,
-      last_stripe_event_created_at: input.eventCreatedIso,
-    },
-    { onConflict: 'user_id' },
-  )
-
-  if (error) {
-    throw new Error(`[stripe webhook] failed to upsert subscription for user ${input.userId}: ${error.message}`)
-  }
-
-  await syncUserDisplayTier(supabase, input)
-}
-
 /**
  * public.users.subscription_tier is a display-only cache (see
  * src/components/layout/Sidebar.tsx) — never read for authorization
- * anywhere. Kept in lock-step here so the label stays honest without
- * every consumer needing to query public.subscriptions. Treated as
- * required (throws on failure, same as the subscriptions upsert itself)
- * rather than best-effort: a request that partially succeeds must not be
- * marked 'processed' — see markProcessed.
+ * anywhere. Computed here and written atomically alongside the canonical
+ * subscriptions row inside reconcile_subscription_if_owner (see
+ * writeSubscriptionIfOwner) so the label can never observably drift from
+ * the row it's derived from.
  */
-async function syncUserDisplayTier(supabase: SupabaseClient, input: UpsertInput) {
+function resolveSubscriptionTier(
+  input: Pick<UpsertInput, 'plan' | 'billingType' | 'status' | 'currentPeriodEnd' | 'cancelAtPeriodEnd' | 'gracePeriodEndsAt'>,
+): PurchasablePlan | 'free' {
   const entitlement = computeEntitlement({
     plan: input.plan,
     billing_type: input.billingType,
@@ -632,13 +710,96 @@ async function syncUserDisplayTier(supabase: SupabaseClient, input: UpsertInput)
     cancel_at_period_end: input.cancelAtPeriodEnd,
     grace_period_ends_at: input.gracePeriodEndsAt,
   })
+  return entitlement.entitled ? input.plan : 'free'
+}
 
-  const { error } = await supabase
-    .from('users')
-    .update({ subscription_tier: entitlement.entitled ? input.plan : 'free' })
-    .eq('id', input.userId)
+/**
+ * Acquires this CUSTOMER's reconciliation fencing token BEFORE any
+ * external retrieve or canonical write happens — see
+ * reconcileSubscriptionFromStripe and the Lifetime checkout branch of
+ * handleCheckoutSessionCompleted, the two callers. Keyed by
+ * stripe_customer_id, not stripe_subscription_id: public.subscriptions is
+ * canonical per USER/CUSTOMER (one row, upserted ON CONFLICT (user_id)),
+ * so every entitlement-changing webhook path for a given customer —
+ * recurring checkout, every subscription lifecycle event, and Lifetime
+ * checkout — must contend for the SAME lock row, or a resubscribe/
+ * Lifetime-vs-recurring race could write through two different,
+ * mutually-blind lock rows and still clobber the one shared canonical
+ * row. A plain upsert is sufficient (no compare-and-swap needed here,
+ * unlike tryReclaim): acquiring always succeeds and always wins the slot
+ * immediately, because Postgres serializes concurrent writers to the same
+ * row and whichever commits LAST is left as the current value — which is
+ * exactly the fencing-token property writeSubscriptionIfOwner relies on.
+ */
+async function acquireReconciliationLock(
+  supabase: SupabaseClient,
+  stripeCustomerId: string,
+  reconciliationToken: string,
+): Promise<void> {
+  const { error } = await supabase.from('subscription_reconciliation_locks').upsert(
+    {
+      stripe_customer_id: stripeCustomerId,
+      reconciliation_token: reconciliationToken,
+      acquired_at: new Date().toISOString(),
+    },
+    { onConflict: 'stripe_customer_id' },
+  )
 
   if (error) {
-    throw new Error(`[stripe webhook] failed to sync users.subscription_tier for user ${input.userId}: ${error.message}`)
+    throw new Error(
+      `[stripe webhook] failed to acquire reconciliation lock for customer ${stripeCustomerId}: ${error.message}`,
+    )
   }
+}
+
+/**
+ * Atomically verifies reconciliationToken is still the CURRENT token for
+ * this customer and, only if so, applies the canonical subscriptions
+ * upsert and the users.subscription_tier sync in one database transaction
+ * — see reconcile_subscription_if_owner in the forward-fix migration.
+ * Returns false ("lost ownership") without writing anything if EITHER:
+ * (1) a later reconciliation attempt for this same customer has since
+ * replaced the fencing token via acquireReconciliationLock, or (2)
+ * isAuthoritative is false and the subscription/billing state this call
+ * is trying to write is no longer (or never was) canonical for this user
+ * — see the canonical-identity rule inside the RPC. The caller must treat
+ * either case as a benign no-op, never a failure.
+ *
+ * isAuthoritative must be true ONLY for a purchase/checkout path (may
+ * establish/replace canonical identity) and false for every ordinary
+ * customer.subscription.* lifecycle event (may only reconcile the
+ * subscription that is already canonical).
+ */
+async function writeSubscriptionIfOwner(
+  supabase: SupabaseClient,
+  reconciliationToken: string,
+  isAuthoritative: boolean,
+  input: UpsertInput,
+): Promise<boolean> {
+  const { data, error } = await supabase.rpc('reconcile_subscription_if_owner', {
+    p_stripe_customer_id: input.stripeCustomerId,
+    p_reconciliation_token: reconciliationToken,
+    p_is_authoritative: isAuthoritative,
+    p_user_id: input.userId,
+    p_stripe_subscription_id: input.stripeSubscriptionId,
+    p_stripe_checkout_session_id: input.stripeCheckoutSessionId,
+    p_stripe_payment_intent_id: input.stripePaymentIntentId,
+    p_stripe_price_id: input.stripePriceId,
+    p_plan: input.plan,
+    p_billing_type: input.billingType,
+    p_status: input.status,
+    p_current_period_end: input.currentPeriodEnd,
+    p_cancel_at_period_end: input.cancelAtPeriodEnd,
+    p_grace_period_ends_at: input.gracePeriodEndsAt,
+    p_last_stripe_event_created_at: input.eventCreatedIso,
+    p_subscription_tier: resolveSubscriptionTier(input),
+  })
+
+  if (error) {
+    throw new Error(
+      `[stripe webhook] reconcile_subscription_if_owner RPC failed for customer ${input.stripeCustomerId}: ${error.message}`,
+    )
+  }
+
+  return data === true
 }

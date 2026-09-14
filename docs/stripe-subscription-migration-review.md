@@ -1215,3 +1215,344 @@ Migration SQL: section C above (full file in
     simulated upgrade to an entitled plan, the same route succeeds.
 
 **Stopping here per instruction — no live DDL executed.**
+
+---
+---
+
+# Round 3 — correctness re-review (same day, two additional races closed)
+
+A same-day re-review of the just-written forward fix (sections A–Q above)
+found two further correctness gaps in `reconcileSubscriptionFromStripe()`
+itself — not in the migration's schema/grants, which stand as written.
+Both are closed here, in the same uncommitted pass, before this branch is
+proposed for merge. **Still not applied / not merged** — this section is
+proposal-and-implementation, exactly like Round 3 above.
+
+## R. Blocker 1 — a stalled reconciler could overwrite a newer write for the same subscription
+
+**The gap:** re-fetching Stripe's current state at reconcile time (Round
+3, section G) prevents a *stale event* from winning, but not a *stale
+in-flight request*. A request that already called
+`stripe.subscriptions.retrieve()` and then stalled (slow network, GC
+pause, frozen serverless instance) can resume after a **different**
+reconciliation attempt for the **same** Stripe subscription — a reclaim of
+the same `event_id`, or a wholly distinct `event_id` for the same
+subscription racing concurrently — has already retrieved and written a
+newer state. The stalled request then overwrites that newer row with its
+own, older, snapshot. Nothing in the claim-token ledger (section F)
+prevents this: the ledger governs only the per-`event_id` processed/failed
+outcome, not the `subscriptions` row mutation itself.
+
+**The fix — a per-subscription reconciliation fencing token**, the same
+distributed-locking shape as `claim_token`, applied one level down (keyed
+by `stripe_subscription_id` rather than `event_id`):
+
+- New table `public.subscription_reconciliation_locks`
+  (`stripe_subscription_id` PK, `reconciliation_token uuid not null`,
+  `acquired_at`). RLS enabled, no policies, all privileges revoked from
+  `anon`/`authenticated`/`service_role` by default; `service_role` then
+  granted exactly `SELECT, INSERT, UPDATE` (no DELETE — one lock row per
+  subscription for its whole life).
+- `acquireReconciliationLock()` (`src/app/api/webhooks/stripe/route.ts`)
+  upserts a fresh `randomUUID()` into that row **before** calling
+  `stripe.subscriptions.retrieve()`. A plain upsert is sufficient — no
+  compare-and-swap needed at acquire time — because Postgres serializes
+  concurrent writers to the same row and whichever commits last is left as
+  the current value, which is exactly the fencing-token property the write
+  side relies on.
+- `reconcile_subscription_if_owner(...)`, a new `SECURITY DEFINER` SQL
+  function (migration section 4), does `SELECT ... FOR UPDATE` on the lock
+  row, compares the caller's token to the current one, and — only if they
+  still match — applies the canonical `subscriptions` upsert *and* the
+  `users.subscription_tier` display-cache sync in that same transaction,
+  returning `true`. If a later `acquireReconciliationLock()` call has
+  since replaced the token, it returns `false` **without writing
+  anything**. The `SELECT ... FOR UPDATE` is load-bearing: it holds the
+  lock row for the rest of the transaction, so the ownership check and the
+  write are one atomic step, not two statements a concurrent acquire could
+  interleave between.
+- `writeSubscriptionIfOwner()` (route.ts) calls this RPC and returns the
+  boolean. `reconcileSubscriptionFromStripe()` treats `false` as a benign
+  no-op — logs a distinct `console.warn` ("lost subscription
+  reconciliation ownership") and returns normally — never as a failure:
+  some other attempt already applied a Stripe state that is, by
+  construction, at least as current as this caller's own now-stale
+  retrieve. The triggering event's own ledger outcome (claim → processed)
+  is entirely unaffected by losing this race; the two mechanisms are
+  independent.
+- The lifetime (one-time-payment) checkout path is untouched — it never
+  retrieves external Stripe state, so it has no analogous stale-overwrite
+  race, and continues to write via the pre-existing `upsertSubscription()`
+  / `syncUserDisplayTier()` pair.
+
+Tests (`describe("subscription reconciliation ownership (Blocker 1 —
+distinct from the ledger claim_token above)")`): **STALE SAME-EVENT
+WRITER** (a stalled retrieve resumes after a reclaim of its own
+`event_id` already wrote newer state — must not regress it), **DISTINCT
+EVENT CONCURRENCY** (same, but the newer write comes from a wholly
+unrelated `event_id` for the same subscription), **LOST OWNERSHIP** (RPC
+returns `false` → row untouched, `console.warn` fires, the ledger still
+finalizes as processed), **NORMAL OWNER** (uncontested path: lock acquired
+before retrieve, RPC called, ledger finalizes normally).
+
+## S. Blocker 2 — the past_due grace period could be anchored to an untrustworthy timestamp
+
+**The gap:** `computeGracePeriodEndsAt()` anchored a fresh 7-day grace
+window to the *triggering event's* `created` timestamp. But reconciliation
+always re-fetches Stripe's **current** subscription state rather than
+trusting any event's embedded snapshot (section G) — so the delivery that
+happens to trigger a given reconciliation may be old, delayed, or
+unrelated to the actual moment the subscription became `past_due`.
+Anchoring to its `created` time could backdate the grace window to an
+arbitrary earlier instant, silently shortening the customer's promised 7
+days (in the extreme, to a deadline already in the past).
+
+**The fix:** `hasConfirmedPastDueTransition(event)` returns true only when
+the triggering event's own payload *proves* it is the exact transition
+into `past_due` — for a `customer.subscription.updated` event, only when
+Stripe's `previous_attributes` includes a `status` key at all (Stripe only
+includes a field there when that specific API operation actually changed
+it, regardless of its prior value). Every other case — no
+`previous_attributes.status`, a different event type, or
+`checkout.session.completed` (which carries a Checkout Session object,
+never a Subscription, and so never has this evidence) — returns false.
+`computeGracePeriodEndsAt()` now takes this as a `hasConfirmedTransition`
+flag: anchors to the event's `created` time only when true, otherwise
+anchors to `now()` — the current moment being the earliest instant this
+reconciliation can *prove* the subscription was known to be `past_due`,
+which can only ever grant a grace window equal to or more generous than
+the true (unproven) transition time, never shorter than the promised 7
+days.
+
+Test: **DELAYED OLD EVENT** — an old event with no confirming
+`previous_attributes.status` triggers a reconciliation while Stripe is
+*currently* `past_due`; asserts the grace deadline is anchored to `now`
+(fake-timers), not to the old event's own unrelated `created` time. The
+existing **GRACE RECOVERY** test was updated so its genuine transition
+events now carry `previous_attributes: { status: "active" }`, since it
+relies on `created`-anchoring being correct for a confirmed transition.
+
+## T. Updated validation results
+
+| Check | Result |
+|---|---|
+| `npx tsc --noEmit` | Clean |
+| `npm run lint` | Clean — same 2 pre-existing, unrelated warnings (`layout.tsx` custom-font, `Avatar.tsx` `<img>`) |
+| `npm test` | **824/824 passed**, 104 files (`route.test.ts` now 24 cases, was 19) |
+| `npm run build` | Succeeds |
+
+## U. Files changed (this re-review, on top of Round 3 sections A–Q)
+
+- `database/subscriptions-entitlement-forward-fix-migration.sql` — added
+  section 4 (`subscription_reconciliation_locks` table +
+  `reconcile_subscription_if_owner` function), appended to the same
+  not-yet-applied file.
+- `src/app/api/webhooks/stripe/route.ts` — `acquireReconciliationLock`,
+  `writeSubscriptionIfOwner`, `hasConfirmedPastDueTransition`,
+  `resolveSubscriptionTier` (extracted, shared by both write paths); wired
+  into `reconcileSubscriptionFromStripe`/`computeGracePeriodEndsAt`.
+- `src/app/api/webhooks/stripe/route.test.ts` — +5 cases per sections R/S.
+
+**Superseded by Round 4 below — both R and S were amended (R's fencing
+key, S's rule entirely) before this migration was ever applied.**
+
+---
+
+# Round 4 — same-day correctness re-review #2 (customer-level fencing, canonical-subscription-id rule, past_due timestamp-inference removed)
+
+A same-day correctness re-review of Round 3's own fencing fix (section R
+above) and grace-period fix (section S above) found the fencing key was
+still too narrow, and the grace-period fix was still trusting event
+timestamps it shouldn't. Both are amended IN PLACE in the same
+not-yet-applied migration file and route.ts, not layered on top —
+**still not applied / not merged.**
+
+## V. Blocker 3 — the reconciliation lock fenced the wrong entity
+
+**The gap:** section R's lock was keyed by `stripe_subscription_id`, but
+`public.subscriptions` is canonical per USER/CUSTOMER — one row per user,
+upserted `ON CONFLICT (user_id)`. A resubscribe (old `sub_old` → new
+`sub_new`, same customer) or a Lifetime-vs-recurring race produces TWO
+different, mutually-blind lock rows, each believing it alone fences the
+ONE shared canonical row:
+
+```
+cus_123 / user_1 previously has sub_old
+user resubscribes: checkout establishes sub_new / active
+later, an old webhook for sub_old arrives:
+  → it owns the sub_old fence (a DIFFERENT lock row than sub_new's)
+  → retrieves sub_old = canceled
+  → finds the same cus_123/user_1 row
+  → overwrites the single canonical user row back to sub_old/canceled
+```
+
+The `sub_new` fence cannot prevent this — the two attempts never contend
+for the same lock row at all. The identical shape of race applies between
+an existing recurring subscription's reconciliation and a Lifetime
+checkout for the same customer.
+
+**The fix — fence the CUSTOMER, not the subscription:**
+`subscription_reconciliation_locks` is now `stripe_customer_id PRIMARY
+KEY` (was `stripe_subscription_id`). `acquireReconciliationLock()` is now
+called with the Stripe customer id from **every** entitlement-changing
+webhook path for that customer — recurring `checkout.session.completed`,
+every `customer.subscription.*` lifecycle event, **and** Lifetime
+`checkout.session.completed` (previously untouched — see section R's last
+bullet, now removed: Lifetime writes through `upsertSubscription()` no
+longer exists as a separate code path at all). All of them now contend
+for the exact same lock row, so whichever last acquires it is, by
+construction, the only one that can subsequently write — regardless of
+which subscription id or billing type it concerns.
+
+## W. Blocker 4 — the canonical-subscription-id rule (closes the fencing gap the token alone can't)
+
+**The gap:** even with a correct customer-level fence, the token alone
+only proves "I am the most-recently-started attempt for this customer" —
+it says nothing about whether the subscription (or billing state) this
+attempt is about to write is the one that's actually supposed to be
+canonical. A normal `customer.subscription.*` lifecycle event must never
+be allowed to SWITCH which Stripe subscription — or Lifetime status — is
+canonical for a user; only an authoritative purchase/checkout event may
+establish or replace that identity.
+
+**The fix — a canonical-identity rule enforced INSIDE
+`reconcile_subscription_if_owner`, at the atomic database-write boundary
+(not merely via a stale client-side `SELECT` before the RPC call):** a
+new `p_is_authoritative` parameter. When `false` (every
+`customer.subscription.*` lifecycle event), the function does its own
+`SELECT stripe_subscription_id, billing_type ... FOR UPDATE` against the
+CURRENT canonical `subscriptions` row before deciding whether to write:
+
+- No canonical row yet for this user → return `false` (only an
+  authoritative checkout may establish one).
+- Canonical row's `billing_type = 'lifetime'` → return `false` (Lifetime
+  is canonical; a recurring lifecycle event is noncanonical).
+- Canonical row's `stripe_subscription_id` differs from this call's →
+  return `false` (an old/noncanonical subscription's event; benign
+  no-op).
+- Otherwise → proceed to the canonical upsert, exactly as before.
+
+When `true` (recurring `checkout.session.completed`, which may
+establish/replace `stripe_subscription_id`; Lifetime
+`checkout.session.completed`, which may set `billing_type = 'lifetime'`
+and clear `stripe_subscription_id`), this check is skipped entirely — an
+authoritative purchase path always wins. `route.ts` passes
+`isAuthoritative: true` from both checkout branches and
+`isAuthoritative: false` from `handleSubscriptionLifecycleEvent` — see
+`ReconcileSubscriptionInput.isAuthoritative`.
+
+The `FOR UPDATE` on the `subscriptions` row read is load-bearing for the
+non-authoritative path exactly the way section R's lock-row `FOR UPDATE`
+is: it holds the row for the rest of this transaction so a concurrent
+authoritative write (an interleaving checkout) can't slip in between the
+identity check and this call's own (rejected) write decision. An
+authoritative call needs no separate lock read of its own — its `INSERT
+... ON CONFLICT (user_id) DO UPDATE` takes an equivalent row lock as part
+of the upsert itself.
+
+## X. Blocker 5 — past_due grace could still be shortened by a "confirmed" but out-of-order transition event
+
+**The gap:** section S's `hasConfirmedPastDueTransition()` anchored a
+fresh grace window to an event's `created` time whenever
+`previous_attributes.status` was present — but that only proves status
+changed at SOME earlier point, never that it was the transition BEHIND
+the state THIS reconciliation just retrieved. Concretely: event A
+(active→past_due), event B (past_due→active), event C (active→past_due).
+If delayed event A arrives after C, its `previous_attributes.status` is
+present and "confirmed" by the old rule, but anchoring to A's `created`
+time backdates the grace window for transition C — potentially
+shortening, or even already expiring, the customer's promised 7 days.
+There is no way to distinguish this from a genuine first transition using
+only the triggering event's own payload.
+
+**The fix — stop trying to reconstruct historical transition time from
+any webhook event at all.** `computeGracePeriodEndsAt()` no longer takes
+`eventCreatedIso` or a confirmation flag; `hasConfirmedPastDueTransition()`
+and `pastDueTransitionConfirmed` are deleted entirely. The rule is now:
+
+- Freshly retrieved status ≠ `past_due` → `grace = null`.
+- Freshly retrieved status = `past_due` AND stored canonical status =
+  `past_due` AND an existing grace deadline exists → preserve it
+  unchanged.
+- Freshly retrieved status = `past_due` AND stored canonical status ≠
+  `past_due` → `grace = now() + 7 days`, unconditionally — never anchored
+  to any event timestamp, confirmed or not.
+
+`now()` is provably ≥ any real, already-occurred transition instant (a
+webhook can't be processed before the event happened), so this can only
+ever grant a window equal to or MORE generous than the true, unknowable
+transition time — never shorter than the promised 7 days. A delayed
+delivery may make the grace slightly more generous; it must never make it
+shorter.
+
+## Y. Updated tests
+
+- **PAST_DUE (A)** — first observed `past_due` sets grace to `now + 7
+  days` (fake timers), regardless of the triggering event's own `created`
+  time.
+- **DELAYED OLD EVENT (B)** — an old event (no confirmation concept left
+  to even check) triggering a reconciliation while Stripe is currently
+  `past_due` still anchors to `now`, never to the old event's `created`
+  time.
+- **GRACE RECOVERY** — rewritten with fake timers advancing at each step
+  (no more `previous_attributes` fixtures anywhere in the file): (C)
+  repeated `past_due` preserves the existing deadline, (D) recovery
+  clears it, (E) a later independent `past_due` transition gets a fresh
+  `now`-anchored window.
+- **`checkout.session.completed` (subscription mode)** and **NORMAL
+  OWNER** — lock assertions updated to `stripe_customer_id`/`onConflict:
+  "stripe_customer_id"`; RPC assertions now include
+  `p_is_authoritative: true` / `false` respectively.
+- **LIFETIME** — rewritten: no longer asserts a plain `subscriptions`
+  upsert; now asserts the customer-level lock is acquired and the
+  canonical write goes through `reconcile_subscription_if_owner` with
+  `p_is_authoritative: true`, `p_stripe_subscription_id: null`.
+- New `describe("canonical subscription identity (Fix 2/3 —
+  customer-level fence + canonical-subscription-id rule)")`:
+  **OLD SUBSCRIPTION AFTER RESUBSCRIBE** (a lifecycle event for the
+  no-longer-canonical old subscription is a no-op; canonical
+  identity/tier untouched), **OLD SUBSCRIPTION AFTER LIFETIME** (same,
+  once canonical billing is Lifetime), **NEW SUBSCRIPTION BEFORE
+  CHECKOUT** (a lifecycle event for a not-yet-canonical new subscription
+  cannot establish it; the following authoritative checkout can), and
+  **LIFETIME VS RECURRING OVERLAP** (once an authoritative Lifetime
+  checkout wins the canonical write, a stale recurring reconciliation —
+  fenced out by the customer-level token — cannot subsequently overwrite
+  it).
+- **STALE SAME-EVENT WRITER**, **DISTINCT EVENT CONCURRENCY**, **LOST
+  OWNERSHIP**, **EQUAL-SECOND DISTINCT EVENTS** — retained unchanged
+  (their fixture rows were given an explicit `stripe_subscription_id: "sub_1"`
+  / `billing_type: "recurring"` so the new canonical-identity check
+  doesn't reject their very first write; the races themselves are
+  untouched).
+
+`route.test.ts`: 28 cases (was 24; +4 net — the two Round-3 grace tests
+were rewritten in place rather than removed and re-added).
+
+## Z. Updated validation results
+
+| Check | Result |
+|---|---|
+| `npx tsc --noEmit` | Clean |
+| `npm run lint` | Clean — same 2 pre-existing, unrelated warnings (`layout.tsx` custom-font, `Avatar.tsx` `<img>`) |
+| `npm run test:ci` | **828/828 passed**, 104 files (`route.test.ts` now 28 cases, was 24) |
+| `npm run build` | Succeeds |
+
+## AA. Files changed (this re-review, on top of Round 3 sections R–U)
+
+- `database/subscriptions-entitlement-forward-fix-migration.sql` —
+  section 4 amended in place: `subscription_reconciliation_locks` re-keyed
+  to `stripe_customer_id`; `reconcile_subscription_if_owner` gains
+  `p_is_authoritative` and the canonical-identity `SELECT ... FOR UPDATE`
+  check.
+- `src/app/api/webhooks/stripe/route.ts` — `acquireReconciliationLock`/
+  `writeSubscriptionIfOwner` re-keyed to customer id and gained
+  `isAuthoritative`; `handleCheckoutSessionCompleted`'s Lifetime branch
+  now calls them instead of the deleted `upsertSubscription()`/
+  `syncUserDisplayTier()` pair; `computeGracePeriodEndsAt()` simplified
+  (no `eventCreatedIso`/confirmation flag); `hasConfirmedPastDueTransition()`
+  deleted; `ReconcileSubscriptionInput.pastDueTransitionConfirmed`
+  replaced by `isAuthoritative`.
+- `src/app/api/webhooks/stripe/route.test.ts` — updated per section Y.
+
+**Stopping here — no live DDL executed, nothing committed or merged.**
